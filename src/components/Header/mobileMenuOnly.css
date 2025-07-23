@@ -1,0 +1,6 @@
+/* Hide mobile menu wrapper on desktop */
+.mobile-menu-responsive-wrapper { display: none; }
+
+@media (max-width: 900px) {
+  .mobile-menu-responsive-wrapper { display: block; }
+}

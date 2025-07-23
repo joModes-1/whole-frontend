@@ -1,0 +1,208 @@
+.seller-orders-page {
+  max-width: 1000px;
+  margin: 32px auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(2,100,241,0.06);
+  padding: 24px 12px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;
+}
+
+@media (max-width: 700px) {
+  .seller-orders-page {
+    padding: 12px 2vw;
+    border-radius: 8px;
+    margin: 12px 0;
+  }
+}
+
+.seller-orders-page h1 {
+  margin-bottom: 24px;
+  font-size: 2rem;
+  color: #0264f1;
+  font-weight: 700;
+}
+
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  background: #fafbfc;
+  font-size: 1rem;
+  min-width: 600px;
+}
+
+.orders-table th, .orders-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e6e6e6;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.order-status-select {
+  min-width: 120px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1.5px solid #e6eaf2;
+  font-size: 1em;
+  color: #0264f1;
+  background: #f4f8fe;
+  transition: border 0.2s;
+}
+.order-status-select:focus {
+  outline: none;
+  border: 1.5px solid #0264f1;
+  background: #eef6fe;
+}
+
+.order-update-btn {
+  min-width: 80px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 1em;
+  background: #0264f1;
+  color: #fff;
+  border: none;
+  margin-top: 6px;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+.order-update-btn:hover, .order-update-btn:focus {
+  background: #014aab;
+  color: #fff;
+}
+.order-update-btn:disabled {
+  background: #e6eaf2;
+  color: #b5c6e0;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .order-status-select, .order-update-btn {
+    width: 100%;
+    min-width: 0;
+    margin: 6px 0 0 0;
+    font-size: 1.04em;
+    box-sizing: border-box;
+  }
+  .order-update-btn {
+    margin-top: 8px;
+  }
+}
+
+.orders-table th {
+  background: #f4f8fe;
+  color: #0264f1;
+  font-weight: 600;
+  font-size: 1.02em;
+}
+
+.orders-table tr:last-child td {
+  border-bottom: none;
+}
+
+.orders-table tr:hover {
+  background: #eef6fe;
+  transition: background 0.2s;
+}
+
+@media (max-width: 900px) {
+  .orders-table {
+    font-size: 0.98rem;
+    min-width: 500px;
+  }
+  .orders-table th, .orders-table td {
+    padding: 8px 8px;
+  }
+}
+
+@media (max-width: 700px) {
+  .orders-table {
+    font-size: 0.95rem;
+    min-width: 420px;
+  }
+  .orders-table th, .orders-table td {
+    padding: 7px 6px;
+  }
+  .orders-table th:nth-child(2),
+  .orders-table td:nth-child(2),
+  .orders-table th:nth-child(5),
+  .orders-table td:nth-child(5) {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .orders-table, .orders-table thead, .orders-table tbody, .orders-table tr, .orders-table th, .orders-table td {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+  .orders-table thead {
+    display: none;
+  }
+  .orders-table tr {
+    margin-bottom: 16px;
+    background: #f4f8fe;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(2,100,241,0.04);
+    padding: 10px 8px;
+    display: flex;
+    flex-direction: column;
+    word-break: break-word;
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+  .orders-table td {
+    border: none;
+    padding: 8px 6px;
+    position: relative;
+    font-size: 1em;
+    background: none;
+    width: 100%;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+  .orders-table td:before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #0264f1;
+    display: block;
+    margin-bottom: 2px;
+    font-size: 0.97em;
+  }
+}
+
+.orders-table th, .orders-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e6e6e6;
+  text-align: left;
+}
+
+.orders-table th {
+  background: #f4f8fe;
+  color: #0264f1;
+  font-weight: 600;
+}
+
+.orders-table tr:last-child td {
+  border-bottom: none;
+}
+
+.orders-table tr:hover {
+  background: #eef6fe;
+}
+
+.error-message {
+  color: #e74c3c;
+  background: #fff6f6;
+  border: 1px solid #ffcccc;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}

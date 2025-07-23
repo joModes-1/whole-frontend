@@ -1,0 +1,54 @@
+.seller-info-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+  transition: box-shadow 0.2s;
+}
+
+.seller-info-card:hover {
+  box-shadow: 0 6px 32px rgba(25, 118, 210, 0.12);
+}
+
+.seller-profile-pic-container {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 1rem;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.09);
+}
+
+.seller-profile-pic {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.seller-info-details {
+  text-align: center;
+}
+
+.seller-company {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #1976d2;
+  margin-bottom: 0.3rem;
+}
+
+.seller-description {
+  color: #666;
+  font-size: 0.97rem;
+  margin-bottom: 0.7rem;
+}
+
+.seller-contact p {
+  margin: 0.2rem 0;
+  font-size: 0.97rem;
+  color: #333;
+}

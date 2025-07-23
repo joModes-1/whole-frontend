@@ -1,5 +1,17 @@
-# Ignore everything
-*
-# But not these files...
+# dependencies
+node_modules/
+
+# production build
+build/
+
+# misc
+.DS_Store
+.env
+
+# allow all source files
+!src/
+!public/
+!package.json
+!package-lock.json
 !.gitignore
 !README.md

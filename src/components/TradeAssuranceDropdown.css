@@ -1,0 +1,156 @@
+.trade-assurance-container {
+  position: relative;
+  display: inline-block;
+  z-index: 1000;
+}
+
+.trade-assurance-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid rgba(120, 30, 255, 0.2);
+  border-radius: 24px;
+  padding: 8px 16px;
+  color: var(--text-primary, #1a202c);
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.trade-assurance-toggle:hover {
+  background: rgba(120, 30, 255, 0.1);
+  border-color: rgba(120, 30, 255, 0.4);
+}
+
+.shield-icon {
+  color: #781eff;
+  font-size: 16px;
+}
+
+.dropdown-icon {
+  transition: transform 0.2s ease;
+  font-size: 16px;
+  color: #64748b;
+}
+
+.dropdown-icon.open {
+  transform: rotate(180deg);
+}
+
+.trade-assurance-dropdown {
+  position: absolute;
+  top: 200px;
+  margin-top: 300px;
+  right: 0;
+  width: 320px;
+  margin-top: 8px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  animation: fadeIn 0.2s ease-out;
+  border: 1px solid #e2e8f0;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-header {
+  padding: 20px;
+  background: linear-gradient(135deg, #f8faff 0%, #eef4ff 100%);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.dropdown-header h3 {
+  margin: 8px 0 4px;
+  color: #1e293b;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dropdown-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.header-icon {
+  color: #781eff;
+  font-size: 20px;
+  background: rgba(120, 30, 255, 0.1);
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.features-list {
+  padding: 16px 0;
+  margin: 0;
+  list-style: none;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  color: #334155;
+  font-size: 14px;
+  transition: background 0.2s ease;
+}
+
+.feature-item:hover {
+  background: #f8fafc;
+}
+
+.check-icon {
+  color: #10b981;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.dropdown-footer {
+  padding: 12px 20px;
+  border-top: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+
+.learn-more {
+  color: #781eff;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: color 0.2s ease;
+}
+
+.learn-more:hover {
+  color: #4b0db3;
+  text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .trade-assurance-dropdown {
+    width: 280px;
+    right: -40px;
+  }
+}
+
+
+.dropdown-uls {
+
+  display: flex;
+  flex-direction: column;
+  }

@@ -1,0 +1,33 @@
+/* ProfileSkeleton.css */
+.profile-skeleton {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+}
+.avatar-skeleton {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #eee;
+  position: relative;
+}
+.profile-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.profile-line {
+  height: 10px;
+  border-radius: 6px;
+  background: #eee;
+}
+.shimmer {
+  animation: shimmer 1.2s infinite linear;
+  background: linear-gradient(90deg, #eee 25%, #f5f5f5 50%, #eee 75%);
+  background-size: 200% 100%;
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
