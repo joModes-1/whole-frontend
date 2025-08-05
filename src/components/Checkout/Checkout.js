@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { createOrder } from '../../services/orderService';
-import { createStripeSession, createPayPalOrder, initiateFlutterwave } from '../../services/paymentService';
 import api from '../../services/api';
 import { loadStripe } from '@stripe/stripe-js';
 import './Checkout.css';
