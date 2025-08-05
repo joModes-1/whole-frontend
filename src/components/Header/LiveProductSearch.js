@@ -1,79 +1,34 @@
-import React, { useState, useEffect, useRef } from 'react';
-import api from '../../services/api';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { FaSearch } from 'react-icons/fa';
 
-const LiveProductSearch = ({ query, onSelect, onBlur }) => {
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [error, setError] = useState(null);
-  const dropdownRef = useRef(null);
+const LiveProductSearch = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!query || query.trim() === '') {
-      setResults([]);
-      setShowDropdown(false);
-      return;
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      const searchQuery = encodeURIComponent(searchTerm.trim());
+      navigate(`/products?search=${searchQuery}`);
+      // Don't clear the search term immediately - let the Products page handle it
     }
-    setLoading(true);
-    setError(null);
-    api.get(`/products?search=${encodeURIComponent(query.trim())}&limit=5`)
-      .then(res => {
-        setResults(res.data.data || []);
-        setShowDropdown(true);
-      })
-      .catch(() => {
-        setError('Error searching products.');
-        setResults([]);
-        setShowDropdown(true);
-      })
-      .finally(() => setLoading(false));
-  }, [query]);
-
-  // Hide dropdown on outside click
-  useEffect(() => {
-    const handleClick = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setShowDropdown(false);
-        if (onBlur) onBlur();
-      }
-    };
-    if (showDropdown) {
-      document.addEventListener('mousedown', handleClick);
-    }
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [showDropdown, onBlur]);
-
-  if (!showDropdown || (!loading && results.length === 0 && !error)) return null;
+  };
 
   return (
-    <div className="live-search-dropdown" ref={dropdownRef}>
-      {loading && <div className="live-search-loading">Searching...</div>}
-      {error && <div className="live-search-error">{error}</div>}
-      {!loading && results.length > 0 && (
-        <ul className="live-search-list">
-          {results.map(product => (
-            <li key={product._id}>
-              <Link
-                to={`/products/${product._id}`}
-                className="live-search-item"
-                onClick={() => {
-                  setShowDropdown(false);
-                  if (onSelect) onSelect(product);
-                }}
-              >
-                {product.name}
-                {product.category && (
-                  <span className="live-search-category">{product.category}</span>
-                )}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-      {!loading && results.length === 0 && !error && (
-        <div className="live-search-no-results">No products found.</div>
-      )}
+    <div className="search-container">
+      <form onSubmit={handleSearchSubmit} className="search-bar">
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search for products..."
+          className="search-input"
+        />
+        <button type="submit" className="search-button">
+          <FaSearch />
+        </button>
+      </form>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 .seller-info-card {
   background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   padding: 2rem 1.5rem 1.5rem 1.5rem;
   display: flex;
   flex-direction: column;
@@ -11,7 +11,7 @@
 }
 
 .seller-info-card:hover {
-  box-shadow: 0 6px 32px rgba(25, 118, 210, 0.12);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 .seller-profile-pic-container {
@@ -20,7 +20,7 @@
   margin-bottom: 1rem;
   border-radius: 50%;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.09);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .seller-profile-pic {
@@ -34,11 +34,11 @@
   text-align: center;
 }
 
-.seller-company {
-  font-size: 1.3rem;
+.seller-name {
+  font-size: 1.5rem;
   font-weight: 600;
-  color: #1976d2;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.25rem;
+  color: #1e293b;
 }
 
 .seller-description {
@@ -47,8 +47,28 @@
   margin-bottom: 0.7rem;
 }
 
-.seller-contact p {
-  margin: 0.2rem 0;
-  font-size: 0.97rem;
-  color: #333;
+.seller-email {
+  color: #64748b;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.contact-seller-button {
+  background-color: #0ea5e9;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+  width: 100%;
+  max-width: 200px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.contact-seller-button:hover {
+  background-color: #0284c7;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }

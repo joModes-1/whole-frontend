@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
+import { fetchCategories } from '../redux/categorySlice';
 import '../styles/CategoriesDropdown.css';
 
 
@@ -11,31 +13,30 @@ import '../styles/CategoriesDropdown.css';
 const CategoriesDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState(null);
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+
   const dropdownRef = useRef(null);
+  const dispatch = useDispatch();
+  const { items, status, error } = useSelector((state) => state.categories || {});
+  const categories = Array.isArray(items) ? items : [];
+  const navigate = useNavigate();
+
+  const handleCategoryClick = (categoryName) => {
+    closeDropdown();
+    if (categoryName === 'All') {
+      navigate('/products');
+    } else {
+      navigate(`/products?category=${encodeURIComponent(categoryName)}`);
+    }
+  };
 
   const toggleDropdown = () => setIsOpen(!isOpen);
   const closeDropdown = () => setIsOpen(false);
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch('/api/categories');
-        if (!response.ok) throw new Error('Failed to fetch categories');
-        const data = await response.json();
-        setCategories(data);
-        setError(null);
-      } catch (err) {
-        setError('Could not load categories.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCategories();
-  }, []);
+    if (status === 'idle') {
+      dispatch(fetchCategories());
+    }
+  }, [status, dispatch]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -62,31 +63,34 @@ const CategoriesDropdown = () => {
       {isOpen && (
         <div className="categories-dropdown">
           <div className="categories-panel">
-            {loading && <div className="categories-loading">Loading categories...</div>}
-            {error && <div className="categories-error">{error}</div>}
-            {!loading && !error && (
+            {status === 'loading' && <div className="categories-loading">Loading categories...</div>}
+            {status === 'failed' && <div className="categories-error">{error}</div>}
+            {status === 'succeeded' && (
               <>
                 <div className="categories-list">
-                  {categories.map((category, index) => (
+                  {Array.isArray(categories) && categories.map((category, index) => (
                     <div 
-                      key={category.id || index}
+                      key={category._id || index}
                       className={`category-item ${activeCategory === index ? 'active' : ''}`}
                       onMouseEnter={() => setActiveCategory(index)}
+                      onClick={() => handleCategoryClick(category._id)}
                     >
                       <div className="category-header">
                         {/* Render category.icon if provided, else fallback */}
                         {category.icon ? (
                           <span className="category-icon">{category.icon}</span>
                         ) : null}
-                        <span className="category-name">{category.name}</span>
-                        {category.subCategories && category.subCategories.length > 0 && (
+                        <span className="category-name">{category._id} ({category.count})</span>
+                        {/* Sub-category logic can be re-added here if the API is extended */}
+                        {false && (
                           <FaChevronRight className="chevron-icon" />
                         )}
                       </div>
                     </div>
                   ))}
                 </div>
-                {activeCategory !== null && categories[activeCategory] && categories[activeCategory].subCategories && (
+                {/* Sub-category panel logic is disabled as the current API does not provide sub-categories */}
+                {false && activeCategory !== null && categories[activeCategory] && (
                   <div className="subcategories-panel">
                     <div className="subcategories-grid">
                       {categories[activeCategory].subCategories.map((subCategory, subIndex) => (

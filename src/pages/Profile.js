@@ -8,7 +8,7 @@ import './Profile.css';
 import ProfileSkeleton from '../components/Header/ProfileSkeleton';
 
 const Profile = () => {
-  const { logout, loading: authLoading, error: authError } = useAuth();
+  const { logout, loading: authLoading, error: authError, updateUser } = useAuth();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector(state => state.user.data);
@@ -51,7 +51,10 @@ const Profile = () => {
   };
 
   const handleImageClick = () => {
-    fileInputRef.current.click();
+    if (fileInputRef.current && !uploading) {
+      console.log('Profile image clicked - opening file picker');
+      fileInputRef.current.click();
+    }
   };
 
   const handleFileChange = async (event) => {
@@ -65,18 +68,20 @@ const Profile = () => {
     setUploadError('');
 
     try {
-      // Use fetch instead of api to avoid the missing import, or re-import api if you prefer
-      const response = await fetch(process.env.REACT_APP_API_BASE_URL ||'http://localhost:4000/api/profile/picture', {
+      // Get token from localStorage or AuthContext (for Authorization)
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:4000/api/profile/picture', {
         method: 'POST',
         body: formData,
-        headers: {
-          // 'Content-Type' should NOT be set when sending FormData
-        },
-        credentials: 'include', // if your backend needs cookies/auth
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
       });
       const data = await response.json();
+      console.log('Profile picture upload response:', data); // Debug log
       if (response.ok && data.user) {
-        dispatch(setUser(data.user));
+        dispatch(setUser(data.user)); // Update Redux
+        updateUser(data.user); // Update AuthContext
+        // Also refresh user data from server to ensure consistency
+        dispatch(fetchUserProfile()); // Refresh user data from server
       } else {
         setUploadError(data.message || 'Failed to upload picture. Please try again.');
       }
@@ -130,11 +135,21 @@ const Profile = () => {
     );
   }
 
+  // Debug logging
+  console.log('Current user data:', user);
+  console.log('Profile picture value:', user.profilePicture);
+  console.log('Constructed image URL:', user.profilePicture ? `http://localhost:4000${user.profilePicture}` : 'No profile picture');
+
   return (
     <div className="profile-container">
       <div className="profile-card">
         <div className="profile-header">
-          <div className="profile-image-container" onClick={handleImageClick}>
+          <div 
+            className="profile-image-container" 
+            onClick={handleImageClick}
+            style={{ cursor: uploading ? 'not-allowed' : 'pointer' }}
+            title="Click to change profile picture"
+          >
             <input
               type="file"
               ref={fileInputRef}
@@ -145,9 +160,15 @@ const Profile = () => {
             />
             {user.profilePicture ? (
   <img
-    src={process.env.REACT_APP_API_BASE_URL ||`http://localhost:4000/api/${user.profilePicture}`}
-    alt={user.name}
+    key={user.profilePicture}
+    src={`http://localhost:4000${user.profilePicture}`}
+    alt={user.name || 'Profile'}
     className={`profile-image profile-image-small ${uploading ? 'uploading' : ''}`}
+    onLoad={() => console.log('Profile image loaded successfully:', `http://localhost:4000${user.profilePicture}`)}
+    onError={(e) => {
+      console.error('Profile image failed to load:', `http://localhost:4000${user.profilePicture}`);
+      console.error('Image error:', e);
+    }}
   />
 ) : (
   <FaUser className="profile-icon profile-image-small" />
@@ -156,8 +177,8 @@ const Profile = () => {
 <div className="edit-overlay">Click to change</div>
           </div>
           <h1 className="profile-name">{user.name}</h1>
-          <span className={`profile-role ${user.role}`}>
-            {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+          <span className={`profile-role ${user.role || ''}`}>
+            {user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Role not set'}
           </span>
           {uploadError && <div className="upload-error-message">{uploadError}</div>}
         </div>
@@ -170,12 +191,7 @@ const Profile = () => {
 
           <div className="detail-item">
             <label>Role</label>
-            <p>{user.role.charAt(0).toUpperCase() + user.role.slice(1)}</p>
-          </div>
-          
-          <div className="detail-item">
-            <label>Company</label>
-            <p>{user.companyName || 'Not specified'}</p>
+            <p>{user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Role not set'}</p>
           </div>
 
           <div className="detail-item">
@@ -212,7 +228,7 @@ const Profile = () => {
             Edit Profile
           </button> 
 
-          {user.role === 'seller' && (
+          {user.role && user.role === 'seller' && (
             <button 
               className="action-button products"
               onClick={handleViewProducts}
@@ -221,7 +237,7 @@ const Profile = () => {
             </button>
           )}
 
-          {user.role === 'buyer' && (
+          {user.role && user.role === 'buyer' && (
             <button 
               className="action-button orders"
               onClick={handleViewOrders}

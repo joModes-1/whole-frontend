@@ -25,7 +25,8 @@ const OrderSuccess = () => {
 
         const orderData = await getOrderById(orderId);
         setOrder(orderData);
-        clearCart(); // Clear cart after successful order
+        // Cart should already be cleared after successful payment verification
+        // Only clear cart here for COD orders or if it wasn't cleared elsewhere
       } catch (err) {
         console.error('Error fetching order:', err);
         setError(err.message || 'Error fetching order details');

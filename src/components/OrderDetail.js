@@ -173,7 +173,7 @@ const OrderDetail = () => {
               {order.items.map((item) => (
                 <div key={item._id} className="p-4 flex justify-between items-center">
                   <div>
-                    <h3 className="font-medium">{item.listing.title}</h3>
+                    <h3 className="font-medium">{item.listing?.title || item.listing?.name || "Product Name Not Available"}</h3>
                     <p className="text-gray-600">
                       Quantity: {item.quantity} × ${item.unitPrice.toFixed(2)}
                     </p>

@@ -22,8 +22,8 @@ api.interceptors.request.use((config) => {
 // Create Stripe payment session
 export const createStripeSession = async (orderId, amount, currency) => {
   try {
-    const response = await api.post('/orders/create-stripe-session', {
-      orderId,
+    const response = await api.post(`/orders/${orderId}/initiate-payment`, {
+      paymentMethod: 'stripe',
       amount,
       currency,
     });
@@ -37,8 +37,8 @@ export const createStripeSession = async (orderId, amount, currency) => {
 // Create PayPal order
 export const createPayPalOrder = async (orderId, amount) => {
   try {
-    const response = await api.post('/orders/create-paypal-order', {
-      orderId,
+    const response = await api.post(`/orders/${orderId}/initiate-payment`, {
+      paymentMethod: 'paypal',
       amount,
     });
     return response.data;
@@ -49,10 +49,11 @@ export const createPayPalOrder = async (orderId, amount) => {
 };
 
 // Capture PayPal payment
-export const capturePayPalPayment = async (orderId) => {
+export const capturePayPalPayment = async (orderId, paymentId) => {
   try {
-    const response = await api.post('/orders/capture-paypal-payment', {
-      orderId,
+    const response = await api.post(`/orders/${orderId}/verify-payment`, {
+      paymentMethod: 'paypal',
+      transactionId: paymentId,
     });
     return response.data;
   } catch (error) {
@@ -62,10 +63,10 @@ export const capturePayPalPayment = async (orderId) => {
 };
 
 // Initialize Flutterwave payment
-export const initiateFlutterwave = async (orderId, amount, email, name, phone) => {
+export const initiateFlutterwave = async (orderId, amount, email, name, phone, paymentMethod = 'flutterwave') => {
   try {
-    const response = await api.post('/orders/initiate-flutterwave', {
-      orderId,
+    const response = await api.post(`/orders/${orderId}/initiate-payment`, {
+      paymentMethod,
       amount,
       email,
       name,
@@ -79,10 +80,11 @@ export const initiateFlutterwave = async (orderId, amount, email, name, phone) =
 };
 
 // Verify Flutterwave payment
-export const verifyFlutterwave = async (transactionId) => {
+export const verifyFlutterwave = async (orderId, transactionId) => {
   try {
-    const response = await api.post('/orders/verify-flutterwave', {
-      transaction_id: transactionId,
+    const response = await api.post(`/orders/${orderId}/verify-payment`, {
+      paymentMethod: 'flutterwave',
+      transactionId,
     });
     return response.data;
   } catch (error) {

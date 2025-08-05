@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 import {
   fetchProducts,
   setFilters,
@@ -10,18 +11,69 @@ import {
 import ProductCard from '../components/ProductCard/ProductCard';
 import ProductSkeleton from '../components/ProductSkeleton/ProductSkeleton';
 import { FaSearch, FaTags, FaBoxOpen, FaTimes } from 'react-icons/fa';
-import './Products.css';
 import useCategoryCounts from '../hooks/useCategoryCounts';
-import BackToTopButton from '../components/BackToTopButton'; // ✅ Add this import if not already
+import BackToTopButton from '../components/BackToTopButton';
+import './Products.css';
+
+// Add some basic error styling if not already in your CSS
+const styles = {
+  errorMessage: {
+    backgroundColor: '#ffebee',
+    color: '#c62828',
+    padding: '1rem',
+    borderRadius: '4px',
+    margin: '1rem 0',
+    textAlign: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '1rem'
+  },
+  retryButton: {
+    backgroundColor: '#c62828',
+    color: 'white',
+    border: 'none',
+    padding: '0.5rem 1rem',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    '&:hover': {
+      backgroundColor: '#b71c1c'
+    }
+  }
+};
 
 const Products = () => {
+  console.log('[Products.js] Component rendering...');
   const dispatch = useDispatch();
+  const location = useLocation();
+  const { status, error, hasMore, filters: reduxFiltersRaw, searchTerm: reduxSearchTerm } = useSelector(state => state.products);
   const allProducts = useSelector(selectAllProducts);
-  const status = useSelector(state => state.products.status);
-  const error = useSelector(state => state.products.error);
-  const hasMore = useSelector(state => state.products.hasMore);
-  const reduxFiltersRaw = useSelector(state => state.products.filters);
-  const reduxSearchTerm = useSelector(state => state.products.searchTerm);
+
+  console.log(`[Products.js] State after useSelector: status=${status}, hasMore=${hasMore}, productsCount=${allProducts.length}`);
+
+  useEffect(() => {
+    if (error) {
+      console.error('[Products.js] Detected an error from Redux:', error);
+    }
+  }, [error]);
+
+  // Initial fetch only if no URL params and no products loaded
+  console.log(`[Products.js] Initial fetch effect triggered. Status: ${status}, Products count: ${allProducts.length}`);
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const hasUrlParams = params.get('search') || params.get('category');
+    
+    if (!hasUrlParams && allProducts.length === 0 && status !== 'loading') {
+      console.log('[Products.js] Conditions met. Dispatching fetchProducts(1).');
+      dispatch(fetchProducts(1));
+    } else {
+      console.log('[Products.js] Conditions not met for initial fetch.');
+    }
+  }, [dispatch, allProducts.length, status, location.search]);
+
+  useEffect(() => {
+    console.log('[Products.js] allProducts from Redux changed, updating local state.');
+  }, [allProducts]);
 
   const observer = useRef();
   const lastProductElementRef = useCallback(node => {
@@ -83,36 +135,31 @@ const Products = () => {
       let prodCategories = [];
 
       if (Array.isArray(product.category)) {
-        prodCategories = product.category.map(c => (c || '').toString().toLowerCase().trim());
+        prodCategories = product.category.map(c => (c?.name || c || '').toString().toLowerCase().trim());
       } else if (typeof product.category === 'string') {
         prodCategories = [product.category.toLowerCase().trim()];
-      } else if (typeof product.category === 'object' && product.category.name) {
+      } else if (typeof product.category === 'object' && product.category?.name) {
         prodCategories = [product.category.name.toLowerCase().trim()];
       }
 
-      if (reduxSearchTerm && !name.toLowerCase().includes(reduxSearchTerm.toLowerCase())) return false;
+      if (reduxSearchTerm && !name.toLowerCase().includes(reduxSearchTerm.toLowerCase())) {
+        return false;
+      }
 
       if (selectedCategories[0] !== 'All') {
         const hasSelectedCategory = prodCategories.some(prodCat =>
-          selectedCategories.some(selCat =>
-            selCat.toLowerCase().trim() === prodCat.toLowerCase().trim()
-          )
+          selectedCategories.some(selCat => selCat.toLowerCase().trim() === prodCat)
         );
         if (!hasSelectedCategory) return false;
       }
 
-      if (priceRange[0] !== 0 || priceRange[1] !== 10000) {
+      if (priceRange[0] > 0 || priceRange[1] < 10000) {
         if (price < priceRange[0] || price > priceRange[1]) return false;
       }
 
       if (availability.length > 0) {
-        const inStock = stock > 0;
-        const outOfStock = stock <= 0;
-        const show = availability.some(option =>
-          (option === 'in-stock' && inStock) ||
-          (option === 'out-of-stock' && outOfStock)
-        );
-        if (!show) return false;
+        const stockStatus = stock > 0 ? 'In Stock' : 'Out of Stock';
+        if (!availability.includes(stockStatus)) return false;
       }
 
       return true;
@@ -121,19 +168,47 @@ const Products = () => {
 
   const { counts: categoryCounts, loading: loadingCounts } = useCategoryCounts();
 
+  // Handle URL search parameters
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const needsRefresh = params.get('refresh');
-    if (needsRefresh) {
-      dispatch(resetProducts());
-      dispatch(fetchProducts(1));
-      window.history.replaceState({}, document.title, window.location.pathname);
-      return;
+    const params = new URLSearchParams(location.search);
+    const category = params.get('category');
+    const search = params.get('search');
+
+    console.log('[Products] URL params detected:', { category, search });
+
+    // Set search term in Redux state if present
+    if (search) {
+      console.log('[Products] Setting search term in Redux:', search);
+      dispatch(setSearchTerm(search));
+    } else if (!search && reduxSearchTerm) {
+      // Clear search term if no search in URL
+      dispatch(setSearchTerm(''));
     }
-    if (status === 'idle' && allProducts.length === 0) {
-      dispatch(fetchProducts(1));
+
+    // Set category filter if present, or clear if not
+    if (category) {
+      const updatedFilters = { ...reduxFiltersRaw, selectedCategories: [category] };
+      dispatch(setFilters(updatedFilters));
+    } else {
+      // Clear category filter if no category in URL
+      const updatedFilters = { ...reduxFiltersRaw, selectedCategories: ['All'] };
+      dispatch(setFilters(updatedFilters));
     }
-  }, [dispatch, status, allProducts.length]);
+
+    // Reset products and fetch with new parameters
+    dispatch(resetProducts());
+    
+    const fetchParams = { page: 1, limit: 20 };
+    if (category) {
+      fetchParams.category = category;
+    }
+    if (search) {
+      fetchParams.search = search; // Use 'search' instead of 'keyword'
+    }
+
+    console.log('[Products] Fetching products with params:', fetchParams);
+    dispatch(fetchProducts(fetchParams));
+  }, [dispatch, location.search]); // Only depend on location.search to avoid loops
 
   const toggleCategory = (category) => {
     let updated = [];
@@ -260,9 +335,9 @@ const Products = () => {
                               {loadingCounts ? '...' : (
                                 catKey === 'All'
                                   ? categories.filter(c => c !== 'All').reduce((sum, c) => {
-                                      const cName = typeof c === 'object' ? c.name : c;
-                                      return sum + (categoryCounts[cName] || 0);
-                                    }, 0)
+                                    const cName = typeof c === 'object' ? c.name : c;
+                                    return sum + (categoryCounts[cName] || 0);
+                                  }, 0)
                                   : categoryCounts[catKey] || 0
                               )}
                             </span>
@@ -380,8 +455,21 @@ const Products = () => {
               </div>
             )}
 
+            {/* Error Message */}
+            {error && (
+              <div className="error-message">
+                <p>{error}</p>
+                <button
+                  onClick={() => dispatch(fetchProducts(1))}
+                  className="retry-button"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+
             {/* Product Grid */}
-            {filteredProducts.length > 0 ? (
+            {!error && filteredProducts.length > 0 ? (
               <div className="product-grid">
                 {filteredProducts.map((product, idx) => (
                   <ProductCard
@@ -391,7 +479,7 @@ const Products = () => {
                   />
                 ))}
               </div>
-            ) : (
+            ) : !error ? (
               <div className="no-products">
                 <h3>No products found</h3>
                 <p>Try adjusting your search or filter criteria</p>
@@ -399,7 +487,7 @@ const Products = () => {
                   Reset Filters
                 </button>
               </div>
-            )}
+            ) : null}
 
             {status === 'loadingMore' && <ProductSkeleton count={3} />}
           </div>

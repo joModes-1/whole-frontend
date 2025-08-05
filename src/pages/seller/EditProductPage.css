@@ -2,16 +2,18 @@
   max-width: 800px;
   margin: 2rem auto;
   padding: 2rem;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  margin-top: 2rem;
 }
 
 .edit-product-container h2 {
   text-align: center;
   margin-bottom: 2rem;
-  color: #333;
-  font-size: 2rem;
+  color: #1e293b;
+  font-weight: 700;
+  font-size: 1.8rem;
 }
 
 .edit-product-form .form-group {
@@ -22,7 +24,8 @@
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 600;
-  color: #555;
+  color: #334155;
+  font-size: 0.9rem;
 }
 
 .edit-product-form input[type="text"],
@@ -30,16 +33,20 @@
 .edit-product-form textarea {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
   font-size: 1rem;
+  box-sizing: border-box;
+  background-color: #f8fafc;
+  color: #1e293b;
+  transition: border-color 0.2s;
 }
 
 .update-product-button {
   width: 100%;
   padding: 0.8rem;
   border: none;
-  background-color: #007bff;
+  background-color: #0284c7;
   color: white;
   border-radius: 4px;
   cursor: pointer;
@@ -48,7 +55,19 @@
 }
 
 .update-product-button:hover {
-  background-color: #0056b3;
+  background-color: #0284c7;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.error-message {
+  padding: 1rem;
+  margin: 1rem 0;
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 500;
 }
 
 .image-preview-container {
@@ -63,10 +82,12 @@
 }
 
 .image-preview img {
-    width: 100px;
-    height: 100px;
-    object-fit: cover;
-    border-radius: 4px;
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 2px solid #0ea5e9;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .remove-image-btn {

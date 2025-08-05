@@ -10,18 +10,18 @@ const HelpDropdown = () => {
       className="help-dropdown"
       onClick={() => setOpen(!open)} 
     >
-      <li className="help-btn">
+      <button className="help-btn">
         Help <FaChevronDown className="icon" />
-      </li>
+      </button>
       {open && (
         <ul className="dropdown-menu">
-          <li>Place & Track Order</li>
-          <li>Returns and Refund</li>
-          <li>Wallet & Payments</li>
-          <li>Loyalty Card</li>
-          <li>Order Cancellation</li>
-          <li>FAQs</li>
-          <li>Contact Us</li>
+          <li><a href="#">Place & Track Order</a></li>
+          <li><a href="#">Returns and Refund</a></li>
+          <li><a href="#">Wallet & Payments</a></li>
+          <li><a href="#">Loyalty Card</a></li>
+          <li><a href="#">Order Cancellation</a></li>
+          <li><a href="#">FAQs</a></li>
+          <li><a href="#">Contact Us</a></li>
         </ul>
       )}
     </div>

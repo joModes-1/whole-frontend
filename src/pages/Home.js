@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import HeroSection from '../components/HeroSection/HeroSection';
 import ProductCard from '../components/ProductCard/ProductCard';
@@ -7,110 +8,94 @@ import {
   FiSearch, 
   FiX, 
   FiTag, 
-  FiBox, 
   FiFilter,
-  FiDollarSign,
   FiRefreshCw,
-  FiChevronDown,
-  FiChevronUp
+  FiShoppingBag,
+  FiMonitor,
+  FiSmartphone,
+  FiHome,
+  FiTruck,
+  FiHeart,
+  FiBook,
+  FiMusic
 } from 'react-icons/fi';
 import './Home.css';
 
 const Home = () => {
-  const [categories, setCategories] = useState(['All']);
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [products, setProducts] = useState([]);
+  const navigate = useNavigate();
+  const [handpickedProducts, setHandpickedProducts] = useState([]);
+  const [featuredCategories, setFeaturedCategories] = useState([]);
+  const [hotDeals, setHotDeals] = useState([]);
+  const [trendingProducts, setTrendingProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const productsContainerRef = useRef(null);
 
-  // Fetch all categories and products on mount
+  // Category icons mapping
+  const getCategoryIcon = (category) => {
+    const categoryLower = category.toLowerCase();
+    if (categoryLower.includes('electronic') || categoryLower.includes('tech')) return FiMonitor;
+    if (categoryLower.includes('phone') || categoryLower.includes('mobile')) return FiSmartphone;
+    if (categoryLower.includes('fashion') || categoryLower.includes('clothing')) return FiShoppingBag;
+    if (categoryLower.includes('home') || categoryLower.includes('furniture')) return FiHome;
+    if (categoryLower.includes('automotive') || categoryLower.includes('car')) return FiTruck;
+    if (categoryLower.includes('health') || categoryLower.includes('beauty')) return FiHeart;
+    if (categoryLower.includes('book') || categoryLower.includes('education')) return FiBook;
+    if (categoryLower.includes('music') || categoryLower.includes('audio')) return FiMusic;
+    return FiTag; // Default icon
+  };
+
+  const handleCategoryClick = (category) => {
+    navigate(`/products?category=${encodeURIComponent(category)}`);
+  };
+
   useEffect(() => {
-    const fetchInitialData = async () => {
+    const fetchHomePageData = async () => {
       setLoading(true);
       setError(null);
       try {
-        // Fetch all products (or just categories endpoint if you have one)
-        const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/products?page=1&limit=1000`);
-        const items = res.data?.data || res.data?.products || res.data?.items || [];
-        setProducts(items);
-        // Build category list from products
-        const categoriesSet = new Set();
-        items.forEach(product => {
-          if (!product.category) return;
-          if (typeof product.category === 'string') {
-            categoriesSet.add(product.category.trim());
-          } else if (Array.isArray(product.category)) {
-            product.category.forEach(c => {
-              if (typeof c === 'string') categoriesSet.add(c.trim());
-              else if (typeof c === 'object' && c.name) categoriesSet.add(c.name.trim());
-            });
-          } else if (typeof product.category === 'object' && product.category.name) {
-            categoriesSet.add(product.category.name.trim());
-          }
-        });
-        setCategories(['All', ...Array.from(categoriesSet)]);
+        // Fetch a batch of products to distribute across sections
+        const productsRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/products?page=1&limit=50`);
+        console.log('[Home] Products response:', productsRes.data);
+        const allProducts = productsRes.data?.products || [];
+
+        // Fetch category data
+        const categoriesRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/products/categories/counts`);
+        console.log('[Home] Categories response:', categoriesRes.data);
+        const categoryData = categoriesRes.data?.data || {};
+        const categoryList = Object.keys(categoryData)
+          .filter(cat => cat !== 'All' && categoryData[cat] > 0)
+          .slice(0, 8); // Take top 8 categories
+        
+        console.log('[Home] Featured categories:', categoryList);
+
+        // Fetch trending products
+        const trendingRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/products/trending`);
+        console.log('[Home] Trending products response:', trendingRes.data);
+        const trendingProductsData = trendingRes.data?.products || [];
+
+        // Distribute products into different sections for the demo layout
+        setHandpickedProducts(allProducts.slice(0, 8));
+        setHotDeals(allProducts.slice(8, 16));
+        setTrendingProducts(trendingProductsData);
+        setFeaturedCategories(categoryList);
+
       } catch (err) {
-        setError('Failed to load products.');
+        console.error('[Home] Error fetching home page data:', err);
+        setError('Failed to load the marketplace. Please try again later.');
       } finally {
         setLoading(false);
       }
     };
-    fetchInitialData();
+
+    fetchHomePageData();
   }, []);
-
-  // Fetch products for selected category
-  useEffect(() => {
-    if (selectedCategory === 'All') return; // Already loaded on mount
-    setLoading(true);
-    setError(null);
-    const fetchCategoryProducts = async () => {
-      try {
-        const params = new URLSearchParams();
-        params.append('page', 1);
-        params.append('limit', 1000);
-        if (selectedCategory !== 'All') {
-          params.append('selectedCategories[]', selectedCategory);
-          params.append('category', selectedCategory);
-        }
-        const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/products?${params.toString()}`);
-        const items = res.data?.data || res.data?.products || res.data?.items || [];
-        setProducts(items);
-      } catch (err) {
-        setError('Failed to load products for category.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCategoryProducts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCategory]);
-
-  // Handler for category click
-  const handleCategoryClick = (category) => {
-    setSelectedCategory(category);
-  };
 
   if (loading) {
     return (
       <div className="home-container">
-        <div className="home-layout">
-          <aside className="sidebar">
-            <div className="sidebar-skeleton">
-              {[1, 2, 3, 4].map((item) => (
-                <div key={item} className="skeleton-filter"></div>
-              ))}
-            </div>
-          </aside>
-          <main className="content">
-            <div className="hero-skeleton"></div>
-            <section className="products-section">
-              <h2 className="section-title">Recent Products</h2>
-              <div className="products-grid">
-                <ProductSkeleton count={8} />
-              </div>
-            </section>
-          </main>
+        <div className="hero-skeleton" style={{ height: '400px', backgroundColor: '#f0f0f0', marginBottom: '2rem' }}></div>
+        <div className="products-grid">
+          <ProductSkeleton count={8} />
         </div>
       </div>
     );
@@ -118,104 +103,81 @@ const Home = () => {
 
   if (error) {
     return (
-      <div className="error-state">
-        <div className="error-content">
-          <h2>Error Loading Products</h2>
-          <p>{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="retry-button"
-          >
-            Retry
-          </button>
-        </div>
+      <div className="error-state" style={{ textAlign: 'center', padding: '4rem 1rem' }}>
+        <h2>Something Went Wrong</h2>
+        <p>{error}</p>
+        <button onClick={() => window.location.reload()} className="retry-button">
+          Try Again
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="home-container" ref={productsContainerRef}>
-      <div className="home-layout">
-        <aside className="sidebar">
-          <div className="filters-card">
-            <div className="filters-header">
-              <FiFilter className="filter-icon" />
-              <h3>Filters</h3>
-              <button className="reset-button">
-                <FiRefreshCw className="reset-icon" />
-                Reset
-              </button>
-            </div>
+    <div className="home-container">
+      <HeroSection featuredProducts={handpickedProducts.slice(0, 4)} />
 
-            <div className="search-filter">
-              <div className="search-container">
-                <FiSearch className="search-icon" />
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  className="search-input"
-                />
-                <button className="clear-search" aria-label="Clear search">
-                  <FiX />
-                </button>
-              </div>
-            </div>
-
-            {/* Dynamic Categories Filter Section */}
-            <div className="filter-section">
-              <div className="filter-section-header">
-                <FiTag className="section-icon" />
-                <span>Categories</span>
-              </div>
-              <div className="filter-section-content">
-                <div className="category-list">
-                  {categories.map((cat) => (
-                    <button
-                      key={cat}
-                      className={`category-button${selectedCategory === cat ? ' active' : ''}`}
-                      onClick={() => handleCategoryClick(cat)}
-                    >
-                      <span className="category-name">{cat}</span>
-                      {selectedCategory === cat && <span className="selected-indicator"></span>}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
+      <main className="home-content-sections">
+        {/* Handpicked For You Section */}
+        <section className="home-product-showcase">
+          <h2 className="section-title">Handpicked For You</h2>
+          <div className="products-grid">
+            {handpickedProducts.map(product => (
+              <ProductCard key={`handpicked-${product._id}`} product={product} />
+            ))}
           </div>
-        </aside>
-        <main className="content">
-          <HeroSection featuredProducts={products.slice(0, 10)} />
-          
-          <section className="products-section">
-            <div className="section-header">
-              <h2 className="section-title">
-                {selectedCategory === 'All' ? 'All Products' : selectedCategory}
-                <span className="product-count">{products.length} products</span>
-              </h2>
-            </div>
+        </section>
 
-            {loading ? (
-              <div className="products-grid">
-                <ProductSkeleton count={8} />
-              </div>
-            ) : products.length > 0 ? (
-              <div className="products-grid">
-                {products.map(product => (
-                  <ProductCard key={product._id} product={product} />
-                ))}
-              </div>
-            ) : (
-              <div className="empty-state">
-                <div className="empty-content">
-                  <h3>No products found</h3>
-                  <p>We couldn't find any products for this category.</p>
+        {/* Featured Categories Section */}
+        <section className="home-category-showcase">
+          <h2 className="section-title">Shop by Category</h2>
+          <div className="category-grid">
+            {featuredCategories.map(category => {
+              const IconComponent = getCategoryIcon(category);
+              return (
+                <div 
+                  key={category} 
+                  className="category-card-item"
+                  onClick={() => handleCategoryClick(category)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      handleCategoryClick(category);
+                    }
+                  }}
+                >
+                  <div className="category-card-image-placeholder">
+                    <IconComponent size={32} />
+                  </div>
+                  <h3>{category}</h3>
+                  <p className="category-card-subtitle">Explore {category}</p>
                 </div>
-              </div>
-            )}
-          </section>
-        </main>
-      </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Hot Deals Section */}
+        <section className="home-product-showcase">
+          <h2 className="section-title">Hot Deals</h2>
+          <div className="products-grid">
+            {hotDeals.map(product => (
+              <ProductCard key={`hotdeal-${product._id}`} product={product} />
+            ))}
+          </div>
+        </section>
+
+        {/* Trending Products Section */}
+        <section className="home-product-showcase">
+          <h2 className="section-title">Trending Products</h2>
+          <div className="products-grid">
+            {trendingProducts.map(product => (
+              <ProductCard key={`trending-${product._id}`} product={product} />
+            ))}
+          </div>
+        </section>
+      </main>
     </div>
   );
 };

@@ -23,12 +23,13 @@ import PrivateRoute from '../components/PrivateRoute';
 import Profile from '../pages/Profile';
 import Cart from '../components/Cart/Cart';
 import Checkout from '../components/Checkout/Checkout';
+import ProcessPayment from '../components/ProcessPayment/ProcessPayment';
 import OrderSuccess from '../components/OrderSuccess/OrderSuccess';
 import SellerDashboard from '../components/SellerDashboard';
 import EditProductPage from '../pages/seller/EditProductPage';
 import MyProductsPage from '../pages/seller/MyProductsPage';
 import AddProductPage from '../pages/seller/AddProductPage';
-import EditProfile from '../pages/EditProfile';
+import EditProfilePage from '../pages/EditProfilePage';
 import SellerOrdersPage from '../pages/SellerOrdersPage';
 import BuyerOrdersPage from '../pages/BuyerOrdersPage';
 import Notification from '../pages/Notification';
@@ -78,10 +79,11 @@ const AppRoutes = () => {
           {/* User/Buyer Protected Routes */}
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<PrivateRoute><Checkout /></PrivateRoute>} />
+          <Route path="/process-payment" element={<PrivateRoute><ProcessPayment /></PrivateRoute>} />
           <Route path="/order-success" element={<PrivateRoute><OrderSuccess /></PrivateRoute>} />
           <Route path="/orders" element={<PrivateRoute roles={['buyer']}><BuyerOrdersPage /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
-          <Route path="/profile/edit" element={<PrivateRoute><EditProfile /></PrivateRoute>} />
+          <Route path="/profile/edit" element={<PrivateRoute><EditProfilePage /></PrivateRoute>} />
 <Route path="/notifications" element={<PrivateRoute><Notification /></PrivateRoute>} />
           <Route path="/rfq/new" element={<PrivateRoute roles={['buyer']}><RFQForm /></PrivateRoute>} />
           <Route path="/dashboard/rfq" element={<PrivateRoute roles={['buyer']}><RFQList /></PrivateRoute>} />
@@ -118,7 +120,7 @@ const AppRoutes = () => {
 
         </Routes>
       </main>
-      {!isAuthPage && location.pathname !== '/products' && <Footer />}
+      {!isAuthPage && <Footer />}
     </>
   );
 };

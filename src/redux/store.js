@@ -1,12 +1,14 @@
 import { configureStore } from '@reduxjs/toolkit';
 
 import productsReducer from './productsSlice';
+import categoryReducer from './categorySlice';
 import userReducer from './userSlice';
 import sellerDashboardReducer from './sellerDashboardSlice';
 import { combineReducers } from 'redux';
 
 const rootReducer = combineReducers({
   products: productsReducer,
+  categories: categoryReducer,
   user: userReducer,
   sellerDashboard: sellerDashboardReducer,
   // cart: cartReducer, // Uncomment and add if you have a cart slice

@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
+import { useCart } from '../../context/CartContext';
 import { createOrder } from '../../services/orderService';
+import { createStripeSession, createPayPalOrder, initiateFlutterwave } from '../../services/paymentService';
 import api from '../../services/api';
 import { loadStripe } from '@stripe/stripe-js';
 import './Checkout.css';
@@ -11,7 +12,7 @@ const stripePromise = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY
   ? loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY)
   : null;
 
-const API_BASE_URL = (process.env.REACT_APP_API_URL || 'http://localhost:4000/api').replace('/api', '');
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -22,9 +23,9 @@ const Checkout = () => {
     fullName: '',
     address: '',
     city: '',
-    state: '',
-    zipCode: '',
-    country: '',
+    subCounty: '',
+    district: '',
+    country: 'Uganda',
     phone: ''
   });
   const [paymentMethod, setPaymentMethod] = useState('');
@@ -52,8 +53,9 @@ const Checkout = () => {
           address: user?.address?.street || '',
           city: user?.address?.city || '',
           state: user?.address?.state || '',
-          zipCode: user?.address?.zipCode || '',
-          country: user?.address?.country || '',
+          subCounty: user?.address?.subCounty || '',
+          district: user?.address?.district || '',
+          country: user?.address?.country || 'Uganda',
         }));
         if (!user || !user._id) {
           setError('Could not load your user user. Please refresh or contact support.');
@@ -76,6 +78,38 @@ const Checkout = () => {
   const handlePaymentMethodChange = (method) => {
     setError('');
     setPaymentMethod(method);
+  };
+
+  const handleGetLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            const response = await fetch(
+              `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=en`
+            );
+            const locationData = await response.json();
+            
+            setShippingInfo(prev => ({
+              ...prev,
+              city: locationData.city || prev.city,
+              district: locationData.locality || prev.district,
+              subCounty: locationData.localityInfo?.administrative?.[1]?.name || prev.subCounty,
+              country: locationData.countryName || prev.country
+            }));
+          } catch (err) {
+            console.error('Error getting location data:', err);
+            setError('Could not retrieve location details. Please fill in manually.');
+          }
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          setError('Could not get your location. Please fill in manually.');
+        }
+      );
+    } else {
+      setError('Geolocation is not supported by your browser.');
+    }
   };
 
   const formatOrderData = useCallback(() => {
@@ -102,7 +136,10 @@ const Checkout = () => {
         buyer: user._id,
         seller: sellerId,
         items: formattedItems,
-        shippingInfo,
+        shippingInfo: {
+          ...shippingInfo,
+          address: `${shippingInfo.address}, ${shippingInfo.subCounty}, ${shippingInfo.district}`
+        },
         paymentMethod,
         subtotal,
         tax,
@@ -122,6 +159,14 @@ const Checkout = () => {
       setError('Please select a payment method.');
       return;
     }
+    
+    // Validate shipping info
+    if (!shippingInfo.fullName || !shippingInfo.phone || !shippingInfo.city || 
+        !shippingInfo.subCounty || !shippingInfo.district || !shippingInfo.address) {
+      setError('Please fill in all shipping information fields.');
+      return;
+    }
+    
     if (!user) {
       setError('User user is not loaded. Cannot proceed.');
       return;
@@ -142,8 +187,16 @@ const Checkout = () => {
         await api.put('/profile', { address: shippingInfo });
       }
 
-      clearCart();
-      navigate(`/order-success?order_id=${newOrder._id}`);
+      // Handle payment processing based on selected method
+      if (paymentMethod === 'cod') {
+        // For Cash on Delivery, just redirect to success page
+        clearCart();
+        navigate(`/order-success?order_id=${newOrder._id}`);
+      } else {
+        // For other payment methods, redirect to payment processing page
+        // Don't clear cart here - it should only be cleared after successful payment
+        navigate(`/process-payment?order_id=${newOrder._id}&method=${paymentMethod}`);
+      }
 
     } catch (err) {
       console.error('Checkout process failed:', err);
@@ -173,12 +226,37 @@ const Checkout = () => {
           <h3>Shipping Information</h3>
           <form onSubmit={handleSubmit} className="checkout-form">
             <div className="form-group">
-              <label htmlFor="city">City</label>
-              <input type="text" id="city" name="city" value={shippingInfo.city} onChange={handleShippingChange} required />
+              <label htmlFor="fullName">Full Name</label>
+              <input type="text" id="fullName" name="fullName" value={shippingInfo.fullName} onChange={handleShippingChange} required />
             </div>
             <div className="form-group">
               <label htmlFor="phone">Phone Number</label>
               <input type="tel" id="phone" name="phone" value={shippingInfo.phone} onChange={handleShippingChange} required />
+            </div>
+            <div className="form-group">
+              <label htmlFor="city">City</label>
+              <input type="text" id="city" name="city" value={shippingInfo.city} onChange={handleShippingChange} required />
+            </div>
+            <div className="form-group">
+              <label htmlFor="subCounty">Sub County</label>
+              <input type="text" id="subCounty" name="subCounty" value={shippingInfo.subCounty} onChange={handleShippingChange} required />
+            </div>
+            <div className="form-group">
+              <label htmlFor="district">District</label>
+              <input type="text" id="district" name="district" value={shippingInfo.district} onChange={handleShippingChange} required />
+            </div>
+            <div className="form-group">
+              <label htmlFor="address">Specific Address/Directions</label>
+              <textarea id="address" name="address" value={shippingInfo.address} onChange={handleShippingChange} required />
+            </div>
+            <div className="form-group">
+              <label htmlFor="country">Country</label>
+              <input type="text" id="country" name="country" value={shippingInfo.country} onChange={handleShippingChange} required />
+            </div>
+            <div className="form-group">
+              <button type="button" className="location-button" onClick={handleGetLocation}>
+                Use My Current Location
+              </button>
             </div>
             <div className="form-group">
               <label className="save-address-label">

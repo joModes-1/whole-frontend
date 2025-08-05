@@ -1,210 +1,133 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { useCart } from '../../context/CartContext';
-import { FaRegUserCircle, FaBars, FaTimes } from 'react-icons/fa';
-import { FiBell, FiShoppingCart } from 'react-icons/fi';
-import TradeAssuranceDropdown from '../TradeAssuranceDropdown';
-import HelpDropdown from '../HelpDropdown'
+import { useSelector, useDispatch } from 'react-redux';
+import { FaUserCircle, FaBell, FaShoppingCart, FaBars, FaTimes, FaChartBar, FaBox, FaList } from 'react-icons/fa';
+import { clearUser } from '../../redux/userSlice'; 
 import CategoriesDropdown from '../CategoriesDropdown';
+import TradeAssuranceDropdown from '../TradeAssuranceDropdown';
+import LiveProductSearch from './LiveProductSearch';
 import './Header.css';
 import './mobileMenuOnly.css';
-import LiveProductSearch from './LiveProductSearch';
-
 
 const Header = () => {
-    const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [isProfileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { isAuthenticated, data: user } = useSelector(state => state.user);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const headerRef = useRef(null);
+  
+  // Check if user is a seller
+  const isSeller = user?.role === 'seller';
 
-    const { user, logout, isSeller } = useAuth();
-    const { cart } = useCart();
-    const navigate = useNavigate();
-    const profileRef = useRef(null);
+  const handleLogout = () => {
+    dispatch(clearUser());
+    navigate('/login');
+  };
 
-    const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!isMobileMenuOpen);
+  };
 
-    const toggleMobileMenu = () => setMobileMenuOpen(!isMobileMenuOpen);
-
-    const handleSearch = (e) => {
-        e.preventDefault();
-        if (searchQuery.trim()) {
-            navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-            setSearchQuery('');
-        }
+  // Close mobile menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (headerRef.current && !headerRef.current.contains(event.target)) {
+        setMobileMenuOpen(false);
+      }
     };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
-    // Close dropdown when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (profileRef.current && !profileRef.current.contains(event.target)) {
-                setProfileDropdownOpen(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
-
-    return (
-        <header className="header">
-            {/* Top Bar */}
-            <div className="top-bar">
-                <div className="container">
-                    <div className="top-bar-content">
-                        <div className="logo">
-                            <Link to="/">
-                                <span className="logo-text">Ujii</span>
-                            </Link>
-                        </div>
-                        <div className="search-container-header">
-                            <form className="search-bar" onSubmit={e => { e.preventDefault(); handleSearch(e); }} autoComplete="off">
-                                <input
-                                    type="text"
-                                    placeholder="What are you looking for?"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    autoComplete="off"
-                                />
-                                <button type="submit" className="search-button">
-                                    Search
-                                </button>
-                                {searchQuery.trim() && (
-                                    <LiveProductSearch
-                                        query={searchQuery}
-                                        onSelect={() => setSearchQuery('')}
-                                        onBlur={() => { }}
-                                    />
-                                )}
-                            </form>
-                        </div>
-
-                        <div className="header-actions">
-                            <div>
-                                <div className="logo-mobile">
-                                    <Link to="/">
-                                        <span className="logo-text">Ujii</span>
-                                    </Link>
-                                </div>
-                            </div>
-                            <div className="header-actions">
-                                <div className="header-action-icons">
-                                    <div className="cart-icon">
-                                        <Link to="/cart">
-                                            <span><FiShoppingCart />
-                                                <span> {cartItemCount > 0 && <span className="cart-count">{cartItemCount}</span>} </span>
-                                            </span>
-                                        </Link>
-                                    </div>
-
-                                    <div className="notification-icon">
-                                        <Link to="/notifications">
-                                            <span><FiBell /></span>
-                                        </Link>
-                                    </div>
-                                </div>
-
-                                {user ? (
-                                    <div className="profile-section" ref={profileRef}>
-                                        <Link
-                                            to="/profile"
-                                            className="profile-btn modern-profile-btn"
-                                            aria-label={user.name || user.email || 'Profile'}
-                                        >
-                                            {user.photoURL ? (
-                                                <img src={user.photoURL} alt="Profile" className="profile-avatar" />
-                                            ) : (
-                                                <FaRegUserCircle size={26} color="#fff" />
-                                            )}
-
-                                        </Link>
-                                        {isProfileDropdownOpen && (
-                                            <div className="profile-dropdown">
-                                                <Link to="/profile" className="header-dropdown-item">Profile</Link>
-                                                {isSeller ? (
-                                                    <Link to="/seller/dashboard" className="header-dropdown-item">Seller Dashboard</Link>
-                                                ) : (
-                                                    <Link to="/become-seller" className="header-dropdown-item">Become a Seller</Link>
-                                                )}
-                                                <button onClick={logout} className="header-dropdown-item">Logout</button>
-                                            </div>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <div className="auth-buttons">
-                                        <Link to="/login" className="login-btn">
-                                            Login
-                                        </Link>
-                                        <Link to="/role-selection" className="register-btn">
-                                            Register
-                                        </Link>
-                                    </div>
-                                )}
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
+  return (
+    <>
+      <header className="main-header" ref={headerRef}>
+        <div className="header-container">
+          <div className="header-top">
+            <div className="logo">
+              <Link to="/" className="logo-link">
+                <span className="logo-text">Ujii</span>
+              </Link>
             </div>
 
-            {/* Navigation */}
-            <nav className="main-nav">
-                <div className="container">
-                    <div className="nav-content">
-                        {/* Hamburger icon for mobile */}
-                        <button
-                            className="hamburger"
-                            aria-label="Open menu"
-                            aria-controls="mobile-menu"
-                            aria-expanded={isMobileMenuOpen}
-                            onClick={toggleMobileMenu}
-                            style={{ display: 'none' }}
-                        >
-                            {isMobileMenuOpen ? <FaTimes size={24} color="#0264f1" /> : <FaBars size={24} color="#0264f1" />}
-                        </button>
+            {/* The one and only search bar */}
+            <div className="search-container-header">
+              <LiveProductSearch />
+            </div>
 
-                        {/* Desktop navigation - split left/right */}
-                        <ul className="nav-links desktop-nav main-nav-left">
-                            <li className="nav-item"><CategoriesDropdown /></li>
-                            <li className="nav-item"><Link to="/products" className="nav-link">Products</Link></li>
-                            <li><TradeAssuranceDropdown /></li>
-                        </ul>
-                        <ul className="nav-links desktop-nav main-nav-right">
-                        {isSeller ? <li><Link to="/seller/products/add" className="create-product-link">+ Add New Product</Link></li> : <></>}
-                            {isSeller ? <li><Link to="/seller/dashboard"><span className="dashboard">Dashboard</span></Link></li> : <></>}
-                            <li><HelpDropdown /></li>
-                        </ul>
+            <div className="header-actions">
+              <div className="header-icons">
+                <Link to="/profile" className="header-icon"><FaUserCircle /></Link>
+                <Link to="/notifications" className="header-icon"><FaBell /></Link>
+                <Link to="/cart" className="header-icon"><FaShoppingCart /></Link>
+                <button onClick={toggleMobileMenu} className="mobile-menu-toggle">
+                  {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
+                </button>
+              </div>
+            </div>
+          </div>
 
+        <nav className={`header-bottom ${isMobileMenuOpen ? 'mobile-menu-open' : ''}`}>
+          <div className="nav-container">
+            {/* Desktop Navigation */}
+            <ul className="nav-links desktop-nav">
+              <li className="nav-item"><CategoriesDropdown /></li>
+              <li className="nav-item"><TradeAssuranceDropdown /></li>
+              {!isSeller && (
+                <li className="nav-item"><Link to="/sell-on-ujii" className="nav-link">Sell on Ujii</Link></li>
+              )}
+              {isSeller && (
+                <>
+                  <li className="nav-item"><Link to="/seller/dashboard" className="nav-link"><FaChartBar /> Dashboard</Link></li>
+                  <li className="nav-item"><Link to="/seller/products" className="nav-link"><FaBox /> My Products</Link></li>
+                  <li className="nav-item"><Link to="/seller/orders" className="nav-link"><FaList /> Orders</Link></li>
+                </>
+              )}
+              <li className="nav-item"><Link to="/help-center" className="nav-link">Help Center</Link></li>
+            </ul>
 
-
-                        {/* Mobile dropdown menu - only render on small screens */}
-                        <div className="mobile-menu-responsive-wrapper">
-                            {isMobileMenuOpen && (
-                                <div className="mobile-menu-overlay" onClick={toggleMobileMenu} />
-                            )}
-                            <div
-                                id="mobile-menu"
-                                className={`mobile-menu-dropdown${isMobileMenuOpen ? ' open' : ''}`}
-                                role="menu"
-                                aria-hidden={!isMobileMenuOpen}
-                            >
-                                <ul className="mobile-nav-links">
-                                    <li onClick={toggleMobileMenu}><Link to="/" className="nav-link">Home</Link></li>
-                                    <li onClick={toggleMobileMenu}><Link to="/products" className="nav-link">All Products</Link></li>
-                                    <li ><HelpDropdown /></li>
-                                    <li ><TradeAssuranceDropdown /></li>
-                                    {isSeller ? <li onClick={toggleMobileMenu}><Link to="/seller/products/add" className="create-product-link">+ Add New Product</Link></li> : <></>}
-                                    {isSeller ? <li onClick={toggleMobileMenu}><Link to="/seller/dashboard"><span className="dashboard">Dashboard</span></Link></li> : <></>}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </nav>
-        </header>
-    );
+            {/* Mobile Navigation */}
+            <ul className="nav-links mobile-nav">
+              <li className="nav-item"><Link to="/" className="nav-link">Home</Link></li>
+              <li className="nav-item"><CategoriesDropdown /></li>
+              <li className="nav-item"><TradeAssuranceDropdown /></li>
+              {!isSeller && (
+                <li className="nav-item"><Link to="/sell-on-ujii" className="nav-link">Sell on Ujii</Link></li>
+              )}
+              {isSeller && (
+                <>
+                  <li className="nav-item"><Link to="/seller/dashboard" className="nav-link">Dashboard</Link></li>
+                  <li className="nav-item"><Link to="/seller/products" className="nav-link">My Products</Link></li>
+                  <li className="nav-item"><Link to="/seller/orders" className="nav-link">Orders</Link></li>
+                </>
+              )}
+              <li className="nav-item"><Link to="/help-center" className="nav-link">Help Center</Link></li>
+              <hr />
+              {isAuthenticated ? (
+                <li className="nav-item" onClick={handleLogout}><span className="nav-link">Logout</span></li>
+              ) : (
+                <>
+                  <li className="nav-item"><Link to="/login" className="nav-link">Login</Link></li>
+                  <li className="nav-item"><Link to="/register" className="nav-link">Register</Link></li>
+                </>
+              )}
+            </ul>
+          </div>
+        </nav>
+        </div>
+      </header>
+      
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className={`mobile-menu-overlay ${isMobileMenuOpen ? 'mobile-menu-open' : ''}`}
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+    </>
+  );
 };
 
 export default Header;

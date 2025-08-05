@@ -1,13 +1,9 @@
 .seller-orders-page {
-  max-width: 1000px;
-  margin: 32px auto;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(2,100,241,0.06);
-  padding: 24px 12px;
-  width: 100%;
-  box-sizing: border-box;
-  overflow-x: auto;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: var(--orders-bg);
+  min-height: 100vh;
 }
 
 @media (max-width: 700px) {
@@ -18,28 +14,78 @@
   }
 }
 
-.seller-orders-page h1 {
-  margin-bottom: 24px;
+.seller-orders-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.seller-orders-header h1 {
+  color: var(--text-primary);
   font-size: 2rem;
-  color: #0264f1;
-  font-weight: 700;
+  font-weight: 800;
+  margin: 0;
+}
+
+.orders-table-container {
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px var(--shadow-color);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  overflow-x: auto;
 }
 
 .orders-table {
   width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 20px;
-  background: #fafbfc;
-  font-size: 1rem;
+  border-collapse: separate;
+  border-spacing: 0;
   min-width: 600px;
 }
 
-.orders-table th, .orders-table td {
-  padding: 10px 12px;
-  border-bottom: 1px solid #e6e6e6;
+.orders-table th {
+  background-color: var(--card-bg-secondary);
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  padding: 1rem;
   text-align: left;
-  vertical-align: middle;
-  white-space: nowrap;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.orders-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.orders-table tr:last-child td {
+  border-bottom: none;
+}
+
+.orders-table tr:hover {
+  background-color: var(--card-bg-secondary);
+}
+
+:root {
+  --orders-bg: #f8fafc;
+  --card-bg: #ffffff;
+  --card-bg-secondary: #f1f5f9;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --accent-primary: #0ea5e9;
+  --accent-secondary: #0284c7;
+  --border-color: #e2e8f0;
+  --shadow-color: rgba(0, 0, 0, 0.08);
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --error-color: #ef4444;
+  --info-color: #3b82f6;
 }
 
 .order-status-select {
@@ -52,10 +98,31 @@
   background: #f4f8fe;
   transition: border 0.2s;
 }
+
 .order-status-select:focus {
   outline: none;
   border: 1.5px solid #0264f1;
   background: #eef6fe;
+}
+
+.order-status-select option[value="pending"] {
+  color: var(--warning-color);
+}
+
+.order-status-select option[value="processing"] {
+  color: var(--info-color);
+}
+
+.order-status-select option[value="shipped"] {
+  color: var(--success-color);
+}
+
+.order-status-select option[value="delivered"] {
+  color: var(--success-color);
+}
+
+.order-status-select option[value="cancelled"] {
+  color: var(--error-color);
 }
 
 .order-update-btn {
@@ -63,17 +130,19 @@
   padding: 6px 14px;
   border-radius: 6px;
   font-size: 1em;
-  background: #0264f1;
+  background: var(--accent-primary);
   color: #fff;
   border: none;
   margin-top: 6px;
   transition: background 0.2s;
   cursor: pointer;
 }
+
 .order-update-btn:hover, .order-update-btn:focus {
-  background: #014aab;
+  background: var(--accent-secondary);
   color: #fff;
 }
+
 .order-update-btn:disabled {
   background: #e6eaf2;
   color: #b5c6e0;
@@ -94,8 +163,8 @@
 }
 
 .orders-table th {
-  background: #f4f8fe;
-  color: #0264f1;
+  background: var(--card-bg-secondary);
+  color: var(--text-secondary);
   font-weight: 600;
   font-size: 1.02em;
 }
@@ -105,7 +174,7 @@
 }
 
 .orders-table tr:hover {
-  background: #eef6fe;
+  background: var(--card-bg-secondary);
   transition: background 0.2s;
 }
 

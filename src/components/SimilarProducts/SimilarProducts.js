@@ -4,37 +4,62 @@ import ProductCard from '../ProductCard/ProductCard';
 import './SimilarProducts.css';
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-const SimilarProducts = ({ categoryId, currentProductId }) => {
+const SimilarProducts = ({ currentProductId, categoryId, limit = 30 }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!categoryId) {
-      setLoading(false);
+    if (!currentProductId && !categoryId) {
+      setProducts([]);
       return;
     }
 
     const fetchSimilarProducts = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/products?category=${categoryId}`);
-        // Filter out the current product and limit the results to 4
-        let productsArr = Array.isArray(response.data) ? response.data : Array.isArray(response.data.data) ? response.data.data : [];
-        if (!Array.isArray(productsArr)) {
-          console.error('Unexpected similar products response:', response.data);
-          productsArr = [];
+        let response;
+        
+        // Try to fetch similar products by product ID first
+        if (currentProductId) {
+          try {
+            response = await axios.get(`${API_BASE_URL}/products/${currentProductId}/similar`);
+          } catch (error) {
+            console.log('Similar products endpoint not available, falling back to category search');
+          }
         }
-        const similar = productsArr.filter(p => p._id !== currentProductId).slice(0, 4);
-        setProducts(similar);
+        
+        // If no similar products endpoint or it failed, fetch by category
+        if (!response && categoryId) {
+          response = await axios.get(`${API_BASE_URL}/products?category=${categoryId}&limit=${limit}`);
+        }
+        
+        // If still no response, fetch general products
+        if (!response) {
+          response = await axios.get(`${API_BASE_URL}/products?limit=${limit}`);
+        }
+
+        const similar = response.data?.products || response.data || [];
+
+        if (!Array.isArray(similar)) {
+          console.error('Expected an array of similar products, but got:', similar);
+          setProducts([]);
+        } else {
+          // Filter out the current product and limit results
+          const filteredProducts = similar
+            .filter(product => product._id !== currentProductId)
+            .slice(0, limit);
+          setProducts(filteredProducts);
+        }
       } catch (error) {
         console.error('Failed to fetch similar products:', error);
+        setProducts([]); // Clear products on error
       } finally {
         setLoading(false);
       }
     };
 
     fetchSimilarProducts();
-  }, [categoryId, currentProductId]);
+  }, [currentProductId, categoryId, limit]);
 
   if (loading) {
     return <div className="loading">Loading similar products...</div>;
@@ -46,12 +71,16 @@ const SimilarProducts = ({ categoryId, currentProductId }) => {
 
   return (
     <div className="similar-products-section">
-      <h2>Similar Products</h2>
       <div className="similar-products-grid">
         {products.map(product => (
           <ProductCard key={product._id} product={product} />
         ))}
       </div>
+      {products.length === 0 && !loading && (
+        <div className="no-products-message">
+          <p>No similar products found at the moment.</p>
+        </div>
+      )}
     </div>
   );
 };

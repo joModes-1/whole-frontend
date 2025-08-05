@@ -236,6 +236,12 @@ export const AuthProvider = ({ children }) => {
     }
   }, [logout]);
 
+  const updateUser = useCallback((userData) => {
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+    dispatch(setReduxUser(userData));
+  }, [dispatch]);
+
   const value = useMemo(() => ({
     user,
     token,
@@ -250,7 +256,8 @@ export const AuthProvider = ({ children }) => {
     googleSignIn,
     auth: authInstance, // Make auth instance available
     setError, // Expose setError to consumers
-  }), [user, token, loading, error, login, logout, verifyAuth, googleSignIn, authInstance]);
+    updateUser, // Add updateUser function
+  }), [user, token, loading, error, login, logout, verifyAuth, googleSignIn, authInstance, updateUser]);
 
   return (
     <AuthContext.Provider value={value}>

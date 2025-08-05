@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
+import ProductSkeleton from '../../components/ProductSkeleton/ProductSkeleton';
 import './MyProductsPage.css';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -54,60 +55,76 @@ const MyProductsPage = () => {
         }
     };
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
-
-    if (error) {
-        return <div className="error-message">{error}</div>;
-    }
-
     return (
         <div className="my-products-container">
             <div className="my-products-header">
                 <h1>My Products</h1>
-                <Link to="/seller/products/add" className="btn btn-primary">Add Product</Link>
+                <Link to="/seller/products/add" className="add-product-link">
+                    + Add New Product
+                </Link>
             </div>
-            {products.length === 0 ? (
-                <p>You have not added any products yet.</p>
+
+            {loading ? (
+                <ProductSkeleton count={6} />
+            ) : error ? (
+                <div className="error-message">{error}</div>
+            ) : products.length === 0 ? (
+                <div className="products-table-container">
+                    <div className="no-products-message">
+                        <p>You haven't added any products yet.</p>
+                    </div>
+                </div>
             ) : (
-                <table className="products-table">
-                    <thead>
-                        <tr>
-                            <th>Image</th>
-                            <th>Name</th>
-                            <th>Price</th>
-                            <th>Category</th>
-                            <th>Stock</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {products.map(product => (
-                            <tr key={product._id}>
-                                <td>
-                                    <img
-                                        src={
-                                            (Array.isArray(product.images) && product.images[0] && (product.images[0].url || product.images[0])) ||
-                                            product.image ||
-                                            '/placeholder.png'
-                                        }
-                                        alt={product.name}
-                                        className="product-table-image"
-                                    />
-                                </td>
-                                <td>{product.name}</td>
-                                <td>${product.price.toFixed(2)}</td>
-                                <td>{product.category}</td>
-                                <td>{product.stock}</td>
-                                <td className="product-actions">
-                                    <Link to={`/seller/products/edit/${String(product._id)}`} className="btn btn-sm btn-light">Edit</Link>
-                                    <button onClick={() => deleteProductHandler(product._id)} className="btn btn-sm btn-danger">Delete</button>
-                                </td>
+                <div className="products-table-container">
+                    <table className="products-table">
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Name</th>
+                                <th>Price</th>
+                                <th>Category</th>
+                                <th>Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {products.map(product => (
+                                <tr key={product._id}>
+                                    <td>
+                                        <img 
+                                            src={
+                                                (Array.isArray(product.images) && product.images.length > 0 && 
+                                                 (product.images[0].url || product.images[0])) || 
+                                                product.image || 
+                                                '/placeholder-image.svg'
+                                            } 
+                                            alt={product.name} 
+                                            className="product-table-image"
+                                            onError={(e) => {
+                                                e.target.src = '/placeholder-image.svg';
+                                            }}
+                                        />
+                                    </td>
+                                    <td>{product.name}</td>
+                                    <td>${product.price}</td>
+                                    <td>{product.category}</td>
+                                    <td>
+                                        <div className="product-actions">
+                                            <Link to={`/seller/products/${product._id}/edit`} className="btn btn-edit">
+                                                Edit
+                                            </Link>
+                                            <button 
+                                                onClick={() => deleteProductHandler(product._id)} 
+                                                className="btn btn-delete"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             )}
         </div>
     );

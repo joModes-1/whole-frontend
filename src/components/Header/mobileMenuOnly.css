@@ -4,3 +4,13 @@
 @media (max-width: 900px) {
   .mobile-menu-responsive-wrapper { display: block; }
 }
+
+/* Hide certain elements on mobile devices */
+@media (max-width: 768px) {
+  .desktop-only { display: none; }
+  .mobile-hidden { display: none; }
+}
+
+@media (min-width: 769px) {
+  .mobile-only { display: none; }
+}

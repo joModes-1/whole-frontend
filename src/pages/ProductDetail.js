@@ -86,79 +86,154 @@ const ProductDetail = () => {
   }
 
   const inStock = product.stock > 0;
-  const categoryId = product.category && (typeof product.category === 'object' ? product.category._id : product.category);
+  // Handle both single and array categories. If it's an array, use the first category.
+  const categoryId = product.category && (Array.isArray(product.category) ? product.category[0] : product.category);
 
   return (
-    <div className="product-detail-container modern-layout">
-      {/* Main content row: left = product, right = seller */}
-      <div className="product-detail-main side-by-side">
-        {/* Left column: Product images and info */}
-        <div className="product-main-content">
-          <div className="product-image-gallery">
-            <div className="main-image">
-              <img src={mainImage || 'https://via.placeholder.com/800x600?text=No+Image'} alt={product.name} />
-            </div>
-          </div>
+    <div className="product-detail-container">
+      {/* Breadcrumb Navigation */}
+      <nav className="breadcrumb">
+        <span onClick={() => navigate('/')} className="breadcrumb-link">Home</span>
+        <span className="breadcrumb-separator">›</span>
+        <span onClick={() => navigate('/products')} className="breadcrumb-link">Products</span>
+        <span className="breadcrumb-separator">›</span>
+        <span className="breadcrumb-current">{product.name}</span>
+      </nav>
 
-          <div className="product-info">
-            <h1>{product.name}</h1>
-            <p className="seller">By {product.seller?.companyName || 'Unknown Seller'}</p>
-            <div className="price-section">
-              <span className="price">${product.price.toFixed(2)}</span>
-              {!inStock && <span className="out-of-stock">Out of Stock</span>}
+      {/* Main Product Section */}
+      <div className="product-detail-main">
+        {/* Left: Product Images and Details */}
+        <div className="product-content">
+          {/* Product Image Gallery */}
+          <div className="product-image-section">
+            <div className="main-image-container">
+              <img 
+                src={mainImage || 'https://via.placeholder.com/600x600?text=No+Image'} 
+                alt={product.name}
+                className="main-product-image"
+              />
+              {!inStock && <div className="stock-overlay">Out of Stock</div>}
             </div>
-            <p className="description">{product.description}</p>
-            {product.specifications && Object.keys(product.specifications).length > 0 && (
-              <div className="specifications">
-                <h3>Specifications</h3>
-                <table>
-                  <tbody>
-                    {Object.entries(product.specifications).map(([key, value]) => (
-                      <tr key={key}>
-                        <td>{key}</td>
-                        <td>{value}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            
+            {/* Thumbnail images if multiple images exist */}
+            {product.images && product.images.length > 1 && (
+              <div className="thumbnail-gallery">
+                {product.images.map((image, index) => (
+                  <img
+                    key={index}
+                    src={image.url}
+                    alt={`${product.name} ${index + 1}`}
+                    className={`thumbnail ${mainImage === image.url ? 'active' : ''}`}
+                    onClick={() => setMainImage(image.url)}
+                  />
+                ))}
               </div>
             )}
-            <div className="actions">
+          </div>
+
+          {/* Product Information */}
+          <div className="product-info">
+            <div className="product-header">
+              <h1 className="product-title">{product.name}</h1>
+              <div className="product-meta">
+                <span className="product-category">{product.category?.name || 'Uncategorized'}</span>
+                <span className="product-stock">Stock: {product.stock} units</span>
+              </div>
+            </div>
+
+            <div className="price-section">
+              <span className="current-price">${product.price.toFixed(2)}</span>
+              {product.originalPrice && product.originalPrice > product.price && (
+                <span className="original-price">${product.originalPrice.toFixed(2)}</span>
+              )}
+            </div>
+
+            <div className="product-description">
+              <h3>Description</h3>
+              <p>{product.description}</p>
+            </div>
+
+            {/* Product Specifications */}
+            {product.specifications && Object.keys(product.specifications).length > 0 && (
+              <div className="specifications-section">
+                <h3>Specifications</h3>
+                <div className="specs-grid">
+                  {Object.entries(product.specifications).map(([key, value]) => (
+                    <div key={key} className="spec-item">
+                      <span className="spec-label">{key}:</span>
+                      <span className="spec-value">{value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Purchase Actions */}
+            <div className="purchase-section">
               {inStock ? (
-                <>
-                  <div className="quantity-selector">
-                    <label htmlFor="quantity">Quantity:</label>
-                    <input
-                      id="quantity"
-                      type="number"
-                      min="1"
-                      max={product.stock}
-                      value={quantity}
-                      onChange={handleQuantityChange}
-                    />
+                <div className="purchase-controls">
+                  <div className="quantity-control">
+                    <label>Quantity:</label>
+                    <div className="quantity-input">
+                      <button 
+                        type="button" 
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        className="qty-btn"
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        min="1"
+                        max={product.stock}
+                        value={quantity}
+                        onChange={handleQuantityChange}
+                        className="qty-input"
+                      />
+                      <button 
+                        type="button" 
+                        onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                        className="qty-btn"
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
-                  <button className="btn-primary" onClick={handleAddToCart}>
-                    Add to Cart
-                  </button>
-                </>
+                  <div className="action-buttons">
+                    <button className="btn-primary add-to-cart" onClick={handleAddToCart}>
+                      Add to Cart - ${(product.price * quantity).toFixed(2)}
+                    </button>
+                    <button className="btn-secondary request-quote" onClick={handleQuoteRequest}>
+                      Request Quote
+                    </button>
+                  </div>
+                </div>
               ) : (
-                <button className="btn-secondary" onClick={handleQuoteRequest}>
-                  Request Quote
-                </button>
+                <div className="out-of-stock-section">
+                  <p className="stock-message">This item is currently out of stock</p>
+                  <button className="btn-secondary" onClick={handleQuoteRequest}>
+                    Request Quote for Restock
+                  </button>
+                </div>
               )}
             </div>
           </div>
         </div>
-        {/* Right column: Seller info only */}
-        <aside className="product-detail-side">
+
+        {/* Right: Seller Information */}
+        <aside className="seller-sidebar">
           <SellerInfoCard seller={product.seller} />
         </aside>
       </div>
-      {/* Similar Products: below both columns, full width */}
-      <div className="similar-products-section full-width">
-        <h3 className="similar-title">More from this category</h3>
-        <SimilarProducts categoryId={categoryId} currentProductId={product._id} />
-      </div>
+
+      {/* Similar Products Section */}
+      <section className="similar-products-wrapper">
+        <div className="section-header">
+          <h2>Similar Products</h2>
+          <p>Discover more products like this one</p>
+        </div>
+        <SimilarProducts categoryId={categoryId} currentProductId={product._id} limit={30} />
+      </section>
     </div>
   );
 };

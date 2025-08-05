@@ -1,44 +1,40 @@
-import React from 'react';
-import { FaMobileAlt, FaTshirt, FaLaptop, FaCouch, FaCarSide, FaAppleAlt, FaShoppingBag } from 'react-icons/fa';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
+import { fetchCategories } from '../../redux/categorySlice';
 import './Categories.css';
 
-const iconMap = {
-  Electronics: FaMobileAlt,
-  Phones: FaMobileAlt,
-  Gadgets: FaMobileAlt,
-  Fashion: FaTshirt,
-  Clothing: FaTshirt,
-  Computers: FaLaptop,
-  Laptops: FaLaptop,
-  Furniture: FaCouch,
-  Automotive: FaCarSide,
-  Groceries: FaAppleAlt,
-};
+const Categories = () => {
+  const dispatch = useDispatch();
+  const { items: categories, status } = useSelector((state) => state.categories);
 
-const Categories = ({ categories = [], selectedCategory, onCategoryClick, categoryCounts = {} }) => {
+  useEffect(() => {
+    // Fetch categories only if they haven't been fetched or are not currently being fetched.
+    if (status === 'idle') {
+      dispatch(fetchCategories());
+    }
+  }, [status, dispatch]);
+
+  // We don't want to show the 'All' category on the homepage list
+  const filteredCategories = categories.filter(c => c._id !== 'All');
+
   return (
-    <div className="categories-panel">
-      
-      <ul className="categories-list">
-        <h3>Categories</h3>
-        {categories.map((category) => (
-    <li key={category.id}>
-      <button
-        className={`category-btn ${selectedCategory === category.name ? 'active' : ''}`}
-        onClick={() => onCategoryClick(category.name)}
-      >
-        {(() => {
-          const IconComp = iconMap[category.name] || FaShoppingBag;
-          return <IconComp className="category-icon" />;
-        })()} {category.name}
-              {categoryCounts[category.name] !== undefined && (
-                <span className="category-badge">{categoryCounts[category.name]}</span>
-              )}
-      </button>
-    </li>
+    <section className="categories-section">
+      <h2 className="section-title">Shop by Category</h2>
+      <div className="categories-container">
+        {status === 'loading' && <p>Loading categories...</p>}
+        {status === 'succeeded' && filteredCategories.map((category) => (
+          <Link 
+            to={`/products?category=${encodeURIComponent(category._id)}`} 
+            key={category._id} 
+            className="category-card"
+          >
+            <div className="category-name">{category._id}</div>
+          </Link>
         ))}
-      </ul>
-    </div>
+        {status === 'failed' && <p>Could not load categories.</p>}
+      </div>
+    </section>
   );
 };
 

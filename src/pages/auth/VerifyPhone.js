@@ -19,6 +19,7 @@ const VerifyPhone = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [resendDisabled, setResendDisabled] = useState(true);
   const [countdown, setCountdown] = useState(30);
+  const [testModeCode, setTestModeCode] = useState('');
 
   // Get data from location state and store confirmationResult in component state
   // Try to get formData from location.state, or fallback to localStorage
@@ -30,6 +31,16 @@ const VerifyPhone = () => {
       if (stored) formData = JSON.parse(stored);
     } catch (e) { /* ignore */ }
   }
+  
+  // Check if we're in test mode and fetch the verification code
+  useEffect(() => {
+    const isTestMode = process.env.REACT_APP_TEST_MODE === 'true';
+    if (isTestMode && formData && formData.phoneNumber) {
+      // In test mode, fetch the verification code from the backend
+      fetchTestModeCode(formData.phoneNumber);
+    }
+  }, [formData]);
+
   // Redirect if essential data is missing
   useEffect(() => {
     if (!formData || !formData.phoneNumber) {
@@ -129,7 +140,23 @@ const VerifyPhone = () => {
     }
     setIsLoading(false);
   };
-  
+
+  // Fetch verification code in test mode
+  const fetchTestModeCode = async (phoneNumber) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/get-test-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber })
+      });
+      const data = await response.json();
+      if (response.ok && data.code) {
+        setTestModeCode(data.code);
+      }
+    } catch (error) {
+      console.error('Failed to fetch test mode code:', error);
+    }
+  };
 
   return (
     <div className="auth-container">
@@ -140,6 +167,12 @@ const VerifyPhone = () => {
           We've sent a 6-digit verification code to <strong>{formData?.phoneNumber}</strong>.
           Please enter it below to complete your registration.
         </p>
+        
+        {testModeCode && (
+          <div className="test-mode-notification">
+            <p><strong>Test Mode:</strong> The verification code is <strong>{testModeCode}</strong></p>
+          </div>
+        )}
         
         {error && <div className="error-message">{error}</div>}
         

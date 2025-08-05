@@ -3,6 +3,7 @@ import ProductSkeleton from './ProductSkeleton/ProductSkeleton';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { FaPlus, FaDollarSign, FaShoppingCart, FaChartLine } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchSellerDashboardStats } from '../redux/sellerDashboardSlice';
@@ -61,36 +62,58 @@ const SellerDashboard = () => {
       <div className="dashboard-header">
         <h1 className="dashboard-title">Seller Dashboard</h1>
         <Link to="/seller/products/add" className="create-product-link">
-          + Add New Product
+          <FaPlus /> Add New Product
         </Link>
       </div>
 
       {/* Summary Cards */}
       <div className="dashboard-grid">
         <div className="dashboard-card">
-          <h3 className="card-title">Total Revenue</h3>
+          <h3 className="card-title">
+            <FaDollarSign className="card-icon revenue" />
+            Total Revenue
+          </h3>
           <p className="card-value">{formatCurrency(stats.totals.totalRevenue)}</p>
         </div>
         <div className="dashboard-card">
-          <h3 className="card-title">Total Orders</h3>
+          <h3 className="card-title">
+            <FaShoppingCart className="card-icon orders" />
+            Total Orders
+          </h3>
           <p className="card-value">{stats.totals.totalOrders}</p>
         </div>
         <div className="dashboard-card">
-          <h3 className="card-title">Average Order Value</h3>
+          <h3 className="card-title">
+            <FaChartLine className="card-icon value" />
+            Average Order Value
+          </h3>
           <p className="card-value">{formatCurrency(stats.totals.averageOrderValue)}</p>
         </div>
       </div>
 
       {/* Revenue Chart */}
-      <div className="dashboard-card chart-container">
+      <div className="dashboard-card-full chart-container">
         <h2 className="section-title">Revenue Over Time</h2>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={revenueData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Line type="monotone" dataKey="revenue" stroke="var(--accent-primary)" strokeWidth={2} />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+            <XAxis dataKey="name" stroke="#94a3b8" />
+            <YAxis stroke="#94a3b8" />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: 'var(--card-bg)', 
+                borderRadius: '8px', 
+                border: '1px solid var(--border-color)'
+              }} 
+            />
+            <Line 
+              type="monotone" 
+              dataKey="revenue" 
+              stroke="var(--accent-primary)" 
+              strokeWidth={3} 
+              dot={{ strokeWidth: 3, r: 5, fill: '#ffffff' }}
+              activeDot={{ r: 8, stroke: '#ffffff', strokeWidth: 2 }}
+            />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -98,7 +121,7 @@ const SellerDashboard = () => {
       {/* Recent Orders */}
       <div className="dashboard-section">
         <h2 className="section-title">Recent Orders</h2>
-        <div className="dashboard-card">
+        <div className="dashboard-card-full">
           <table className="recent-orders-table">
             <thead>
               <tr>

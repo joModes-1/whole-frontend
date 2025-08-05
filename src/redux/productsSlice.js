@@ -1,45 +1,82 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000/api';
 
-export const fetchProducts = createAsyncThunk('products/fetchProducts', async (page = 1, { getState, rejectWithValue }) => {
+export const fetchProducts = createAsyncThunk('products/fetchProducts', async (pageOrParams = 1, { getState, rejectWithValue }) => {
+  console.log(`[Slice] fetchProducts thunk initiated with:`, pageOrParams);
   try {
-    // Artificial delay for skeleton testing
-    await new Promise(resolve => setTimeout(resolve, 800));
-    const { products } = getState();
-    const { searchTerm, filters } = products;
+    console.log('[Slice] Step 1: Getting state from Redux.');
+    const currentState = getState().products;
+    const { searchTerm, filters, limit } = currentState;
+    console.log(`[Slice] State retrieved: limit=${limit}, searchTerm='${searchTerm}'`);
+
+    // Handle both page number and params object
+    let page = 1;
+    let overrideParams = {};
     
-    const cleanedFilters = Object.fromEntries(
-      Object.entries(filters).filter(([_, v]) => v != null && v !== '')
-    );
+    if (typeof pageOrParams === 'object') {
+      page = pageOrParams.page || 1;
+      overrideParams = { ...pageOrParams };
+      delete overrideParams.page; // Remove page from override params
+    } else {
+      page = pageOrParams || 1;
+    }
+
+    console.log('[Slice] Step 2: Cleaning filters.');
+    const cleanedFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+      if (value) acc[key] = value;
+      return acc;
+    }, {});
+    console.log('[Slice] Filters cleaned:', cleanedFilters);
+
+    console.log('[Slice] Step 3: Constructing request parameters.');
     const params = {
       page,
-      limit: 20,
+      limit,
       ...(searchTerm && { search: searchTerm }),
       ...cleanedFilters,
+      ...overrideParams, // Override with URL params
     };
-    console.log('Params being sent:', params);
+    console.log('[Slice] Parameters constructed:', params);
+
+    const requestUrl = `${API_BASE_URL}/products`;
+    console.log(`[Slice] Step 4: Preparing to send API request to ${requestUrl}`);
     
-    const response = await axios.get(`${API_BASE_URL}/products`, { params });
-    
-    // Handle different API response structures
-    const items = Array.isArray(response.data)
-      ? response.data
-      : response.data?.data
-        || response.data?.products
-        || response.data?.items
-        || [];
-    console.log('Fetched items:', items, 'Raw response:', response.data);
-    // If we don't get a full page, we've reached the end
-    const hasMore = items.length === 20;
+    const response = await axios.get(requestUrl, { params });
+    console.log('[Slice] Step 5: API request successful. Response received:', response.data);
+
+    const { products: items, totalProducts } = response.data;
+
+    if (!Array.isArray(items)) {
+      console.error('[Slice] Response format error: `products` is not an array.');
+      throw new Error('Expected `products` to be an array in the API response.');
+    }
+
+    const loadedCount = (page - 1) * limit + items.length;
+    const hasMore = loadedCount < totalProducts;
+    console.log(`[Slice] Step 6: Processed response. hasMore=${hasMore}, totalProducts=${totalProducts}`);
+
     return {
       items,
       page,
-      hasMore
+      hasMore,
+      totalProducts
     };
   } catch (error) {
-    return rejectWithValue(error.response?.data?.message || 'Failed to fetch products');
+    console.error('--- [Slice] CRITICAL ERROR in fetchProducts thunk ---');
+    if (error.response) {
+      console.error('Error Response Data:', error.response.data);
+      console.error('Error Response Status:', error.response.status);
+      console.error('Error Response Headers:', error.response.headers);
+    } else if (error.request) {
+      console.error('Error Request:', error.request);
+    } else {
+      console.error('Error Message:', error.message);
+    }
+    console.error('Full Error Object:', error);
+    console.error('--- End of CRITICAL ERROR ---');
+    return rejectWithValue(error.message || 'A critical error occurred');
   }
 });
 
@@ -49,38 +86,45 @@ const productsAdapter = createEntityAdapter({
 
 // Load products from localStorage if available
 const getInitialProductsState = () => {
-  try {
-    const stored = localStorage.getItem('products');
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      // Use productsAdapter to set items
-      return productsAdapter.setAll(
-        productsAdapter.getInitialState({
-          status: parsed.status || 'idle',
-          error: parsed.error || null,
-          page: parsed.page || 1,
-          hasMore: parsed.hasMore !== undefined ? parsed.hasMore : true,
-          searchTerm: parsed.searchTerm || '',
-          filters: parsed.filters || {},
-          hasFetched: typeof parsed.hasFetched === 'boolean' ? parsed.hasFetched : false,
-          initialized: parsed.initialized || false,
-        }),
-        parsed.ids && parsed.entities ? parsed.ids.map(id => parsed.entities[id]) : []
-      );
-    }
-  } catch (e) {
-    console.error('Error reading products from localStorage:', e);
-  }
-  return productsAdapter.getInitialState({
+  let initialState = productsAdapter.getInitialState({
     status: 'idle',
     error: null,
     page: 1,
     hasMore: true,
     searchTerm: '',
     filters: {},
+    limit: 20,
     hasFetched: false,
     initialized: false,
+    allProducts: [], // Ensure allProducts is always an array
   });
+
+  try {
+    const stored = localStorage.getItem('products');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      const products = parsed.ids && parsed.entities ? parsed.ids.map(id => parsed.entities[id]) : [];
+      initialState = productsAdapter.setAll(initialState, products);
+      // Create a new object to avoid modifying read-only properties
+      initialState = {
+        ...initialState,
+        status: parsed.status || 'idle',
+        error: parsed.error || null,
+        page: parsed.page || 1,
+        hasMore: parsed.hasMore !== undefined ? parsed.hasMore : true,
+        searchTerm: parsed.searchTerm || '',
+        filters: parsed.filters || {},
+        limit: parsed.limit || 20,
+        hasFetched: typeof parsed.hasFetched === 'boolean' ? parsed.hasFetched : false,
+        initialized: parsed.initialized || false,
+        allProducts: products
+      };
+    }
+  } catch (e) {
+    console.error('Error reading products from localStorage:', e);
+  }
+
+  return initialState;
 };
 
 const productsSlice = createSlice({

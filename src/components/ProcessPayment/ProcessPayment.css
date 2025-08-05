@@ -1,0 +1,166 @@
+.process-payment-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.process-payment-content {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+}
+
+.process-payment-content h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+.payment-details {
+  margin-bottom: 2rem;
+}
+
+.order-summary {
+  margin-bottom: 2rem;
+}
+
+.order-summary h3 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.summary-items {
+  margin-bottom: 1rem;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.summary-item:last-child {
+  border-bottom: none;
+}
+
+.summary-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.2rem;
+  font-weight: bold;
+  padding: 1rem 0;
+  border-top: 2px solid #333;
+  margin-top: 1rem;
+}
+
+.payment-section h3 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.payment-button-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.payment-button {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #007bff;
+  color: white;
+  transition: background-color 0.3s;
+}
+
+.payment-button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.payment-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.stripe-button {
+  background-color: #6772e5;
+}
+
+.stripe-button:hover:not(:disabled) {
+  background-color: #5560d2;
+}
+
+.flutterwave-button {
+  background-color: #f5a623;
+}
+
+.flutterwave-button:hover:not(:disabled) {
+  background-color: #e0951d;
+}
+
+.mtn-button {
+  background-color: #ffcc00;
+  color: #000;
+}
+
+.mtn-button:hover:not(:disabled) {
+  background-color: #e6b800;
+}
+
+.airtel-button {
+  background-color: #e60012;
+}
+
+.airtel-button:hover:not(:disabled) {
+  background-color: #cc0010;
+}
+
+.back-button {
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  border: 1px solid #007bff;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: white;
+  color: #007bff;
+  transition: all 0.3s;
+}
+
+.back-button:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+.loading-message {
+  text-align: center;
+  padding: 2rem;
+}
+
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #007bff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  border: 1px solid #f5c6cb;
+}
