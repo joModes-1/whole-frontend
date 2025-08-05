@@ -15,32 +15,7 @@ import useCategoryCounts from '../hooks/useCategoryCounts';
 import BackToTopButton from '../components/BackToTopButton';
 import './Products.css';
 
-// Add some basic error styling if not already in your CSS
-const styles = {
-  errorMessage: {
-    backgroundColor: '#ffebee',
-    color: '#c62828',
-    padding: '1rem',
-    borderRadius: '4px',
-    margin: '1rem 0',
-    textAlign: 'center',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '1rem'
-  },
-  retryButton: {
-    backgroundColor: '#c62828',
-    color: 'white',
-    border: 'none',
-    padding: '0.5rem 1rem',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    '&:hover': {
-      backgroundColor: '#b71c1c'
-    }
-  }
-};
+// Error styles are now inlined in the JSX
 
 const Products = () => {
   console.log('[Products.js] Component rendering...');
@@ -208,7 +183,7 @@ const Products = () => {
 
     console.log('[Products] Fetching products with params:', fetchParams);
     dispatch(fetchProducts(fetchParams));
-  }, [dispatch, location.search]); // Only depend on location.search to avoid loops
+  }, [dispatch, location.search, reduxFiltersRaw, reduxSearchTerm]); // Include all dependencies used in the effect
 
   const toggleCategory = (category) => {
     let updated = [];

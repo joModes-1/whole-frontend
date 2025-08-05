@@ -1,15 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import HeroSection from '../components/HeroSection/HeroSection';
 import ProductCard from '../components/ProductCard/ProductCard';
 import ProductSkeleton from '../components/ProductSkeleton/ProductSkeleton';
 import { 
-  FiSearch, 
-  FiX, 
-  FiTag, 
-  FiFilter,
-  FiRefreshCw,
+  FiTag,
   FiShoppingBag,
   FiMonitor,
   FiSmartphone,

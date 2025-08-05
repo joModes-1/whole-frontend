@@ -1,12 +1,12 @@
-import React, { useState, useContext, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FaUser, FaCamera, FaLock, FaSave, FaUpload, FaArrowLeft } from 'react-icons/fa';
+import { FaUser, FaLock, FaSave, FaUpload, FaArrowLeft } from 'react-icons/fa';
 import api from '../services/api';
 import './EditProfile.css';
 
 const EditProfilePage = () => {
-  const { user, logout, updateUser } = useAuth();
+  const { user, updateUser } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
@@ -18,7 +18,7 @@ const EditProfilePage = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   
   // Loading and error states
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [nameUpdateLoading, setNameUpdateLoading] = useState(false);
