@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import CategoryDropdown from '../../components/CategoryDropdown';
 import './EditProductPage.css';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -12,6 +13,8 @@ const EditProductPage = () => {
     description: '',
     price: '',
     category: '',
+    productType: '',
+    condition: '',
     stock: '',
     specifications: '',
     features: '',
@@ -30,12 +33,14 @@ const EditProductPage = () => {
       setLoading(true);
       try {
         const response = await axios.get(`${API_BASE_URL}/products/${id}`);
-        const { name, description, price, category, stock, specifications, features, images } = response.data;
+        const { name, description, price, category, productType, condition, stock, specifications, features, images } = response.data;
         setProductData({
           name,
           description,
           price,
           category,
+          productType: productType || '',
+          condition: condition || '',
           stock,
           specifications: specifications ? Object.entries(specifications).map(([key, value]) => `${key}: ${value}`).join('\n') : '',
           features: features ? features.join('\n') : '',
@@ -93,6 +98,8 @@ const EditProductPage = () => {
       formData.append('description', productData.description);
       formData.append('price', productData.price);
       formData.append('category', productData.category);
+      formData.append('productType', productData.productType);
+      formData.append('condition', productData.condition);
       formData.append('stock', productData.stock);
       formData.append('specifications', JSON.stringify(specObject));
       formData.append('features', JSON.stringify(featuresArray));
@@ -149,7 +156,42 @@ const EditProductPage = () => {
 
         <div className="form-group">
           <label htmlFor="category">Category</label>
-          <input type="text" name="category" id="category" value={productData.category} onChange={handleChange} required />
+          <CategoryDropdown 
+            value={productData.category} 
+            onChange={(value) => setProductData(prev => ({ ...prev, category: value }))} 
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="productType">Product Type</label>
+          <select 
+            name="productType" 
+            id="productType" 
+            value={productData.productType} 
+            onChange={handleChange}
+            className="form-control"
+          >
+            <option value="">Select Product Type</option>
+            <option value="Physical Product">Physical Product</option>
+            <option value="Digital Product">Digital Product</option>
+            <option value="Service">Service</option>
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="condition">Condition</label>
+          <select 
+            name="condition" 
+            id="condition" 
+            value={productData.condition} 
+            onChange={handleChange}
+            className="form-control"
+          >
+            <option value="">Select Condition</option>
+            <option value="New">New</option>
+            <option value="Used">Used</option>
+            <option value="Refurbished">Refurbished</option>
+          </select>
         </div>
 
         <div className="form-group">

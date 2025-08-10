@@ -33,16 +33,6 @@ export const store = configureStore({
     })
 });
 
-// Persist products state to localStorage on change
-store.subscribe(() => {
-  const state = store.getState();
-  try {
-    const productsState = state.products;
-    // Only persist if products have been fetched and there are products
-    if (productsState.hasFetched && Array.isArray(productsState.ids) && productsState.ids.length > 0) {
-      localStorage.setItem('products', JSON.stringify(productsState));
-    }
-  } catch (e) {
-    console.error('Error saving products to localStorage:', e);
-  }
-});
+// Commented out the store subscription that was causing infinite loops
+// A better approach would be to handle persistence directly in the slice
+// or use Redux Persist library for more robust state persistence

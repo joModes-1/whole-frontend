@@ -10,7 +10,7 @@
 }
 
 .header-container {
-    max-width: 1400px;
+    max-width: 2800px;
     margin: 0 auto;
     padding: 0 20px;
 }
@@ -43,11 +43,35 @@
     letter-spacing: -0.5px;
 }
 
+
+
+.logo-mobile {
+    font-size: 21px;
+    font-weight: 800;
+    color: purple; /* Sky blue accent */
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+
+.logo-mobile-container{
+    display: none;
+}
 /* Search Container */
 .search-container-header {
-    flex: 1;
-    max-width: 500px;
+    max-width: 1200px;
     margin: 0 20px;
+}
+
+.search-container-header ,.search-container ,.search-bar{
+    width: 100% !important;
+    max-width: 1200px !important;
+    margin: 0 !important;
+}
+
+.search-container-header .search-bar {
+    width: 100% !important;
+    max-width: none !important;
 }
 
 /* Header Actions */
@@ -61,6 +85,37 @@
     display: flex;
     align-items: center;
     gap: 20px;
+}
+
+/* Auth links (Login/Register) shown when not authenticated */
+.header-auth-links {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.auth-link {
+    color: #111827;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.auth-link:hover {
+    background: #f1f5f9;
+    color: #0ea5e9;
+}
+
+.auth-link-primary {
+    background: #0ea5e9;
+    color: #fff !important;
+}
+
+.auth-link-primary:hover {
+    filter: brightness(0.95);
 }
 
 .header-icon {
@@ -107,7 +162,7 @@
 }
 
 .nav-container {
-    max-width: 1400px;
+    max-width: 2800px;
     margin: 0 auto;
     padding: 0 20px;
 }
@@ -200,19 +255,26 @@
         height: 60px;
         gap: 12px;
     }
+
+    .logo {
+        display: none; /* Hide desktop logo on mobile */
+    }
+    
+    .logo-mobile-container {
+        display: block; /* Show mobile logo */
+    }
     
     .logo-text {
         font-size: 24px;
     }
     
+
+
     .search-container-header {
-        margin: 0 12px;
-        max-width: 300px;
+        display: none; /* Hide search bar on mobile */
     }
     
-    .search-bar {
-        height: 40px;
-    }
+
     
     .search-input {
         padding: 10px 12px;
@@ -227,6 +289,10 @@
     
     .mobile-menu-toggle {
         display: block;
+    }
+    
+    .search-container-header {
+        display: none; /* Hide search bar on mobile */
     }
     
     .desktop-nav {
@@ -256,9 +322,7 @@
         font-size: 20px;
     }
     
-    .search-container-header {
-        display: none;
-    }
+
     
     .header-icons {
         gap: 12px;
@@ -267,20 +331,13 @@
     .header-icon {
         font-size: 18px;
     }
+
+    .logo-mobile-container{
+        display: block;
+    }
 }
 
-/* Search bar specific mobile styles */
-@media (max-width: 600px) {
-    .search-container-header {
-        order: 3;
-        width: 100%;
-        margin: 8px 0 0 0;
-    }
-    
-    .header-top {
-        flex-wrap: wrap;
-    }
-}
+
 
 /* Mobile Menu Overlay */
 .mobile-menu-overlay {
@@ -302,6 +359,7 @@
 .search-container {
     position: relative;
     width: 100%;
+    max-width: none;
 }
 
 .search-bar {
@@ -313,6 +371,8 @@
     transition: all 0.3s ease;
     background: #fff;
     height: 44px;
+    width: 100%;
+    max-width: none;
 }
 
 .search-bar:focus-within {
@@ -321,7 +381,6 @@
 }
 
 .search-input {
-    flex: 1;
     border: none;
     padding: 12px 16px;
     font-size: 14px;
@@ -329,6 +388,7 @@
     color: #333;
     background: transparent;
     height: 100%;
+    width: 100%;
 }
 
 .search-input::placeholder {
@@ -769,7 +829,6 @@
 /* Responsive Styles */
 @media (max-width: 1024px) {
     .search-container-header {
-        max-width: 450px;
         margin: 0 15px;
     }
 }

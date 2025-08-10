@@ -54,15 +54,31 @@ const Home = () => {
         console.log('[Home] Products response:', productsRes.data);
         const allProducts = productsRes.data?.products || [];
 
-        // Fetch category data
-        const categoriesRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/products/categories/counts`);
-        console.log('[Home] Categories response:', categoriesRes.data);
-        const categoryData = categoriesRes.data?.data || {};
-        const categoryList = Object.keys(categoryData)
-          .filter(cat => cat !== 'All' && categoryData[cat] > 0)
-          .slice(0, 8); // Take top 8 categories
+        // Fetch category data (with fallback)
+        let categoryList = [];
+        try {
+          const categoriesRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/products/categories/counts`);
+          console.log('[Home] Categories response:', categoriesRes.data);
+          const categoryData = categoriesRes.data?.data || {};
+          categoryList = Object.keys(categoryData)
+            .filter(cat => cat !== 'All' && categoryData[cat] > 0)
+            .slice(0, 8); // Take top 8 categories
+        } catch (catErr) {
+          console.warn('[Home] Categories API failed, will derive from products:', catErr);
+        }
+
+        // Derive categories from products if API empty/failed
+        if (!categoryList || categoryList.length === 0) {
+          const derived = Array.from(new Set(
+            allProducts
+              .map(p => p.category)
+              .filter(Boolean)
+          )).slice(0, 8);
+          categoryList = derived;
+          console.log('[Home] Derived featured categories from products:', categoryList);
+        }
         
-        console.log('[Home] Featured categories:', categoryList);
+        console.log('[Home] Featured categories (final):', categoryList);
 
         // Fetch trending products
         const trendingRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/products/trending`);
@@ -70,7 +86,8 @@ const Home = () => {
         const trendingProductsData = trendingRes.data?.products || [];
 
         // Distribute products into different sections for the demo layout
-        setHandpickedProducts(allProducts.slice(0, 8));
+        // Increase handpicked pool so HeroSection "You may like" has enough items
+        setHandpickedProducts(allProducts.slice(0, 16));
         setHotDeals(allProducts.slice(8, 16));
         setTrendingProducts(trendingProductsData);
         setFeaturedCategories(categoryList);
@@ -111,7 +128,7 @@ const Home = () => {
 
   return (
     <div className="home-container">
-      <HeroSection featuredProducts={handpickedProducts.slice(0, 4)} />
+      <HeroSection featuredProducts={handpickedProducts} />
 
       <main className="home-content-sections">
         {/* Handpicked For You Section */}

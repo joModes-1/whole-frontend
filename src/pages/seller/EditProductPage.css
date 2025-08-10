@@ -30,7 +30,8 @@
 
 .edit-product-form input[type="text"],
 .edit-product-form input[type="number"],
-.edit-product-form textarea {
+.edit-product-form textarea,
+.edit-product-form select {
   width: 100%;
   padding: 0.75rem;
   border: 1px solid #cbd5e1;

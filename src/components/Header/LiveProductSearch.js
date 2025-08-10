@@ -22,7 +22,7 @@ const LiveProductSearch = () => {
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search for products..."
+          placeholder="Search for productss..."
           className="search-input"
         />
         <button type="submit" className="search-button">

@@ -56,13 +56,26 @@ const Header = () => {
             <div className="search-container-header">
               <LiveProductSearch />
             </div>
-
+            <div className="logo-mobile-container">
+              <Link to="/" className="logo-link">
+                <span className="logo-mobile">Ujii</span>
+              </Link>
+            </div>
             <div className="header-actions">
               <div className="header-icons">
-                <Link to="/profile" className="header-icon"><FaUserCircle /></Link>
-                <Link to="/notifications" className="header-icon"><FaBell /></Link>
-                <Link to="/cart" className="header-icon"><FaShoppingCart /></Link>
-                <button onClick={toggleMobileMenu} className="mobile-menu-toggle">
+                {isAuthenticated ? (
+                  <>
+                    <Link to="/profile" className="header-icon" aria-label="Profile"><FaUserCircle /></Link>
+                    <Link to="/notifications" className="header-icon" aria-label="Notifications"><FaBell /></Link>
+                  </>
+                ) : (
+                  <div className="header-auth-links">
+                    <Link to="/login" className="auth-link">Login</Link>
+                    <Link to="/register" className="auth-link auth-link-primary">Register</Link>
+                  </div>
+                )}
+                <Link to="/cart" className="header-icon" aria-label="Cart"><FaShoppingCart /></Link>
+                <button onClick={toggleMobileMenu} className="mobile-menu-toggle" aria-label="Toggle menu">
                   {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
                 </button>
               </div>
@@ -119,13 +132,7 @@ const Header = () => {
         </div>
       </header>
       
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div 
-          className={`mobile-menu-overlay ${isMobileMenuOpen ? 'mobile-menu-open' : ''}`}
-          onClick={() => setMobileMenuOpen(false)}
-        />
-      )}
+      
     </>
   );
 };

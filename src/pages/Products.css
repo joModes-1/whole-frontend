@@ -493,16 +493,10 @@
   }
 }
 
-@media (max-width: 480px) {
-  .product-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 /* Products Grid */
 .products-card-grid {
   display: grid;
-  grid-template-columns: repeat(3, 4fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
 }
 
@@ -528,7 +522,7 @@
 
 @media (max-width: 768px) {
   .products-card-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 

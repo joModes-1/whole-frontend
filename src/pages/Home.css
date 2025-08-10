@@ -175,13 +175,10 @@
     font-size: 1.5rem;
   }
 
-  .products-grid {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 1rem;
-  }
-
+  /* Force 2 columns on mobile */
+  .products-grid,
   .category-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(2, 1fr) !important;
     gap: 1rem;
   }
   
@@ -210,8 +207,11 @@
     gap: 2.5rem;
   }
 
-  .products-grid, .category-grid {
-    grid-template-columns: 1fr 1fr;
+  /* Still keep 2 columns on very small phones */
+  .products-grid,
+  .category-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.75rem;
   }
 
   .category-card-item {

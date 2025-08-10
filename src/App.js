@@ -1,6 +1,5 @@
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import { CartProvider } from './context/CartContext';
 import { QueryProvider } from './components/QueryProvider';
@@ -27,30 +26,29 @@ const router = {
 function App() {
   return (
     <PayPalScriptProvider options={initialPayPalOptions}>
-      <AuthProvider>
-        <CartProvider>
-          <QueryProvider>
-            <Router {...router}>
-              <div className="app">
-                <AppRoutes />
-                <ToastContainer 
-                  position="top-right"
-                  autoClose={3000}
-                  hideProgressBar={false}
-                  newestOnTop={false}
-                  closeOnClick
-                  rtl={false}
-                  pauseOnFocusLoss
-                  draggable
-                  pauseOnHover
-                />
-              </div>
-            </Router>
-          </QueryProvider>
-        </CartProvider>
-      </AuthProvider>
+      {/* AuthProvider is already applied in src/index.js; avoid double wrapping */}
+      <CartProvider>
+        <QueryProvider>
+          <Router {...router}>
+            <div className="app">
+              <AppRoutes />
+              <ToastContainer 
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+              />
+            </div>
+          </Router>
+        </QueryProvider>
+      </CartProvider>
     </PayPalScriptProvider>
   );
 }
 
-export default App; 
+export default App;

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+import CategoryDropdown from './CategoryDropdown';
 
 const ListingForm = () => {
   const navigate = useNavigate();
@@ -151,16 +152,10 @@ const ListingForm = () => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700">Category</label>
-          <select
-            name="category"
-            value={formData.category}
-            onChange={handleChange}
-            required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          >
-            <option value="Product">Product</option>
-            <option value="Service">Service</option>
-          </select>
+          <CategoryDropdown 
+            value={formData.category} 
+            onChange={(value) => setFormData(prev => ({ ...prev, category: value }))} 
+          />
         </div>
 
         <div>

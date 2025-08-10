@@ -137,6 +137,8 @@ const ProductDetail = () => {
               <h1 className="product-title">{product.name}</h1>
               <div className="product-meta">
                 <span className="product-category">{product.category?.name || 'Uncategorized'}</span>
+                {product.productType && <span className="product-type">Type: {product.productType}</span>}
+                {product.condition && <span className="product-condition">Condition: {product.condition}</span>}
                 <span className="product-stock">Stock: {product.stock} units</span>
               </div>
             </div>

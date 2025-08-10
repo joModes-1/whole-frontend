@@ -70,48 +70,35 @@ const ProductCard = forwardRef(({ product }, ref) => {
 
   const isOutOfStock = product.stock === 0;
 
+  const imageUrl = getProductImage(product) || getPlaceholderImage();
+
   return (
-    <div className="product-card" ref={ref}>
-      <Link to={`/products/${product._id}`} className="product-card-link" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
-        <div className="product-image-container">
-          <img
-            src={getProductImage(product)}
-            alt={product.name}
-            onError={(e) => {
-              e.currentTarget.src = getPlaceholderImage();
-              setError('Failed to load product image');
-            }}
-          />
-          {error && <div className="image-error">{error}</div>}
+    <div className="productCard" ref={ref}>
+      {/* Image section */}
+      <div
+        className="productCard-image"
+        style={{ backgroundImage: `url(${imageUrl})` }}
+        role="img"
+        aria-label={product.name}
+      ></div>
+
+      {/* Info section */}
+      <div className="product-info">
+        <Link to={`/products/${product._id}`} className="product-title-link">
+          <h3 className="product-title">{product.name}</h3>
+        </Link>
+        <p className="product-price">${Number(product.price).toFixed(2)}</p>
+        <div className="button-container">
+          <button
+            className="add-to-cart-btn"
+            type="button"
+            onClick={handleAddToCart}
+            disabled={loading || isOutOfStock}
+            aria-label={isOutOfStock ? 'Out of stock' : 'Add to cart'}
+          >
+            {loading ? 'Adding...' : isOutOfStock ? 'Out of Stock' : added ? '✓ Added!' : 'Add to Cart'}
+          </button>
         </div>
-        <div className="product-details">
-          <h3 className="product-name">{product.name}</h3>
-          <p className="product-price">${product.price.toFixed(2)}</p>
-          <p className="product-description">{product.description}</p>
-          <p className="product-date">
-            {product.createdAt ? 
-              `Added: ${new Date(product.createdAt).toLocaleDateString()} at ${new Date(product.createdAt).toLocaleTimeString()}` 
-              : 'No date available'}
-          </p>
-        </div>
-      </Link>
-      <div className="product-actions">
-        <button
-          onClick={handleAddToCart}
-          disabled={loading || isOutOfStock}
-          aria-label={isOutOfStock ? 'Out of stock' : 'Add to cart'}
-          className={`add-to-cart-btn ${loading ? 'loading' : ''}`}
-        >
-          {loading ? (
-            <span>Adding...</span>
-          ) : added ? (
-            <span>✓ Added!</span>
-          ) : isOutOfStock ? (
-            <span>Out of Stock</span>
-          ) : (
-            <span>Add to Cart</span>
-          )}
-        </button>
       </div>
     </div>
   );

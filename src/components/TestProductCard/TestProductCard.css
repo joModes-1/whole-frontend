@@ -1,0 +1,44 @@
+.test-product-card {
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.test-product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(16, 24, 40, 0.08);
+}
+
+.test-product-image {
+  width: 100%;
+  aspect-ratio: 1 / 1; /* Accio-like square thumbnail */
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.test-product-info { padding: 14px 16px 16px; }
+
+.test-product-title { font-size: 1.05rem; margin-bottom: 6px; color: #111827; font-weight: 600; line-height: 1.4; }
+.test-product-price { font-weight: 700; color: #111827; font-size: 1.1rem; }
+
+.test-button-container { display: flex; gap: 10px; margin-top: 10px; }
+
+.test-add-to-cart-btn {
+  padding: 9px 14px;
+  border: none;
+  border-radius: 9999px; /* pill buttons */
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+.test-add-to-cart-btn { background-image: linear-gradient(90deg, #6366f1, #2563eb); color: #fff; box-shadow: 0 1px 2px rgba(37, 99, 235, 0.3); }
+.test-add-to-cart-btn:hover { filter: brightness(1.05); }
+/* Removed Quick View styles */

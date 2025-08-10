@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   fetchProducts,
   setFilters,
@@ -21,6 +21,7 @@ const Products = () => {
   console.log('[Products.js] Component rendering...');
   const dispatch = useDispatch();
   const location = useLocation();
+  const navigate = useNavigate();
   const { status, error, hasMore, filters: reduxFiltersRaw, searchTerm: reduxSearchTerm } = useSelector(state => state.products);
   const allProducts = useSelector(selectAllProducts);
 
@@ -38,17 +39,18 @@ const Products = () => {
     const params = new URLSearchParams(location.search);
     const hasUrlParams = params.get('search') || params.get('category');
     
-    if (!hasUrlParams && allProducts.length === 0 && status !== 'loading') {
+    if (!hasUrlParams && allProducts.length === 0 && status === 'idle') {
       console.log('[Products.js] Conditions met. Dispatching fetchProducts(1).');
       dispatch(fetchProducts(1));
     } else {
       console.log('[Products.js] Conditions not met for initial fetch.');
     }
-  }, [dispatch, allProducts.length, status, location.search]);
+  }, [status, allProducts.length, dispatch, location.search]); // Include relevant dependencies
 
-  useEffect(() => {
-    console.log('[Products.js] allProducts from Redux changed, updating local state.');
-  }, [allProducts]);
+  // Removed unnecessary useEffect that was causing re-renders
+  // useEffect(() => {
+  //   console.log('[Products.js] allProducts from Redux changed, updating local state.');
+  // }, [allProducts]);
 
   const observer = useRef();
   const lastProductElementRef = useCallback(node => {
@@ -104,7 +106,7 @@ const Products = () => {
 
   const filteredProducts = useMemo(() => {
     return allProducts.filter(product => {
-      const name = (product.name || '').toString();
+      const productName = (product.title || product.name || '').toString();
       const price = Number(product.price) || 0;
       const stock = Number(product.stock);
       let prodCategories = [];
@@ -117,7 +119,7 @@ const Products = () => {
         prodCategories = [product.category.name.toLowerCase().trim()];
       }
 
-      if (reduxSearchTerm && !name.toLowerCase().includes(reduxSearchTerm.toLowerCase())) {
+      if (reduxSearchTerm && !productName.toLowerCase().includes(reduxSearchTerm.toLowerCase())) {
         return false;
       }
 
@@ -133,7 +135,7 @@ const Products = () => {
       }
 
       if (availability.length > 0) {
-        const stockStatus = stock > 0 ? 'In Stock' : 'Out of Stock';
+        const stockStatus = stock > 0 ? 'in-stock' : 'out-of-stock';
         if (!availability.includes(stockStatus)) return false;
       }
 
@@ -143,47 +145,40 @@ const Products = () => {
 
   const { counts: categoryCounts, loading: loadingCounts } = useCategoryCounts();
 
-  // Handle URL search parameters
+  // Handle URL search parameters (react ONLY to location.search changes)
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const category = params.get('category');
     const search = params.get('search');
 
+    // If no URL filters, do nothing here
+    if (!category && !search) return;
+
     console.log('[Products] URL params detected:', { category, search });
 
-    // Set search term in Redux state if present
-    if (search) {
-      console.log('[Products] Setting search term in Redux:', search);
+    // Sync search term only if different
+    if (typeof search === 'string' && search !== reduxSearchTerm) {
       dispatch(setSearchTerm(search));
-    } else if (!search && reduxSearchTerm) {
-      // Clear search term if no search in URL
-      dispatch(setSearchTerm(''));
     }
 
-    // Set category filter if present, or clear if not
+    // Sync category only if different (guard undefined)
+    const selectedCatsSafe = Array.isArray(reduxFiltersRaw.selectedCategories) ? reduxFiltersRaw.selectedCategories : ['All'];
     if (category) {
-      const updatedFilters = { ...reduxFiltersRaw, selectedCategories: [category] };
-      dispatch(setFilters(updatedFilters));
-    } else {
-      // Clear category filter if no category in URL
-      const updatedFilters = { ...reduxFiltersRaw, selectedCategories: ['All'] };
-      dispatch(setFilters(updatedFilters));
+      if (!selectedCatsSafe.includes(category)) {
+        dispatch(setFilters({ ...reduxFiltersRaw, selectedCategories: [category] }));
+      }
+    } else if (selectedCatsSafe[0] !== 'All') {
+      dispatch(setFilters({ ...reduxFiltersRaw, selectedCategories: ['All'] }));
     }
 
-    // Reset products and fetch with new parameters
-    dispatch(resetProducts());
-    
+    // Fetch once for this URL state
     const fetchParams = { page: 1, limit: 20 };
-    if (category) {
-      fetchParams.category = category;
-    }
-    if (search) {
-      fetchParams.search = search; // Use 'search' instead of 'keyword'
-    }
-
+    if (category) fetchParams.category = category;
+    if (search) fetchParams.search = search;
+    dispatch(resetProducts());
     console.log('[Products] Fetching products with params:', fetchParams);
     dispatch(fetchProducts(fetchParams));
-  }, [dispatch, location.search, reduxFiltersRaw, reduxSearchTerm]); // Include all dependencies used in the effect
+  }, [location.search, dispatch, reduxFiltersRaw.selectedCategories, reduxSearchTerm]);
 
   const toggleCategory = (category) => {
     let updated = [];
@@ -204,6 +199,10 @@ const Products = () => {
   };
 
   const resetFilters = () => {
+    // Clear URL params so they don't re-apply via effect
+    navigate('/products', { replace: false });
+
+    // Reset Redux filters and search
     dispatch(setSearchTerm(''));
     dispatch(setFilters({
       ...reduxFiltersRaw,
@@ -211,9 +210,13 @@ const Products = () => {
       selectedCategories: ['All'],
       availability: []
     }));
+
+    // Reset list and fetch fresh page 1
+    dispatch(resetProducts());
+    dispatch(fetchProducts({ page: 1, limit: 20 }));
   };
 
-  if (status === 'loading' || allProducts === null) {
+  if ((status === 'loading' || status === 'loadingMore') || allProducts === null) {
     return (
       <>
         <div className="products-card-container">

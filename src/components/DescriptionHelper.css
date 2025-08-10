@@ -1,0 +1,110 @@
+.description-helper {
+  margin-top: 0.5rem;
+  width: 100%;
+}
+
+.description-quality {
+  margin-bottom: 1rem;
+}
+
+.quality-indicator {
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.quality-indicator.empty {
+  background-color: #f8f9fa;
+  color: #6c757d;
+}
+
+.quality-indicator.poor {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.quality-indicator.fair {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.quality-indicator.good {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.quality-indicator.excellent {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.missing-keywords {
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  border-radius: 4px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  color: #856404;
+}
+
+.missing-keywords p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.suggestions-panel {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.suggestions-panel h4 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  color: #496bff;
+  font-size: 1rem;
+}
+
+.suggestions-panel ul {
+  list-style-type: none;
+  padding-left: 0;
+  margin-bottom: 1rem;
+}
+
+.suggestions-panel li {
+  margin-bottom: 0.5rem;
+}
+
+.suggestion-button {
+  background-color: #e9ecef;
+  border: 1px solid #adb5bd;
+  border-radius: 4px;
+  padding: 0.75rem;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.suggestion-button:hover {
+  background-color: #dee2e6;
+}
+
+.close-suggestions {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.close-suggestions:hover {
+  background-color: #5a6268;
+}

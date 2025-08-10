@@ -23,27 +23,28 @@ export const fetchProducts = createAsyncThunk('products/fetchProducts', async (p
       page = pageOrParams || 1;
     }
 
-    console.log('[Slice] Step 2: Cleaning filters.');
-    const cleanedFilters = Object.entries(filters).reduce((acc, [key, value]) => {
-      if (value) acc[key] = value;
-      return acc;
-    }, {});
-    console.log('[Slice] Filters cleaned:', cleanedFilters);
-
-    console.log('[Slice] Step 3: Constructing request parameters.');
+    // Build safe params for API: do NOT forward internal UI filters like selectedCategories/availability/priceRange
+    console.log('[Slice] Step 3: Constructing request parameters (sanitized).');
     const params = {
       page,
       limit,
       ...(searchTerm && { search: searchTerm }),
-      ...cleanedFilters,
-      ...overrideParams, // Override with URL params
+      ...overrideParams, // Only explicit URL params like { category, search }
     };
     console.log('[Slice] Parameters constructed:', params);
 
     const requestUrl = `${API_BASE_URL}/products`;
     console.log(`[Slice] Step 4: Preparing to send API request to ${requestUrl}`);
     
-    const response = await axios.get(requestUrl, { params });
+    // Timeout and abort support to avoid infinite loading
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    let response;
+    try {
+      response = await axios.get(requestUrl, { params, signal: controller.signal, timeout: 10000 });
+    } finally {
+      clearTimeout(timeoutId);
+    }
     console.log('[Slice] Step 5: API request successful. Response received:', response.data);
 
     const { products: items, totalProducts } = response.data;
@@ -65,6 +66,11 @@ export const fetchProducts = createAsyncThunk('products/fetchProducts', async (p
     };
   } catch (error) {
     console.error('--- [Slice] CRITICAL ERROR in fetchProducts thunk ---');
+    // Normalize timeout / abort
+    if (error.name === 'AbortError' || error.code === 'ERR_CANCELED' || error.code === 'ECONNABORTED') {
+      console.error('Request aborted due to timeout.');
+      return rejectWithValue('Request timed out. Please try again.');
+    }
     if (error.response) {
       console.error('Error Response Data:', error.response.data);
       console.error('Error Response Status:', error.response.status);
@@ -160,8 +166,9 @@ const productsSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchProducts.pending, (state, action) => {
-        console.log('Pending fetchProducts with page:', action.meta.arg); // Debug log
-        const isInitialLoad = action.meta.arg === 1;
+        const arg = action.meta.arg;
+        const isInitialLoad = (typeof arg === 'number' && arg === 1) || (typeof arg === 'object' && (arg?.page || 1) === 1);
+        console.log('Pending fetchProducts with arg:', arg, 'isInitialLoad:', isInitialLoad);
         state.status = isInitialLoad ? 'loading' : 'loadingMore';
         if (isInitialLoad) {
           productsAdapter.removeAll(state);

@@ -55,6 +55,7 @@ const AppRoutes = () => {
   const { currentUser } = useAuth();
   const location = useLocation();
   const isAuthPage = ['/login', '/register', '/role-selection', '/verify-phone'].includes(location.pathname);
+  const isInfoPage = ['/', '/about', '/contact', '/terms', '/privacy-policy'].includes(location.pathname);
   
   return (
     <>
@@ -120,7 +121,7 @@ const AppRoutes = () => {
 
         </Routes>
       </main>
-      {!isAuthPage && <Footer />}
+      {isInfoPage && <Footer />}
     </>
   );
 };
