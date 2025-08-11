@@ -8,7 +8,7 @@ export const fetchProducts = createAsyncThunk('products/fetchProducts', async (p
   try {
     console.log('[Slice] Step 1: Getting state from Redux.');
     const currentState = getState().products;
-    const { searchTerm, filters, limit } = currentState;
+    const { searchTerm, limit } = currentState;
     console.log(`[Slice] State retrieved: limit=${limit}, searchTerm='${searchTerm}'`);
 
     // Handle both page number and params object

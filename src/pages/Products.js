@@ -146,6 +146,7 @@ const Products = () => {
   const { counts: categoryCounts, loading: loadingCounts } = useCategoryCounts();
 
   // Handle URL search parameters (react ONLY to location.search changes)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const category = params.get('category');
@@ -178,7 +179,7 @@ const Products = () => {
     dispatch(resetProducts());
     console.log('[Products] Fetching products with params:', fetchParams);
     dispatch(fetchProducts(fetchParams));
-  }, [location.search, dispatch, reduxFiltersRaw.selectedCategories, reduxSearchTerm]);
+  }, [location.search, dispatch]);
 
   const toggleCategory = (category) => {
     let updated = [];
