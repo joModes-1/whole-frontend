@@ -8,7 +8,6 @@ import './ProductCard.css';
 
 const ProductCard = forwardRef(({ product }, ref) => {
   const { addToCart } = useCart();
-  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [added, setAdded] = useState(false);
 
@@ -25,7 +24,6 @@ const ProductCard = forwardRef(({ product }, ref) => {
 
     try {
       setLoading(true);
-      setError(null);
 
       // Validate product data
       if (!product || !product._id || !product.name || !product.price) {
@@ -58,7 +56,6 @@ const ProductCard = forwardRef(({ product }, ref) => {
       });
     } catch (err) {
       console.error('Error adding to cart:', err);
-      setError(err.message || 'Failed to add to cart');
       toast.error('Failed to add to cart', {
         position: 'top-right',
         autoClose: 2000,

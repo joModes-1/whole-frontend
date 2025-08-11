@@ -179,7 +179,7 @@ const Products = () => {
     dispatch(resetProducts());
     console.log('[Products] Fetching products with params:', fetchParams);
     dispatch(fetchProducts(fetchParams));
-  }, [location.search, dispatch]);
+  }, [location.search, dispatch, reduxFiltersRaw, reduxSearchTerm]);
 
   const toggleCategory = (category) => {
     let updated = [];
