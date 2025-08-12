@@ -158,6 +158,14 @@ body {
   .grid-2, .grid-3, .grid-4 {
     grid-template-columns: 1fr;
   }
+
+  
+.main-content { 
+  width: 100%;
+  padding-left: 1px;
+  padding-right: 1px;
+  padding-inline: 30px;
+}
 }
 
 /* Loading spinner */
