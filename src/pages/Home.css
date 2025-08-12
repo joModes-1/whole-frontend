@@ -173,6 +173,11 @@
 @media (max-width: 768px) {
   .section-title {
     font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .home-content-sections {
+    gap: 1.5rem;
   }
 
   /* Force 2 columns on mobile */
@@ -204,7 +209,11 @@
 @media (max-width: 480px) {
   .home-content-sections {
     padding: 1rem 0.5rem;
-    gap: 2rem;
+    gap: 1.25rem;
+  }
+
+  .section-title {
+    margin-bottom: 0.75rem;
   }
 
   /* Still keep 2 columns on very small phones but reduce gap */
