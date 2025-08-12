@@ -24,6 +24,7 @@ const Products = () => {
   const navigate = useNavigate();
   const { status, error, hasMore, filters: reduxFiltersRaw, searchTerm: reduxSearchTerm } = useSelector(state => state.products);
   const allProducts = useSelector(selectAllProducts);
+  const lastFetchRef = useRef('');
 
   console.log(`[Products.js] State after useSelector: status=${status}, hasMore=${hasMore}, productsCount=${allProducts.length}`);
 
@@ -41,11 +42,44 @@ const Products = () => {
     
     if (!hasUrlParams && allProducts.length === 0 && status === 'idle') {
       console.log('[Products.js] Conditions met. Dispatching fetchProducts(1).');
-      dispatch(fetchProducts(1));
+      const key = JSON.stringify({ page: 1, limit: 20 });
+      if (lastFetchRef.current !== key) {
+        lastFetchRef.current = key;
+        dispatch(fetchProducts(1));
+      }
     } else {
       console.log('[Products.js] Conditions not met for initial fetch.');
     }
   }, [status, allProducts.length, dispatch, location.search]); // Include relevant dependencies
+
+  // When the in-page search term changes (e.g., user types in sidebar search),
+  // fetch results from the backend so new products (including user-added ones)
+  // are included, rather than relying only on client-side filtering.
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const urlSearch = params.get('search') || '';
+
+    // Avoid double-fetch when URL already drives the search
+    if (reduxSearchTerm === urlSearch) return;
+
+    // If user is typing in the sidebar search input, fetch fresh results
+    if (typeof reduxSearchTerm === 'string') {
+      const handle = setTimeout(() => {
+        const fetchParams = { page: 1, limit: 20 };
+        if (reduxSearchTerm.trim()) fetchParams.search = reduxSearchTerm.trim();
+        const key = JSON.stringify(fetchParams);
+        if (lastFetchRef.current !== key) {
+          lastFetchRef.current = key;
+          dispatch(resetProducts());
+          console.log('[Products.js] Sidebar search changed (debounced), fetching with params:', fetchParams);
+          dispatch(fetchProducts(fetchParams));
+        } else {
+          console.log('[Products.js] Skipping duplicate sidebar search fetch.');
+        }
+      }, 500); // 500ms debounce
+      return () => clearTimeout(handle);
+    }
+  }, [reduxSearchTerm, dispatch, location.search]);
 
   // Removed unnecessary useEffect that was causing re-renders
   // useEffect(() => {
@@ -106,7 +140,6 @@ const Products = () => {
 
   const filteredProducts = useMemo(() => {
     return allProducts.filter(product => {
-      const productName = (product.title || product.name || '').toString();
       const price = Number(product.price) || 0;
       const stock = Number(product.stock);
       let prodCategories = [];
@@ -119,9 +152,7 @@ const Products = () => {
         prodCategories = [product.category.name.toLowerCase().trim()];
       }
 
-      if (reduxSearchTerm && !productName.toLowerCase().includes(reduxSearchTerm.toLowerCase())) {
-        return false;
-      }
+      // Do not apply client-side search filtering; backend already filters by search term
 
       if (selectedCategories[0] !== 'All') {
         const hasSelectedCategory = prodCategories.some(prodCat =>
@@ -141,12 +172,11 @@ const Products = () => {
 
       return true;
     });
-  }, [allProducts, selectedCategories, priceRange, availability, reduxSearchTerm]);
+  }, [allProducts, selectedCategories, priceRange, availability]);
 
   const { counts: categoryCounts, loading: loadingCounts } = useCategoryCounts();
 
   // Handle URL search parameters (react ONLY to location.search changes)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const category = params.get('category');
@@ -172,13 +202,19 @@ const Products = () => {
       dispatch(setFilters({ ...reduxFiltersRaw, selectedCategories: ['All'] }));
     }
 
-    // Fetch once for this URL state
+    // Fetch once for this URL state (guard against duplicate fetches)
     const fetchParams = { page: 1, limit: 20 };
     if (category) fetchParams.category = category;
     if (search) fetchParams.search = search;
-    dispatch(resetProducts());
-    console.log('[Products] Fetching products with params:', fetchParams);
-    dispatch(fetchProducts(fetchParams));
+    const key = JSON.stringify(fetchParams);
+    if (lastFetchRef.current !== key) {
+      lastFetchRef.current = key;
+      dispatch(resetProducts());
+      console.log('[Products] Fetching products with params:', fetchParams);
+      dispatch(fetchProducts(fetchParams));
+    } else {
+      console.log('[Products] Skipping duplicate URL-driven fetch.');
+    }
   }, [location.search, dispatch, reduxFiltersRaw, reduxSearchTerm]);
 
   const toggleCategory = (category) => {

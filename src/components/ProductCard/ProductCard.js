@@ -84,6 +84,18 @@ const ProductCard = forwardRef(({ product }, ref) => {
         <Link to={`/products/${product._id}`} className="product-title-link">
           <h3 className="product-title">{product.name}</h3>
         </Link>
+        
+        {/* Product details */}
+        <div className="product-details">
+          <p className="product-category">{product.category}</p>
+          <p className="product-seller">
+            By: {product.seller?.companyName || product.seller?.name || 'Unknown Seller'}
+          </p>
+          <p className="product-stock">
+            {isOutOfStock ? 'Out of Stock' : `In Stock (${product.stock} available)`}
+          </p>
+        </div>
+        
         <p className="product-price">${Number(product.price).toFixed(2)}</p>
         <div className="button-container">
           <button

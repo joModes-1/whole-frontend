@@ -16,6 +16,7 @@ import Contact from '../pages/Contact';
 import SearchResults from '../pages/SearchResults';
 import Terms from '../pages/Terms';
 import PrivacyPolicy from '../pages/PrivacyPolicy';
+import HelpCenter from '../pages/HelpCenter';
 import RFQForm from '../components/RFQ/RFQForm';
 import RFQList from '../components/RFQ/RFQList';
 import RFQDetail from '../components/RFQ/RFQDetail';
@@ -55,7 +56,7 @@ const AppRoutes = () => {
   const { currentUser } = useAuth();
   const location = useLocation();
   const isAuthPage = ['/login', '/register', '/role-selection', '/verify-phone'].includes(location.pathname);
-  const isInfoPage = ['/', '/about', '/contact', '/terms', '/privacy-policy'].includes(location.pathname);
+  const isInfoPage = ['/', '/about', '/contact', '/terms', '/privacy-policy', '/help-center'].includes(location.pathname);
   
   return (
     <>
@@ -75,6 +76,7 @@ const AppRoutes = () => {
           <Route path="/search" element={<SearchResults />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/help-center" element={<HelpCenter />} />
           <Route path="/products/:id" element={<ProductDetail />} />
 
           {/* User/Buyer Protected Routes */}

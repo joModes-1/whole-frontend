@@ -16,16 +16,16 @@ const LiveProductSearch = () => {
   };
 
   return (
-    <div className="search-container">
-      <form onSubmit={handleSearchSubmit} className="search-bar">
+    <div className="header-search-container">
+      <form onSubmit={handleSearchSubmit} className="header-search-bar">
         <input
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search for productss..."
-          className="search-input"
+          className="header-search-input"
         />
-        <button type="submit" className="search-button">
+        <button type="submit" className="header-search-button">
           <FaSearch />
         </button>
       </form>

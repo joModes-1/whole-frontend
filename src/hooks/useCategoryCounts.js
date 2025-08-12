@@ -9,23 +9,30 @@ export default function useCategoryCounts() {
   useEffect(() => {
     let isMounted = true;
     setLoading(true);
-    const baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+    const baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000/api';
     const apiUrl = `${baseUrl}/products/categories/counts`;
-    fetch(apiUrl)
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
+
+    fetch(apiUrl, { signal: controller.signal })
       .then(res => res.json())
       .then(data => {
         if (isMounted) {
-          setCounts(data.success ? data.data : {});
-          setError(data.success ? null : data.message || 'Failed to fetch counts');
+          const ok = Array.isArray(data);
+          setCounts(ok ? data.reduce((acc, cur) => ({ ...acc, [cur._id]: cur.count }), {}) : {});
+          if (!ok) setError(data.message || 'Failed to fetch counts');
+          else setError(null);
         }
       })
       .catch(err => {
-        if (isMounted) setError(err.message);
+        if (isMounted) setError(err.name === 'AbortError' ? 'Request timed out' : err.message);
       })
       .finally(() => {
+        clearTimeout(timer);
         if (isMounted) setLoading(false);
       });
-    return () => { isMounted = false; };
+    return () => { isMounted = false; controller.abort(); clearTimeout(timer); };
   }, []);
 
   return { counts, loading, error };

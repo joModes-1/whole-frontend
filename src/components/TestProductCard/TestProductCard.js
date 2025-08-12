@@ -7,6 +7,7 @@ const TestProductCard = ({ product }) => {
   const image = getProductImage(product) || getPlaceholderImage();
   const title = product?.name || product?.title || 'Untitled Product';
   const price = typeof product?.price === 'number' ? product.price : Number(product?.price) || 0;
+  const isOutOfStock = product?.stock === 0;
 
   return (
     <div className="test-product-card">
@@ -15,6 +16,18 @@ const TestProductCard = ({ product }) => {
         <Link to={`/products/${product?._id || product?.id || ''}`} className="test-product-title-link">
           <h3 className="test-product-title">{title}</h3>
         </Link>
+        
+        {/* Product details */}
+        <div className="test-product-details">
+          <p className="test-product-category">{product?.category}</p>
+          <p className="test-product-seller">
+            By: {product?.seller?.companyName || product?.seller?.name || 'Unknown Seller'}
+          </p>
+          <p className="test-product-stock">
+            {isOutOfStock ? 'Out of Stock' : `In Stock (${product?.stock} available)`}
+          </p>
+        </div>
+        
         <p className="test-product-price">${price.toFixed(2)}</p>
         <div className="test-button-container">
           <Link to={`/products/${product?._id || product?.id || ''}`} className="test-add-to-cart-btn">View</Link>

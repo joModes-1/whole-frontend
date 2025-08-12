@@ -11,7 +11,8 @@ import './mobileMenuOnly.css';
 
 const Header = () => {
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { isAuthenticated, data: user } = useSelector(state => state.user);
+  const { data: user } = useSelector(state => state.user);
+  const isAuthenticated = !!user;
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const headerRef = useRef(null);

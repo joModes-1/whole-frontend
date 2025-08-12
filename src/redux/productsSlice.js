@@ -36,12 +36,13 @@ export const fetchProducts = createAsyncThunk('products/fetchProducts', async (p
     const requestUrl = `${API_BASE_URL}/products`;
     console.log(`[Slice] Step 4: Preparing to send API request to ${requestUrl}`);
     
-    // Timeout and abort support to avoid infinite loading
+    // Timeout and abort support to avoid infinite loading (30s)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
     let response;
     try {
-      response = await axios.get(requestUrl, { params, signal: controller.signal, timeout: 10000 });
+      // Use AbortController for timeout; avoid axios timeout to prevent double-abort races
+      response = await axios.get(requestUrl, { params, signal: controller.signal });
     } finally {
       clearTimeout(timeoutId);
     }
