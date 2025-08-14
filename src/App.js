@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, useLocation } from 'react-router-dom';
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import { CartProvider } from './context/CartContext';
 import { QueryProvider } from './components/QueryProvider';
@@ -7,6 +7,15 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AppRoutes from './routes/AppRoutes';
 import './App.css';
+
+// Scroll to top on route change to avoid landing at the bottom when content loads
+function ScrollToTop() {
+  const location = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname, location.hash, location.search]);
+  return null;
+}
 
 // Configure router future flags
 const initialPayPalOptions = {
@@ -31,6 +40,7 @@ function App() {
         <QueryProvider>
           <Router {...router}>
             <div className="app">
+              <ScrollToTop />
               <AppRoutes />
               <ToastContainer 
                 position="top-right"

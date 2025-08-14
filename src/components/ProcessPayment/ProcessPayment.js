@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { loadStripe } from '@stripe/stripe-js';
 import { useCart } from '../../context/CartContext';
 import { PayPalButtons } from '@paypal/react-paypal-js';
-import { createStripeSession, createPayPalOrder, capturePayPalPayment, initiateFlutterwave, verifyFlutterwave } from '../../services/paymentService';
+import { createStripeSession, createPayPalOrder, capturePayPalPayment, initiatePesapal, verifyPesapal } from '../../services/paymentService';
 import { getOrderById } from '../../services/orderService';
 import './ProcessPayment.css';
 
@@ -19,14 +19,23 @@ const ProcessPayment = () => {
   const [orderId, setOrderId] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
 
+  // UGX currency formatter
+  const formatUGX = useCallback((amount) => {
+    try {
+      return new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', maximumFractionDigits: 0 }).format(amount || 0);
+    } catch {
+      return `UGX ${Math.round(amount || 0).toLocaleString('en-UG')}`;
+    }
+  }, []);
+
   // Get order/invoice ID and payment method from URL parameters
-  // Also check for Flutterwave callback parameters
+  // Also check for Pesapal callback parameters
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const id = searchParams.get('order_id') || searchParams.get('invoice_id');
     const method = searchParams.get('method');
-    const transactionId = searchParams.get('transaction_id');
-    const status = searchParams.get('status');
+    // Pesapal returns OrderTrackingId on callback
+    const pesapalTrackingId = searchParams.get('OrderTrackingId');
     
     if (!id || !method) {
       navigate('/checkout');
@@ -43,16 +52,16 @@ const ProcessPayment = () => {
         const orderData = await getOrderById(id);
         setOrder(orderData);
         
-        // If this is a Flutterwave callback with a successful status, verify payment
-        if (transactionId && status === 'successful') {
+        // If this is a Pesapal callback, verify payment regardless of status (backend is source of truth)
+        if (pesapalTrackingId) {
           try {
-            const response = await verifyFlutterwave(id, transactionId);
+            const response = await verifyPesapal(id, pesapalTrackingId, method);
             if (response.success) {
               clearCart(); // Clear cart only after successful payment
               navigate(`/order-success?order_id=${id}`);
             }
           } catch (err) {
-            console.error('Error verifying Flutterwave payment:', err);
+            console.error('Error verifying Pesapal payment:', err);
             setError('Payment verification failed. Please contact support.');
           }
         }
@@ -135,70 +144,36 @@ const ProcessPayment = () => {
     }
   };
 
-  // Handle Flutterwave payment
-  const handleFlutterwavePayment = async () => {
+  // Handle Pesapal payment (also used for MTN/Airtel via Pesapal)
+  const handlePesapalPayment = async () => {
     if (!order) return;
     
     try {
       setLoading(true);
       setError('');
       
-      // Initiate Flutterwave payment with the correct payment method
-      const paymentData = await initiateFlutterwave(
+      // Initialize Pesapal payment via backend
+      const response = await initiatePesapal(
         orderId,
         order.totalAmount,
-        user?.email || '',
-        user?.name || '',
-        order.shippingInfo?.phone || user?.phone || '',
-        paymentMethod // Pass the actual payment method (mtn, airtel, or flutterwave)
+        order.buyer?.email || order?.buyer?.email,
+        order.buyer?.name || order?.buyer?.name,
+        order.buyer?.phone || order?.buyer?.phone,
+        paymentMethod
       );
-      
-      // Redirect to Flutterwave payment page
-      if (paymentData.paymentLink) {
-        window.location.href = paymentData.paymentLink;
+
+      if (response.paymentLink) {
+        window.location.href = response.paymentLink; // Redirect to Pesapal hosted payment page
       } else {
-        setError('Could not initiate Flutterwave payment');
+        setError('Could not initiate payment. Please try again.');
       }
     } catch (err) {
-      console.error('Flutterwave payment error:', err);
-      setError(err.message || 'Error processing Flutterwave payment');
+      console.error('Pesapal payment initiation error:', err);
+      setError(err.message || 'Error initiating Pesapal payment');
     } finally {
       setLoading(false);
     }
   };
-
-  // Handle payment verification for Flutterwave
-  useEffect(() => {
-    const verifyFlutterwavePayment = async () => {
-      const searchParams = new URLSearchParams(location.search);
-      const transactionId = searchParams.get('transaction_id');
-      
-      if (transactionId && paymentMethod === 'flutterwave') {
-        try {
-          setLoading(true);
-          setError('');
-          
-          // Verify payment
-          const verification = await verifyFlutterwave(orderId, transactionId);
-          
-          if (verification.success) {
-            // Redirect to success page
-            clearCart();
-            navigate(`/order-success?order_id=${orderId}`);
-          } else {
-            setError('Payment verification failed');
-          }
-        } catch (err) {
-          console.error('Flutterwave verification error:', err);
-          setError(err.message || 'Error verifying Flutterwave payment');
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-    
-    verifyFlutterwavePayment();
-  }, [location, paymentMethod, orderId, clearCart, navigate]);
 
   // Render payment buttons based on selected method
   const renderPaymentButton = () => {
@@ -228,14 +203,14 @@ const ProcessPayment = () => {
           />
         );
         
-      case 'flutterwave':
+      case 'pesapal':
         return (
           <button 
             className="payment-button flutterwave-button" 
-            onClick={handleFlutterwavePayment}
+            onClick={handlePesapalPayment}
             disabled={loading}
           >
-            {loading ? 'Processing...' : 'Pay with Flutterwave'}
+            {loading ? 'Processing...' : 'Pay with Pesapal'}
           </button>
         );
         
@@ -243,7 +218,7 @@ const ProcessPayment = () => {
         return (
           <button 
             className="payment-button mtn-button" 
-            onClick={handleFlutterwavePayment}
+            onClick={handlePesapalPayment}
             disabled={loading}
           >
             {loading ? 'Processing...' : 'Pay with MTN Mobile Money'}
@@ -254,7 +229,7 @@ const ProcessPayment = () => {
         return (
           <button 
             className="payment-button airtel-button" 
-            onClick={handleFlutterwavePayment}
+            onClick={handlePesapalPayment}
             disabled={loading}
           >
             {loading ? 'Processing...' : 'Pay with Airtel Money'}
@@ -303,13 +278,13 @@ const ProcessPayment = () => {
                 {order.items.map((item) => (
                   <div key={item._id} className="summary-item">
                     <span>{item.name} x {item.quantity}</span>
-                    <span>${(item.unitPrice * item.quantity).toFixed(2)}</span>
+                    <span>{formatUGX(item.unitPrice * item.quantity)}</span>
                   </div>
                 ))}
               </div>
               <div className="summary-total">
                 <span>Total Amount:</span>
-                <span>${order.totalAmount.toFixed(2)}</span>
+                <span>{formatUGX(order.totalAmount)}</span>
               </div>
             </div>
             

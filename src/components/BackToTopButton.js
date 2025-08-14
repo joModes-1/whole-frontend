@@ -26,7 +26,7 @@ const BackToTopButton = () => {
         bottom: 32,
         zIndex: 9999,
         display: visible ? 'block' : 'none',
-        background: '#781eff',
+        background: 'var(--color-primary)',
         color: '#fff',
         border: 'none',
         borderRadius: '50%',

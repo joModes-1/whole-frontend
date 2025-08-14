@@ -35,6 +35,7 @@ import SellerOrdersPage from '../pages/SellerOrdersPage';
 import BuyerOrdersPage from '../pages/BuyerOrdersPage';
 import Notification from '../pages/Notification';
 import Header from '../components/Header/Header';
+import TrackOrderPage from '../pages/TrackOrderPage';
 
 // Admin Imports
 import AdminLayout from '../pages/admin/AdminLayout';
@@ -85,6 +86,7 @@ const AppRoutes = () => {
           <Route path="/process-payment" element={<PrivateRoute><ProcessPayment /></PrivateRoute>} />
           <Route path="/order-success" element={<PrivateRoute><OrderSuccess /></PrivateRoute>} />
           <Route path="/orders" element={<PrivateRoute roles={['buyer']}><BuyerOrdersPage /></PrivateRoute>} />
+          <Route path="/orders/:id/track" element={<PrivateRoute roles={['buyer']}><TrackOrderPage /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="/profile/edit" element={<PrivateRoute><EditProfilePage /></PrivateRoute>} />
 <Route path="/notifications" element={<PrivateRoute><Notification /></PrivateRoute>} />

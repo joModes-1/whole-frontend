@@ -31,7 +31,7 @@
 
 .test-product-category {
   font-size: 0.85rem;
-  color: #781eff;
+  color: var(--color-primary);
   font-weight: 500;
   margin: 0;
 }
@@ -64,7 +64,7 @@
   justify-content: center;
   font-weight: 600;
 }
-.test-add-to-cart-btn { background-image: linear-gradient(90deg, #6366f1, #2563eb); color: #fff; box-shadow: 0 1px 2px rgba(37, 99, 235, 0.3); }
+.test-add-to-cart-btn { background-image: linear-gradient(90deg, var(--color-primary), var(--color-primary-hover)); color: #fff; box-shadow: 0 1px 2px rgba(90, 15, 255, 0.3); }
 .test-add-to-cart-btn:hover { filter: brightness(1.05); }
 /* Removed Quick View styles */
 

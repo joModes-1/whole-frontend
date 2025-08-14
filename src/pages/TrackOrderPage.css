@@ -1,0 +1,29 @@
+.track-order-container{max-width:960px;margin:0 auto;padding:24px}
+.track-order-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.track-order-header .meta{display:flex;gap:12px;align-items:center}
+.badge.status{text-transform:capitalize;background:rgba(91,15,255,.08);color:#5B0FFF;padding:6px 10px;border-radius:999px;font-weight:600}
+.order-number{color:#64748b}
+.order-summary-card{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;background:#fff;border:1px solid #eef2ff;border-radius:12px;padding:16px;margin:16px 0;box-shadow:0 6px 18px rgba(2,100,241,.05)}
+.order-summary-card .label{font-size:.85rem;color:#64748b}
+.order-summary-card .value{font-weight:700;color:#0f172a}
+.timeline{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #eef2ff;border-radius:12px;padding:16px;margin:16px 0;overflow-x:auto}
+.timeline-step{position:relative;display:flex;align-items:center;gap:8px}
+.timeline-step .dot{width:14px;height:14px;border-radius:50%;background:#cbd5e1}
+.timeline-step.reached .dot{background:#5B0FFF;box-shadow:0 0 0 4px rgba(91,15,255,.12)}
+.timeline-step .label{font-weight:600;color:#334155;margin-right:8px;white-space:nowrap}
+.timeline-step .bar{width:80px;height:3px;background:#e2e8f0;border-radius:3px}
+.timeline-step .bar.filled{background:#5B0FFF}
+.actions{display:flex;justify-content:space-between;align-items:center;margin:20px 0}
+.btn{padding:10px 14px;border-radius:10px;border:1px solid #c7d2fe;background:#fff;color:#111827;font-weight:600;cursor:pointer}
+.btn.secondary:hover{background:#f8fafc}
+.btn.danger{background:#ef4444;border-color:#ef4444;color:#fff}
+.btn.danger:hover{filter:brightness(.95)}
+.items-list{margin-top:20px;background:#fff;border:1px solid #eef2ff;border-radius:12px}
+.items-list .item{display:grid;grid-template-columns:1fr auto auto;gap:12px;padding:12px 16px;border-bottom:1px solid #f1f5f9}
+.items-list .item:last-child{border-bottom:none}
+.items-list .name{font-weight:600;color:#0f172a}
+.items-list .qty{color:#64748b}
+.items-list .amount{font-weight:700;color:#111827}
+.spinner{width:32px;height:32px;border-radius:50%;border:3px solid #e5e7eb;border-top-color:#5B0FFF;animation:spin 1s linear infinite;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:768px){.order-summary-card{grid-template-columns:1fr}.timeline-step .bar{width:48px}.items-list .item{grid-template-columns:1fr auto;grid-template-areas:'name amount' 'qty amount'}.items-list .name{grid-area:name}.items-list .qty{grid-area:qty}.items-list .amount{grid-area:amount;text-align:right}}

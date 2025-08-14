@@ -4,14 +4,14 @@
     --card-bg-secondary: #f1f5f9;
     --text-primary: #1e293b;
     --text-secondary: #64748b;
-    --accent-primary: #0ea5e9;
-    --accent-secondary: #0284c7;
+    --accent-primary: var(--color-primary);
+    --accent-secondary: var(--color-primary-hover);
     --border-color: #e2e8f0;
     --shadow-color: rgba(0, 0, 0, 0.08);
     --success-color: #10b981;
     --warning-color: #f59e0b;
     --error-color: #ef4444;
-    --info-color: #3b82f6;
+    --info-color: var(--color-primary);
 }
 
 .my-products-container {
@@ -130,7 +130,7 @@
 }
 
 .btn-edit:hover {
-    background-color: #2563eb;
+    background-color: var(--color-primary);
     transform: translateY(-2px);
 }
 
@@ -200,14 +200,14 @@
 
 /* Using brand colors from memory */
 .my-products-header .btn-primary {
-    background-color: #781eff; /* Primary brand color */
-    border-color: #781eff;
+    background-color: var(--color-primary); /* Primary brand color */
+    border-color: var(--color-primary);
     color: #fff;
 }
 
 .my-products-header .btn-primary:hover {
-    background-color: #4b0db3; /* Darker shade for hover */
-    border-color: #4b0db3;
+    background-color: var(--color-primary-hover); /* Darker shade for hover */
+    border-color: var(--color-primary-hover);
 }
 
 .product-actions .btn-light {

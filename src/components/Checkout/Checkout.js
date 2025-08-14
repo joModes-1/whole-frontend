@@ -11,7 +11,7 @@ const stripePromise = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY
   ? loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY)
   : null;
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000';
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -33,6 +33,15 @@ const Checkout = () => {
   const [saveAddress, setSaveAddress] = useState(true);
   const [isProfileLoading, setIsProfileLoading] = useState(false);
 
+  // Currency formatter for UGX (no cents)
+  const formatUGX = useCallback((amount) => {
+    try {
+      return new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', maximumFractionDigits: 0 }).format(amount || 0);
+    } catch {
+      return `UGX ${Math.round(amount || 0).toLocaleString('en-UG')}`;
+    }
+  }, []);
+
   useEffect(() => {
     if (cart && cart.length > 0) {
       console.log('Cart items:', cart);
@@ -45,16 +54,30 @@ const Checkout = () => {
       if (!token || !user) return;
       setIsProfileLoading(true);
       try {
+        const fullName = user?.name || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || '';
+        const phone = user?.contactNumber || user?.phone || user?.phoneNumber || '';
+        const addr = user?.address || {};
+        const next = {
+          fullName,
+          phone,
+          address: addr?.street || addr?.line1 || addr?.address || '',
+          city: addr?.city || '',
+          state: addr?.state || addr?.region || '',
+          subCounty: addr?.subCounty || addr?.subcounty || '',
+          district: addr?.district || addr?.province || '',
+          country: addr?.country || 'Uganda',
+        };
+        // Only fill fields that are currently empty, so we don't overwrite user's typing
         setShippingInfo(prev => ({
           ...prev,
-          fullName: user?.name || '',
-          phone: user?.contactNumber || '',
-          address: user?.address?.street || '',
-          city: user?.address?.city || '',
-          state: user?.address?.state || '',
-          subCounty: user?.address?.subCounty || '',
-          district: user?.address?.district || '',
-          country: user?.address?.country || 'Uganda',
+          fullName: prev.fullName || next.fullName,
+          phone: prev.phone || next.phone,
+          address: prev.address || next.address,
+          city: prev.city || next.city,
+          state: prev.state || next.state,
+          subCounty: prev.subCounty || next.subCounty,
+          district: prev.district || next.district,
+          country: prev.country || next.country,
         }));
         if (!user || !user._id) {
           setError('Could not load your user user. Please refresh or contact support.');
@@ -236,6 +259,12 @@ const Checkout = () => {
               <label htmlFor="city">City</label>
               <input type="text" id="city" name="city" value={shippingInfo.city} onChange={handleShippingChange} required />
             </div>
+            {/* Location button right below City, aligned to the right */}
+            <div className="form-row-actions">
+              <button type="button" className="location-button" onClick={handleGetLocation}>
+                Use My Current Location
+              </button>
+            </div>
             <div className="form-group">
               <label htmlFor="subCounty">Sub County</label>
               <input type="text" id="subCounty" name="subCounty" value={shippingInfo.subCounty} onChange={handleShippingChange} required />
@@ -252,16 +281,51 @@ const Checkout = () => {
               <label htmlFor="country">Country</label>
               <input type="text" id="country" name="country" value={shippingInfo.country} onChange={handleShippingChange} required />
             </div>
-            <div className="form-group">
-              <button type="button" className="location-button" onClick={handleGetLocation}>
-                Use My Current Location
-              </button>
-            </div>
+            {/* standalone location button removed; now inline with address field */}
             <div className="form-group">
               <label className="save-address-label">
                 <input type="checkbox" checked={saveAddress} onChange={(e) => setSaveAddress(e.target.checked)} />
                 Save this shipping address to my user
               </label>
+            </div>
+            {/* Payment Methods moved before submit */}
+            <div className="payment-methods">
+              <h3>Select Payment Method</h3>
+              <div className="payment-options-grid">
+                {stripePromise && (
+                  <button type="button" className={`payment-option-btn ${paymentMethod === 'stripe' ? 'selected' : ''}`} onClick={() => handlePaymentMethodChange('stripe')}>
+                    <img src="https://js.stripe.com/v3/fingerprinted/img/visa-729c257a7d9680175868a94c8c2571df.svg" alt="Stripe" />
+                    <span>Credit Card</span>
+                  </button>
+                )}
+                <button type="button" className={`payment-option-btn ${paymentMethod === 'paypal' ? 'selected' : ''}`} onClick={() => handlePaymentMethodChange('paypal')}>
+                  <img src="https://www.paypalobjects.com/webstatic/mktg/logo-center/PP_Acceptance_Marks_for_LogoCenter_266x142.png" alt="PayPal" />
+                  <span>PayPal</span>
+                </button>
+                <button type="button" className={`payment-option-btn ${paymentMethod === 'airtel' ? 'selected' : ''}`} onClick={() => handlePaymentMethodChange('airtel')}>
+                  <img src="/images/airtel-money-logo.png" alt="Airtel Money" onError={(e)=>{e.currentTarget.style.display='none';}} />
+                  <span>Airtel Money</span>
+                </button>
+                <button type="button" className={`payment-option-btn ${paymentMethod === 'mtn' ? 'selected' : ''}`} onClick={() => handlePaymentMethodChange('mtn')}>
+                  <img src="/images/MoMo-Pay-Icon-1.png" alt="MTN MoMo" onError={(e)=>{e.currentTarget.style.display='none';}} />
+                  <span>MTN MoMo</span>
+                </button>
+                <button
+                  type="button"
+                  className={`payment-option-btn ${paymentMethod === 'cod' ? 'selected' : ''}`}
+                  onClick={() => handlePaymentMethodChange('cod')}
+                >
+                  {/* No local icon available; show text only */}
+                  <span>Cash on Delivery</span>
+                </button>
+              </div>
+              {paymentMethod === 'cod' && (
+                <div className="cod-info modern-card">
+                  <span style={{color: '#0264f1', fontWeight: 600, fontSize: '1.08rem'}}>
+                    Pay with cash when your order is delivered. No online payment required.
+                  </span>
+                </div>
+              )}
             </div>
             <button className="place-order-button" type="submit" disabled={loading}>
               {loading ? 'Placing Order...' : 'Place Order'}
@@ -275,15 +339,33 @@ const Checkout = () => {
           <h3>Order Summary</h3>
           <div className="summary-items">
             {cart.map((item) => {
-              const imageUrl = item.imagePath
-                ? `${API_BASE_URL}${item.imagePath}`
-                : 'https://via.placeholder.com/60x60.png?text=No+Image';
+              // Resolve product image from multiple possible shapes
+              let candidate = null;
+              if (Array.isArray(item.images) && item.images.length > 0) {
+                const first = item.images[0];
+                candidate = typeof first === 'string' ? first : (first?.url || first?.path || null);
+              }
+              if (!candidate) candidate = item.image || item.imagePath || item.thumbnail || null;
+              // Build full URL only for relative paths
+              let imageUrl = '/placeholder-image.svg';
+              if (candidate) {
+                if (typeof candidate === 'string' && (candidate.startsWith('http://') || candidate.startsWith('https://'))) {
+                  imageUrl = candidate;
+                } else if (typeof candidate === 'string') {
+                  imageUrl = `${API_BASE_URL}${candidate}`;
+                }
+              }
               return (
                 <div key={item._id} className="summary-item">
-                  <img className="summary-item-image" src={imageUrl} alt={item.name} />
+                  <img
+                    className="summary-item-image"
+                    src={imageUrl}
+                    alt={item.name}
+                    onError={(e) => { e.currentTarget.src = '/placeholder-image.svg'; }}
+                  />
                   <div className="summary-item-details">
                     <span>{item.name} x {item.quantity}</span>
-                    <strong>${(item.price * item.quantity).toFixed(2)}</strong>
+                    <strong>{formatUGX(item.price * item.quantity)}</strong>
                   </div>
                 </div>
               );
@@ -291,55 +373,12 @@ const Checkout = () => {
           </div>
           <div className="summary-total">
             <span>Total:</span>
-            <span>${(total * 1.1).toFixed(2)}</span>
+            <span>{formatUGX(total * 1.1)}</span>
           </div>
         </section>
       </div>
 
-      {/* Payment Options */}
-      <section className="payment-section">
-        <h2>Select Payment Method</h2>
-        <hr />
-        <div className="payment-methods">
-          <div className="payment-options-grid">
-            {stripePromise && (
-              <button type="button" className={`payment-option-btn ${paymentMethod === 'stripe' ? 'selected' : ''}`} onClick={() => handlePaymentMethodChange('stripe')}>
-                <img src="https://js.stripe.com/v3/fingerprinted/img/visa-729c257a7d9680175868a94c8c2571df.svg" alt="Stripe" />
-                <span>Credit Card</span>
-              </button>
-            )}
-            <button type="button" className={`payment-option-btn ${paymentMethod === 'paypal' ? 'selected' : ''}`} onClick={() => handlePaymentMethodChange('paypal')}>
-              <img src="https://www.paypalobjects.com/webstatic/mktg/logo-center/PP_Acceptance_Marks_for_LogoCenter_266x142.png" alt="PayPal" />
-              <span>PayPal</span>
-            </button>
-            <button type="button" className={`payment-option-btn ${paymentMethod === 'airtel' ? 'selected' : ''}`} onClick={() => handlePaymentMethodChange('airtel')}>
-              <img src="/images/airtel-money-logo.png" alt="Airtel Money" />
-              <span>Airtel Money</span>
-            </button>
-            <button type="button" className={`payment-option-btn ${paymentMethod === 'mtn' ? 'selected' : ''}`} onClick={() => handlePaymentMethodChange('mtn')}>
-              <img src="/images/mtn-momo-logo.png" alt="MTN MoMo" />
-              <span>MTN MoMo</span>
-            </button>
-          {/* Add Cash on Delivery Option */}
-            <button
-              type="button"
-              className={`payment-option-btn ${paymentMethod === 'cod' ? 'selected' : ''}`}
-              onClick={() => handlePaymentMethodChange('cod')}
-            >
-              <img src="/images/cash-on-delivery.svg" alt="Cash on Delivery" style={{height: 40, marginBottom: 6}} />
-              <span>Cash on Delivery</span>
-            </button>
-          </div>
-        </div>
-        {paymentMethod === 'cod' && (
-          <div className="cod-info modern-card">
-            <span style={{color: '#0264f1', fontWeight: 600, fontSize: '1.08rem'}}>
-              Pay with cash when your order is delivered. No online payment required.
-            </span>
-          </div>
-        )}
-        {error && <div className="error-message">{error}</div>}
-      </section>
+      {/* Payment section removed; now inside the form above submit */}
     </div>
   );
 };

@@ -11,6 +11,9 @@
   padding: 0; /* image touches edges */
   box-sizing: border-box;
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  text-decoration: none; /* if used as a Link */
+  color: inherit;        /* if used as a Link */
+  cursor: pointer;       /* affordance for click */
 }
 
 .product-card:hover, .productCard:hover {
@@ -55,7 +58,7 @@
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
   padding: 12px 14px 14px;
 }
 
@@ -75,7 +78,7 @@
 
 .product-category {
   font-size: 0.85rem;
-  color: #781eff;
+  color: var(--color-primary);
   font-weight: 500;
   margin: 0;
 }
@@ -90,6 +93,13 @@
   font-size: 0.8rem;
   color: #6b7280;
   margin: 0;
+}
+
+.product-location {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0;
+  font-style: italic;
 }
 
 .product-price { font-weight: 700; color: #111827; font-size: 1.1rem; margin: 0.5rem 0; }
@@ -117,7 +127,7 @@
 }
 
 .add-to-cart-button {
-  background-color: #0ea5e9;
+  background-color: var(--color-primary);
   color: white;
   border: none;
   padding: 0.75rem;
@@ -130,7 +140,7 @@
 }
 
 .add-to-cart-button:hover {
-  background-color: #0284c7;
+  background-color: var(--color-primary-hover);
   transform: translateY(-1px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -203,7 +213,6 @@
 
 .product-title {
   font-size: 1.05rem;
-  margin-bottom: 6px;
   color: #111827;
   font-weight: 600;
 }
@@ -222,8 +231,11 @@
   font-weight: 600;
 }
 
-.add-to-cart-btn { background-image: linear-gradient(90deg, #6366f1, #2563eb); color: #fff; box-shadow: 0 1px 2px rgba(37, 99, 235, 0.3); }
+.add-to-cart-btn { background-image: linear-gradient(90deg, var(--color-primary), var(--color-primary-hover)); color: #fff; box-shadow: 0 1px 2px rgba(90, 15, 255, 0.3); }
 .add-to-cart-btn:hover { filter: brightness(1.05); }
+
+.add-to-cart-btn.out-of-stock { background-image: linear-gradient(90deg, #ef4444, #dc2626); color: #fff; box-shadow: 0 1px 2px rgba(220, 38, 38, 0.3); }
+.add-to-cart-btn.out-of-stock:hover { filter: brightness(1.05); }
 
 /* Removed Quick View overlay styles */
 
@@ -231,11 +243,6 @@
 @media (max-width: 768px) {
   .product-card, .productCard {
     margin-bottom: 1rem;
-  }
-  
-  .product-title {
-    font-size: 1rem;
-    min-height: 2.8em;
   }
   
   .product-category {

@@ -93,7 +93,7 @@
 .product-price {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #781eff;
+  color: var(--color-primary);
   margin: 0;
 }
 
@@ -108,7 +108,7 @@
 }
 
 .edit-btn:hover {
-  background-color: #4b0db3;
+  background-color: var(--color-primary-hover);
 }
 
 .delete-btn:hover {
@@ -127,7 +127,7 @@
 }
 
 .product-info {
-  padding: 1rem;
+  padding: 4px;
 }
 
 .product-info h3 {
@@ -237,7 +237,7 @@
   border-bottom-width: 2px;
 }
 .border-blue-500 {
-  border-color: #3b82f6;
+  border-color: var(--color-primary);
 }
 .text-red-500 {
   color: #ef4444;
@@ -258,7 +258,7 @@
   padding-bottom: 0.5rem;
 }
 .bg-blue-500 {
-  background-color: #3b82f6;
+  background-color: var(--color-primary);
 }
 .text-white {
   color: #ffffff;
@@ -267,5 +267,5 @@
   border-radius: 0.25rem;
 }
 .hover\:bg-blue-600:hover {
-  background-color: #2563eb;
+  background-color: var(--color-primary-hover);
 }

@@ -63,32 +63,36 @@ export const capturePayPalPayment = async (orderId, paymentId) => {
 };
 
 // Initialize Flutterwave payment
-export const initiateFlutterwave = async (orderId, amount, email, name, phone, paymentMethod = 'flutterwave') => {
+export const initiatePesapal = async (orderId, amount, email, name, phone, paymentMethod = 'pesapal') => {
   try {
+    // Normalize UI-selected MTN/Airtel to backend using Pesapal
+    const method = (paymentMethod === 'mtn' || paymentMethod === 'airtel') ? paymentMethod : 'pesapal';
     const response = await api.post(`/orders/${orderId}/initiate-payment`, {
-      paymentMethod,
+      paymentMethod: method,
       amount,
       email,
       name,
       phone,
     });
-    return response.data;
+    return response.data; // { paymentLink, transactionRef }
   } catch (error) {
-    console.error('Initiate Flutterwave payment error:', error);
+    console.error('Initiate Pesapal payment error:', error);
     throw error.response?.data || { message: 'Error initiating payment' };
   }
 };
 
-// Verify Flutterwave payment
-export const verifyFlutterwave = async (orderId, transactionId) => {
+// Verify Pesapal payment
+export const verifyPesapal = async (orderId, transactionId, originalMethod = 'pesapal') => {
   try {
+    // For MTN/Airtel UI choices, backend expects 'mtn'/'airtel' or 'pesapal'
+    const method = (originalMethod === 'mtn' || originalMethod === 'airtel') ? originalMethod : 'pesapal';
     const response = await api.post(`/orders/${orderId}/verify-payment`, {
-      paymentMethod: 'flutterwave',
-      transactionId,
+      paymentMethod: method,
+      transactionId, // orderTrackingId from Pesapal
     });
     return response.data;
   } catch (error) {
-    console.error('Verify Flutterwave payment error:', error);
+    console.error('Verify Pesapal payment error:', error);
     throw error.response?.data || { message: 'Error verifying payment' };
   }
-}; 
+};

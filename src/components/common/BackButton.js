@@ -8,7 +8,7 @@ const BackButton = ({ className = '', style = {} }) => {
     <button
       type="button"
       className={`back-button ${className}`}
-      style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', color: '#781eff', fontWeight: 600, fontSize: 18, cursor: 'pointer', ...style }}
+      style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', color: 'var(--color-primary)', fontWeight: 600, fontSize: 18, cursor: 'pointer', ...style }}
       aria-label="Go back"
       onClick={() => navigate(-1)}
     >

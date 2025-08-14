@@ -27,7 +27,7 @@
 }
 
 .shield-icon {
-  color: #781eff;
+  color: var(--color-primary);
   font-size: 16px;
 }
 
@@ -136,7 +136,7 @@
 }
 
 .learn-more:hover {
-  color: #4b0db3;
+  color: var(--color-primary-hover);
   text-decoration: underline;
 }
 

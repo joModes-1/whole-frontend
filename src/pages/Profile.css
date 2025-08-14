@@ -3,7 +3,7 @@
   --card-bg: #ffffff;
   --muted: #6b7280;
   --text: #111827;
-  --primary: #2563eb;
+  --primary: var(--color-primary);
   --success: #16a34a;
   --warning: #f59e0b;
   --danger: #ef4444;
@@ -231,7 +231,7 @@
 
 .profile-role.buyer {
   background-color: #e8f1ff;
-  color: #1d4ed8;
+  color: var(--color-primary);
 }
 
 .profile-role.seller {

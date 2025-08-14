@@ -2,7 +2,7 @@ import React from 'react';
 import { FaStore, FaEnvelope, FaPhone, FaMapMarkerAlt, FaStar, FaUserCheck } from 'react-icons/fa';
 import './SellerInfoCard.css';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000';
 
 const SellerInfoCard = ({ seller }) => {
   if (!seller) {
@@ -40,7 +40,13 @@ const SellerInfoCard = ({ seller }) => {
         <div className="seller-profile-pic-container">
           <img
             className="seller-profile-pic"
-            src={profilePicture ? `${API_BASE_URL}${profilePicture}` : 'https://via.placeholder.com/120?text=Seller'}
+            src={
+              typeof profilePicture === 'string' && profilePicture
+                ? (profilePicture.startsWith('http')
+                    ? profilePicture
+                    : `${API_BASE_URL}${profilePicture}`)
+                : 'https://via.placeholder.com/120?text=Seller'
+            }
             alt={displayName}
           />
           {verified && (

@@ -9,7 +9,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #781eff;
+  background: var(--color-primary);
   color: white;
   border: none;
   border-radius: 6px;
@@ -22,7 +22,7 @@
 }
 
 .categories-toggle:hover {
-  background: #4b0db3;
+  background: var(--color-primary-hover);
   transform: translateY(-1px);
 }
 
@@ -82,12 +82,12 @@
 
 .category-item:hover, .category-item.active {
   background: white;
-  border-left-color: #781eff;
+  border-left-color: var(--color-primary);
 }
 
 .category-item:hover .category-name, 
 .category-item.active .category-name {
-  color: #781eff;
+  color: var(--color-primary);
 }
 
 .category-header {
@@ -106,7 +106,7 @@
 }
 
 .category-item.active .category-icon {
-  color: #781eff;
+  color: var(--color-primary);
 }
 
 .category-name {
@@ -213,7 +213,7 @@
 }
 
 .view-all-btn {
-  background: #781eff;
+  background: var(--color-primary);
   color: white;
   border: none;
   border-radius: 6px;
@@ -227,7 +227,7 @@
 }
 
 .view-all-btn:hover {
-  background: #4b0db3;
+  background: var(--color-primary-hover);
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(2, 100, 241, 0.3);
 }

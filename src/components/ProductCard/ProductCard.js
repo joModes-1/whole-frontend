@@ -1,4 +1,4 @@
-import React, { useState, useEffect, forwardRef } from 'react';
+import React, { useState, useEffect, forwardRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { toast } from 'react-toastify';
@@ -8,6 +8,14 @@ import './ProductCard.css';
 
 const ProductCard = forwardRef(({ product }, ref) => {
   const { addToCart } = useCart();
+
+  const formatUGX = useCallback((amount) => {
+    try {
+      return new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', maximumFractionDigits: 0 }).format(Number(amount) || 0);
+    } catch {
+      return `UGX ${Math.round(Number(amount) || 0).toLocaleString('en-UG')}`;
+    }
+  }, []);
   const [loading, setLoading] = useState(false);
   const [added, setAdded] = useState(false);
 
@@ -70,7 +78,7 @@ const ProductCard = forwardRef(({ product }, ref) => {
   const imageUrl = getProductImage(product) || getPlaceholderImage();
 
   return (
-    <div className="productCard" ref={ref}>
+    <Link to={`/products/${product._id}`} className="productCard" ref={ref}>
       {/* Image section */}
       <div
         className="productCard-image"
@@ -81,27 +89,28 @@ const ProductCard = forwardRef(({ product }, ref) => {
 
       {/* Info section */}
       <div className="product-info">
-        <Link to={`/products/${product._id}`} className="product-title-link">
-          <h3 className="product-title">{product.name}</h3>
-        </Link>
+        <h3 className="product-title">{product.name}</h3>
         
         {/* Product details */}
         <div className="product-details">
-          <p className="product-category">{product.category}</p>
           <p className="product-seller">
-            By: {product.seller?.companyName || product.seller?.name || 'Unknown Seller'}
           </p>
+          {product.district && (
+            <p className="product-location">
+              Location: {product.district}
+            </p>
+          )}
           <p className="product-stock">
-            {isOutOfStock ? 'Out of Stock' : `In Stock (${product.stock} available)`}
+            {isOutOfStock ? 'Out of Stock' : `In Stock (${product.stock})`}
           </p>
         </div>
         
-        <p className="product-price">${Number(product.price).toFixed(2)}</p>
+        <p className="product-price">{formatUGX(product.price)}</p>
         <div className="button-container">
           <button
-            className="add-to-cart-btn"
+            className={`add-to-cart-btn ${isOutOfStock ? 'out-of-stock' : ''}`}
             type="button"
-            onClick={handleAddToCart}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAddToCart(); }}
             disabled={loading || isOutOfStock}
             aria-label={isOutOfStock ? 'Out of stock' : 'Add to cart'}
           >
@@ -109,7 +118,7 @@ const ProductCard = forwardRef(({ product }, ref) => {
           </button>
         </div>
       </div>
-    </div>
+    </Link>
   );
 });
 

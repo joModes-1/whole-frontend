@@ -38,19 +38,27 @@
 .logo-text {
     font-size: 28px;
     font-weight: 800;
-    color: #0ea5e9; /* Sky blue accent */
+    color: var(--color-primary-soft); /* Softer brand color */
     margin: 0;
     letter-spacing: -0.5px;
 }
 
-
+.logo-link:hover .logo-text {
+    color: var(--color-primary);
+}
 
 .logo-mobile {
     font-size: 21px;
     font-weight: 800;
-    color: purple; /* Sky blue accent */
+    color: var(--color-primary-soft);
     margin: 0;
     letter-spacing: -0.5px;
+}
+
+/* Hover: emphasize brand primary on interaction */
+.logo-link:hover .logo-text,
+.logo-mobile-container:hover .logo-mobile {
+    color: var(--color-primary);
 }
 
 
@@ -97,7 +105,7 @@
 }
 
 .header-search-button {
-    background-color: #781eff;
+    background-color: var(--color-primary);
     color: white;
     border: none;
     padding: 12px 16px;
@@ -113,7 +121,7 @@
 }
 
 .header-search-button:hover {
-    background-color: #4b0db3;
+    background-color: var(--color-primary-hover);
 }
 
 /* Header Actions */
@@ -154,11 +162,11 @@
 
 .auth-link:hover {
     background: #f1f5f9;
-    color: #0ea5e9;
+    color: var(--color-primary);
 }
 
 .auth-link-primary {
-    background: #0ea5e9;
+    background: var(--color-primary);
     color: #fff !important;
 }
 
@@ -179,7 +187,7 @@
 }
 
 .header-icon:hover {
-    color: #0ea5e9; /* Sky blue accent */
+    color: #781EFF; /* Brand purple */
     background-color: #f1f5f9;
     transform: scale(1.1);
 }
@@ -200,7 +208,7 @@
 
 .mobile-menu-toggle:hover {
     background-color: #f1f5f9;
-    color: #0ea5e9; /* Sky blue accent */
+    color: #781EFF; /* Brand purple */
 }
 
 /* ===== HEADER BOTTOM NAVIGATION ===== */
@@ -424,7 +432,7 @@
 }
 
 .search-bar:focus-within {
-    border-color: #781eff;
+    border-color: var(--color-primary);
     box-shadow: 0 0 0 3px rgba(120, 30, 255, 0.15);
 }
 
@@ -503,7 +511,7 @@
 }
 .live-search-item:hover {
   background: #f4f9ff;
-  color: #781eff;
+  color: var(--color-primary);
 }
 .live-search-category {
   font-size: 0.85em;
@@ -590,8 +598,8 @@
 }
 
 .login-btn {
-    border: 1px solid #781eff;
-    color: #781eff;
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
     background: transparent;
 }
 
