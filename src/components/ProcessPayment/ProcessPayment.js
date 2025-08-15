@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
 import { loadStripe } from '@stripe/stripe-js';
 import { useCart } from '../../context/CartContext';
 import { PayPalButtons } from '@paypal/react-paypal-js';
@@ -11,13 +10,12 @@ import './ProcessPayment.css';
 const ProcessPayment = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
   const { clearCart } = useCart();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [order, setOrder] = useState(null);
   const [orderId, setOrderId] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('');   
 
   // UGX currency formatter
   const formatUGX = useCallback((amount) => {
