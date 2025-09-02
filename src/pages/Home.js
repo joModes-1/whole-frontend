@@ -48,48 +48,41 @@ const Home = () => {
     const fetchHomePageData = async () => {
       setLoading(true);
       setError(null);
+      
       try {
-        // Fetch a batch of products to distribute across sections
-        const productsRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/products?page=1&limit=50`);
-        console.log('[Home] Products response:', productsRes.data);
-        const allProducts = productsRes.data?.products || [];
+        // Fetch all data in parallel for better performance
+        const [productsRes, categoriesRes, trendingRes] = await Promise.allSettled([
+          axios.get(`${process.env.REACT_APP_API_BASE_URL}/products?page=1&limit=20`),
+          axios.get(`${process.env.REACT_APP_API_BASE_URL}/products/categories/counts`),
+          axios.get(`${process.env.REACT_APP_API_BASE_URL}/products/trending`)
+        ]);
 
-        // Fetch category data (with fallback)
+        // Process products
+        const allProducts = productsRes.status === 'fulfilled' ? 
+          (productsRes.value.data?.products || []) : [];
+
+        // Process categories with fallback
         let categoryList = [];
-        try {
-          const categoriesRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/products/categories/counts`);
-          console.log('[Home] Categories response:', categoriesRes.data);
-          const categoryData = categoriesRes.data?.data || {};
+        if (categoriesRes.status === 'fulfilled') {
+          const categoryData = categoriesRes.value.data?.data || {};
           categoryList = Object.keys(categoryData)
             .filter(cat => cat !== 'All' && categoryData[cat] > 0)
-            .slice(0, 8); // Take top 8 categories
-        } catch (catErr) {
-          console.warn('[Home] Categories API failed, will derive from products:', catErr);
-        }
-
-        // Derive categories from products if API empty/failed
-        if (!categoryList || categoryList.length === 0) {
-          const derived = Array.from(new Set(
-            allProducts
-              .map(p => p.category)
-              .filter(Boolean)
-          )).slice(0, 8);
-          categoryList = derived;
-          console.log('[Home] Derived featured categories from products:', categoryList);
+            .slice(0, 6); // Reduced to 6 for better performance
         }
         
-        console.log('[Home] Featured categories (final):', categoryList);
+        // Fallback: derive from products if categories failed
+        if (categoryList.length === 0 && allProducts.length > 0) {
+          categoryList = [...new Set(allProducts.map(p => p.category).filter(Boolean))].slice(0, 6);
+        }
 
-        // Fetch trending products
-        const trendingRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/products/trending`);
-        console.log('[Home] Trending products response:', trendingRes.data);
-        const trendingProductsData = trendingRes.data?.products || [];
+        // Process trending products
+        const trendingProductsData = trendingRes.status === 'fulfilled' ? 
+          (trendingRes.value.data?.products || []) : [];
 
-        // Distribute products into different sections for the demo layout
-        // Increase handpicked pool so HeroSection "You may like" has enough items
-        setHandpickedProducts(allProducts.slice(0, 16));
-        setHotDeals(allProducts.slice(8, 16));
-        setTrendingProducts(trendingProductsData);
+        // Set state efficiently
+        setHandpickedProducts(allProducts.slice(0, 12));
+        setHotDeals(allProducts.slice(6, 12));
+        setTrendingProducts(trendingProductsData.slice(0, 8));
         setFeaturedCategories(categoryList);
 
       } catch (err) {

@@ -1,56 +1,77 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import OrderTable from '../../components/admin/OrderTable';
 import './OrderManagementPage.css';
 
 const OrderManagementPage = () => {
-  // Mock data for orders
-  const mockOrders = [
-    {
-      id: 'ORD-001',
-      customer: 'John Doe',
-      seller: 'Tech Gadgets Inc.',
-      date: '2023-10-27',
-      total: 299.99,
-      status: 'Processing',
-      payment: 'Paid',
-    },
-    {
-      id: 'ORD-002',
-      customer: 'Jane Smith',
-      seller: 'Fashion Hub',
-      date: '2023-10-26',
-      total: 150.5,
-      status: 'Shipped',
-      payment: 'Paid',
-    },
-    {
-      id: 'ORD-003',
-      customer: 'Mike Johnson',
-      seller: 'Home Essentials',
-      date: '2023-10-25',
-      total: 75.0,
-      status: 'Delivered',
-      payment: 'Paid',
-    },
-    {
-      id: 'ORD-004',
-      customer: 'Emily Brown',
-      seller: 'Tech Gadgets Inc.',
-      date: '2023-10-24',
-      total: 1200.0,
-      status: 'Pending',
-      payment: 'Unpaid',
-    },
-     {
-      id: 'ORD-005',
-      customer: 'Chris Lee',
-      seller: 'Global Imports',
-      date: '2023-10-23',
-      total: 450.0,
-      status: 'Cancelled',
-      payment: 'Refunded',
-    },
-  ];
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_BASE_URL}/orders/admin/all`
+        );
+
+        const ordersData = response.data?.orders || [];
+        
+        // Transform backend data to match admin table format
+        const transformedOrders = ordersData.map(order => ({
+          id: order._id || order.id,
+          customer: order.buyerName || order.buyer?.name || 'Unknown Customer',
+          seller: order.sellerName || order.seller?.name || 'Unknown Seller',
+          date: new Date(order.createdAt).toLocaleDateString(),
+          total: order.totalAmount || order.total || 0,
+          status: order.status || 'Unknown',
+          payment: order.paymentStatus || 'Unknown',
+          items: order.items || []
+        }));
+
+        setOrders(transformedOrders);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching admin orders:', err);
+        setError(err.response?.data?.message || 'Failed to load orders');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="order-management-page">
+        <header className="page-header">
+          <h1>Order Management</h1>
+          <p>Monitor and manage all customer orders.</p>
+        </header>
+        <div style={{ padding: '2rem', textAlign: 'center' }}>
+          <div className="spinner"></div>
+          <p>Loading orders...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="order-management-page">
+        <header className="page-header">
+          <h1>Order Management</h1>
+          <p>Monitor and manage all customer orders.</p>
+        </header>
+        <div className="error-message" style={{ margin: '2rem' }}>
+          {error}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="order-management-page">
@@ -58,7 +79,7 @@ const OrderManagementPage = () => {
         <h1>Order Management</h1>
         <p>Monitor and manage all customer orders.</p>
       </header>
-      <OrderTable orders={mockOrders} />
+      <OrderTable orders={orders} />
     </div>
   );
 };

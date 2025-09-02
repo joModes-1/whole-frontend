@@ -10,19 +10,40 @@ export default function useCategoryCounts() {
     let isMounted = true;
     setLoading(true);
     const baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000/api';
-    const apiUrl = `${baseUrl}/products/categories/counts`;
 
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 15000);
 
-    fetch(apiUrl, { signal: controller.signal })
-      .then(res => res.json())
-      .then(data => {
+    // Fetch both categories and product counts in parallel
+    Promise.all([
+      fetch(`${baseUrl}/categories`, { signal: controller.signal }).then(res => res.json()),
+      fetch(`${baseUrl}/products/categories/counts`, { signal: controller.signal }).then(res => res.json())
+    ])
+      .then(([categoriesData, countsData]) => {
         if (isMounted) {
-          const ok = Array.isArray(data);
-          setCounts(ok ? data.reduce((acc, cur) => ({ ...acc, [cur._id]: cur.count }), {}) : {});
-          if (!ok) setError(data.message || 'Failed to fetch counts');
-          else setError(null);
+          // Create counts object from categories collection
+          const categoryNames = {};
+          
+          // Add categories from database
+          if (Array.isArray(categoriesData)) {
+            categoriesData.forEach(cat => {
+              if (cat.name) {
+                categoryNames[cat.name] = 0; // Initialize with 0
+              }
+            });
+          }
+          
+          // Add actual product counts
+          if (Array.isArray(countsData)) {
+            countsData.forEach(item => {
+              if (item._id && typeof item.count === 'number') {
+                categoryNames[item._id] = item.count;
+              }
+            });
+          }
+          
+          setCounts(categoryNames);
+          setError(null);
         }
       })
       .catch(err => {

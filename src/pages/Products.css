@@ -45,7 +45,7 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem 1.5rem;
-  background-color: #f8f5f2; /* Warm light background */
+  background-color: #f9fafb; /* Neutral light background */
 }
 
 @media (max-width: 768px) {
@@ -66,10 +66,10 @@
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  background: #3a3633; /* Dark wood tone */
-  color: #f0e6d2; /* Light cream */
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
   padding: 0.75rem 1.5rem;
-  border: 2px solid #3a3633;
+  border: 2px solid var(--color-primary);
   border-radius: 8px;
   margin-bottom: 1.5rem;
   cursor: pointer;
@@ -77,12 +77,12 @@
   font-weight: 600;
   letter-spacing: 0.5px;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(58, 54, 51, 0.1);
+  box-shadow: 0 2px 8px rgba(91, 15, 255, 0.15);
 }
 
 .mobile-filter-button:hover {
-  background: #f0e6d2;
-  color: #3a3633;
+  background: var(--color-primary-hover);
+  color: var(--color-primary-contrast);
 }
 
 .filter-icon {
@@ -109,8 +109,8 @@
   background: #ffffff;
   padding: 1.75rem;
   border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(58, 54, 51, 0.08);
-  border: 1px solid #e8e1d9;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  border: 1px solid #eef2f7;
   top: 1rem;
 }
 
@@ -120,14 +120,14 @@
   align-items: center;
   margin-bottom: 1.75rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid #e8e1d9;
+  border-bottom: 1px solid #eef2f7;
 }
 
 .filter-header h2 {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
-  color: #3a3633;
+  color: #1f2937;
   font-family: 'Helvetica Neue', sans-serif;
   letter-spacing: -0.5px;
 }
@@ -135,7 +135,7 @@
 .reset-filters {
   background: none;
   border: none;
-  color: #8b7355; /* Warm wood accent */
+  color: var(--color-primary);
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
@@ -149,9 +149,9 @@
 }
 
 .reset-filters:hover {
-  color: #6b5a43;
-  border-color: #e8e1d9;
-  background: #f8f5f2;
+  color: var(--color-primary);
+  border-color: #ebe8ff;
+  background: #f3f0ff;
 }
 
 /* Search Section - Nordic Elegance */
@@ -164,7 +164,7 @@
   margin-bottom: 0.75rem;
   font-size: 0.95rem;
   font-weight: 500;
-  color: #5a534a;
+  color: #374151;
   letter-spacing: 0.3px;
 }
 
@@ -177,7 +177,7 @@
   left: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #8b7355;
+  color: var(--color-primary);
   font-size: 1.1rem;
 }
 
@@ -187,12 +187,12 @@
   min-width: 0;
   box-sizing: border-box;
   padding: 0.75rem 1rem 0.75rem 2.75rem;
-  border: 1px solid #e8e1d9;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
   font-size: 0.95rem;
   transition: all 0.3s ease;
-  background-color: #f8f5f2;
-  color: #3a3633;
+  background-color: #fff;
+  color: #111827;
   margin: 0;
 }
 
@@ -214,8 +214,8 @@
 
 .search-input:focus {
   outline: none;
-  border-color: #8b7355;
-  box-shadow: 0 0 0 3px rgba(139, 115, 85, 0.15);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(91, 15, 255, 0.15);
   background-color: #fff;
 }
 
@@ -226,20 +226,20 @@
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: #b8a99a;
+  color: #9ca3af;
   cursor: pointer;
   padding: 0.25rem;
   transition: all 0.3s ease;
 }
 
 .clear-search:hover {
-  color: #8b7355;
+  color: var(--color-primary);
 }
 
 /* Filter Sections - Clean Nordic Design */
 .filter-section {
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid #e8e1d9;
+  border-bottom: 1px solid #eef2f7;
   padding-bottom: 1.5rem;
 }
 
@@ -256,14 +256,14 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: #3a3633;
+  color: #111827;
   font-size: 1rem;
   font-weight: 500;
   transition: color 0.3s ease;
 }
 
 .filter-header-button:hover {
-  color: #8b7355;
+  color: var(--color-primary);
 }
 
 .filter-header-button .filter-title {
@@ -273,7 +273,7 @@
 }
 
 .filter-icon {
-  color: #8b7355;
+  color: var(--color-primary);
   font-size: 1.1rem;
 }
 
@@ -289,13 +289,13 @@
   align-items: center;
   margin-bottom: 1rem;
   font-size: 0.9rem;
-  color: #5a534a;
+  color: #6b7280;
 }
 
 .clear-categories {
   background: none;
   border: none;
-  color: #8b7355;
+  color: var(--color-primary);
   font-size: 0.85rem;
   cursor: pointer;
   text-decoration: underline;
@@ -303,7 +303,7 @@
 }
 
 .clear-categories:hover {
-  color: #6b5a43;
+  color: var(--color-primary-hover);
 }
 
 .category-list {
@@ -322,7 +322,7 @@
   appearance: none;
   width: 1.25rem;
   height: 1.25rem;
-  border: 2px solid #e8e1d9;
+  border: 2px solid #e5e7eb;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -330,8 +330,8 @@
 }
 
 .category-checkbox:checked {
-  background-color: #8b7355;
-  border-color: #8b7355;
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 .category-checkbox:checked::after {
@@ -353,13 +353,13 @@
 }
 
 .category-name {
-  color: #3a3633;
+  color: #111827;
   font-size: 0.95rem;
 }
 
 .category-count-badge {
-  background-color: #f0e6d2;
-  color: #8b7355;
+  background-color: rgba(91, 15, 255, 0.12);
+  color: var(--color-primary);
   padding: 0.2rem 0.5rem;
   border-radius: 12px;
   font-size: 0.8rem;
@@ -375,16 +375,17 @@
   display: flex;
   justify-content: space-between;
   font-size: 0.9rem;
-  color: #5a534a;
+  color: #6b7280;
   margin-bottom: 1rem;
 }
 
 .price-range-slider {
   -webkit-appearance: none;
+  appearance: none;
   width: 100%;
   height: 6px;
   border-radius: 3px;
-  background: #e8e1d9;
+  background: #e5e7eb;
   outline: none;
   margin: 1rem 0;
 }
@@ -395,20 +396,20 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #8b7355;
+  background: var(--color-primary);
   cursor: pointer;
   border: 2px solid white;
-  box-shadow: 0 2px 4px rgba(58, 54, 51, 0.2);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
 
 .price-range-slider::-moz-range-thumb {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #8b7355;
+  background: var(--color-primary);
   cursor: pointer;
   border: 2px solid white;
-  box-shadow: 0 2px 4px rgba(58, 54, 51, 0.2);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
 
 /* Radio and Checkbox Styles - Nordic Minimal */
@@ -425,7 +426,7 @@
   appearance: none;
   width: 1.25rem;
   height: 1.25rem;
-  border: 2px solid #e8e1d9;
+  border: 2px solid #e5e7eb;
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -438,8 +439,8 @@
 
 .filter-option input[type="radio"]:checked,
 .filter-option input[type="checkbox"]:checked {
-  background-color: #8b7355;
-  border-color: #8b7355;
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 .filter-option input[type="radio"]:checked::after {
@@ -465,7 +466,7 @@
 }
 
 .filter-option-label {
-  color: #3a3633;
+  color: #111827;
   font-size: 0.95rem;
   display: flex;
   align-items: center;
@@ -555,21 +556,21 @@
 }
 
 .active-filter {
-  background: #f0e6d2;
-  color: #5a534a;
+  background: rgba(91, 15, 255, 0.08);
+  color: var(--color-primary);
   padding: 0.5rem 1rem;
   border-radius: 20px;
   font-size: 0.85rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  border: 1px solid #e8e1d9;
+  border: 1px solid #ebe8ff;
 }
 
 .remove-filter {
   background: none;
   border: none;
-  color: #8b7355;
+  color: var(--color-primary);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -611,14 +612,14 @@
   align-items: center;
   justify-content: center;
   padding: 3rem;
-  color: #8b7355;
+  color: var(--color-primary);
   gap: 1.5rem;
 }
 
 .spinner-icon {
   animation: spin 1.2s linear infinite;
   font-size: 2.5rem;
-  color: #8b7355;
+  color: var(--color-primary);
 }
 
 @keyframes spin {
@@ -676,13 +677,13 @@
 .no-products {
   text-align: center;
   padding: 3rem;
-  color: #5a534a;
+  color: #6b7280;
 }
 
 .no-products h3 {
   font-size: 1.5rem;
   margin-bottom: 1rem;
-  color: #3a3633;
+  color: #111827;
 }
 
 .no-products p {
@@ -691,8 +692,8 @@
 }
 
 .reset-filters-btn {
-  background: #3a3633;
-  color: #f0e6d2;
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
@@ -703,7 +704,7 @@
 }
 
 .reset-filters-btn:hover {
-  background: #5a534a;
+  background: var(--color-primary-hover);
 }
 /* Search Section */
 .search-section {
@@ -749,7 +750,7 @@
 .search-input:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 0 2px rgba(91, 15, 255, 0.2);
 }
 
 .clear-search {
@@ -766,7 +767,7 @@
 }
 
 .clear-search:hover {
-  color: #6b7280;
+  color: var(--color-primary);
 }
 /* Product Card Styles */
 .product-card {
@@ -862,7 +863,7 @@
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  color: #0264f1;
+  color: var(--color-primary);
   gap: 1rem;
 }
 

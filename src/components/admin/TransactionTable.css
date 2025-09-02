@@ -54,13 +54,13 @@
 }
 
 .type-sale {
-  background-color: #e6f0ff;
-  color: #0264f1;
+  background-color: color-mix(in srgb, var(--color-primary) 12%, white);
+  color: var(--color-primary);
 }
 
 .type-payout {
-  background-color: #e6f7ff;
-  color: #007bff;
+  background-color: color-mix(in srgb, var(--color-primary) 12%, white);
+  color: var(--color-primary);
 }
 
 .type-refund {

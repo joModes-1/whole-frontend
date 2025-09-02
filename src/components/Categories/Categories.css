@@ -33,13 +33,13 @@
   padding: 0 7px;
   font-size: 0.85em;
   border-radius: 12px;
-  background: #0264f1;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
   font-weight: 600;
   vertical-align: middle;
   text-align: center;
   line-height: 1.6;
-  box-shadow: 0 1px 3px rgba(2, 100, 241, 0.08);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--color-primary) 8%, transparent);
 }
 
 /* Only grid on small phones (≤414px) */
@@ -90,13 +90,13 @@
 }
 
 .category-btn:hover {
-  background-color: rgba(2, 100, 241, 0.08);
-  color: rgb(120, 30, 255);
+  background-color: color-mix(in srgb, var(--color-primary) 10%, white);
+  color: var(--color-primary);
 }
 
 .category-btn.active {
-  background-color: rgba(2, 100, 241, 0.15);
-  color: #0264f1;
+  background-color: color-mix(in srgb, var(--color-primary) 15%, white);
+  color: var(--color-primary);
   font-weight: 600;
 }
 
@@ -108,7 +108,7 @@
   top: 0;
   bottom: 0;
   width: 4px;
-  background: #0264f1;
+  background: var(--color-primary);
   border-radius: 4px 0 0 4px;
 }
 

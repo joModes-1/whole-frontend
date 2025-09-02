@@ -18,7 +18,9 @@ const AdminDashboard = () => {
         setError(null);
       } catch (err) {
         setError('Failed to fetch dashboard data. Please try again later.');
-        console.error(err);
+        console.error('Dashboard fetch error:', err);
+        console.error('Error response:', err.response?.data);
+        console.error('Error status:', err.response?.status);
       } finally {
         setLoading(false);
       }

@@ -82,10 +82,11 @@ const ProductCard = forwardRef(({ product }, ref) => {
       {/* Image section */}
       <div
         className="productCard-image"
-        style={{ backgroundImage: `url(${imageUrl})` }}
         role="img"
         aria-label={product.name}
-      ></div>
+      >
+        <img src={imageUrl} alt={product.name} className="productCard-img" />
+      </div>
 
       {/* Info section */}
       <div className="product-info">

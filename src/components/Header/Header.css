@@ -15,6 +15,11 @@
     padding: 0 20px;
 }
 
+/* Mobile searchbar container (hidden by default, shown on mobile) */
+.mobile-searchbar {
+    display: none;
+}
+
 /* ===== HEADER TOP SECTION ===== */
 .header-top {
     display: flex;
@@ -38,7 +43,7 @@
 .logo-text {
     font-size: 28px;
     font-weight: 800;
-    color: var(--color-primary-soft); /* Softer brand color */
+    color: var(--color-primary); /* Softer brand color */
     margin: 0;
     letter-spacing: -0.5px;
 }
@@ -69,7 +74,9 @@
 .search-container-header {
     flex: 1 1 auto;         /* allow growth and shrink */
     min-width: 0;           /* prevent overflow clipping */
-    margin: 0 20px;
+    margin: 0 auto;         /* center between logo and actions */
+    max-width: 640px;       /* constrain width on desktop */
+    width: 100%;
 }
 
 /* Namespaced header search to avoid conflicts */
@@ -83,7 +90,7 @@
     align-items: center;
     height: 44px;
     border: 1px solid #e5e7eb;
-    border-radius: 10px;
+    border-radius: 9999px; /* fully rounded */
     background: #f9fafb;
     overflow: hidden;
 }
@@ -106,7 +113,7 @@
 
 .header-search-button {
     background-color: var(--color-primary);
-    color: white;
+    color: var(--color-primary-contrast);
     border: none;
     padding: 12px 16px;
     font-size: 14px;
@@ -116,8 +123,8 @@
     align-items: center;
     justify-content: center;
     height: 100%;
-    border-top-right-radius: 10px;
-    border-bottom-right-radius: 10px;
+    border-top-right-radius: 9999px; /* match pill shape */
+    border-bottom-right-radius: 9999px; /* match pill shape */
 }
 
 .header-search-button:hover {
@@ -184,12 +191,18 @@
     justify-content: center;
     padding: 8px;
     border-radius: 8px;
+    background: transparent; /* ensure no background fill */
 }
 
 .header-icon:hover {
-    color: #781EFF; /* Brand purple */
-    background-color: #f1f5f9;
+    color: var(--color-primary); /* Brand primary */
     transform: scale(1.1);
+    background: transparent; /* keep hover transparent */
+}
+
+/* Also keep focus-visible state transparent while retaining outline for a11y */
+.header-icon:focus-visible {
+    background: transparent;
 }
 
 .mobile-menu-toggle {
@@ -208,7 +221,7 @@
 
 .mobile-menu-toggle:hover {
     background-color: #f1f5f9;
-    color: #781EFF; /* Brand purple */
+    color: var(--color-primary); /* Brand primary */
 }
 
 /* ===== HEADER BOTTOM NAVIGATION ===== */
@@ -251,8 +264,8 @@
 }
 
 .nav-link:hover {
-    color: #28a745; /* Green accent */
-    background-color: rgba(40, 167, 69, 0.1);
+    color: var(--color-primary);
+    background-color: #f1f5f9;
 }
 
 /* Mobile Navigation - Hidden by default */
@@ -328,6 +341,7 @@
 
     .search-container-header {
         display: none; /* Hide search bar on mobile */
+        flex: 1 1 100%;
     }
     
 
@@ -349,6 +363,12 @@
     
     .search-container-header {
         display: none; /* Hide search bar on mobile */
+        flex: 1 1 100%;
+    }
+    
+    .mobile-searchbar {
+        display: block; /* Show separate search row on mobile */
+        padding: 8px 0 12px;
     }
     
     .desktop-nav {
@@ -453,7 +473,7 @@
 }
 
 .search-button {
-    background-color: #781eff;
+    background-color: var(--color-primary);
     color: white;
     border: none;
     padding: 12px 16px;
@@ -468,7 +488,7 @@
 }
 
 .search-button:hover {
-    background-color: #4b0db3;
+    background-color: var(--color-primary-hover);
 }
 
 .search-button:active {
@@ -604,18 +624,18 @@
 }
 
 .login-btn:hover {
-    background-color: rgba(120, 30, 255, 0.05);
+    background-color: #f1f5f9;
 }
 
 .register-btn {
-    background-color: #781eff;
+    background-color: var(--color-primary);
     color: white;
-    border: 1px solid #781eff;
+    border: 1px solid var(--color-primary);
 }
 
 .register-btn:hover {
-    background-color: #4b0db3;
-    border-color: #4b0db3;
+    background-color: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
 }
 
 /* Profile Dropdown */
@@ -638,8 +658,8 @@
 }
 
 .header-profile-button:hover {
-    border-color: #781eff;
-    color: #781eff;
+    border-color: var(--color-primary);
+    color: var(--color-primary);
 }
 
 .header-profile-icon {
@@ -789,7 +809,7 @@
 }
 
 .trade-assurance-footer a {
-    color: #781eff;
+    color: var(--color-primary);
     text-decoration: none;
     font-size: 13px;
     font-weight: 500;
@@ -878,8 +898,8 @@
 }
 
 .nav-link:hover {
-    color: #781eff;
-    background-color: rgba(120, 30, 255, 0.05);
+    color: var(--color-primary);
+    background-color: #f1f5f9;
 }
 
 /* Responsive Styles */
@@ -961,18 +981,18 @@
 }
 
 .bottom-bar-right .login-btn:hover {
-    background: rgba(120, 30, 255, 0.1);
-    color: rgb(120, 30, 255);
+    background: #f1f5f9;
+    color: var(--color-primary);
 }
 
 .bottom-bar-right .register-btn {
-    background: rgb(120, 30, 255);
+    background: var(--color-primary);
     color: white;
     border: none;
 }
 
 .bottom-bar-right .register-btn:hover {
-    background: rgba(120, 30, 255, 0.9);
+    background: var(--color-primary-hover);
     transform: translateY(-1px);
 }
 
@@ -1025,7 +1045,7 @@
 
 .trade-assurance-dropdown .dropdown-icon {
     font-size: 48px;
-    color: rgb(120, 30, 255);
+    color: var(--color-primary);
     margin-bottom: 10px;
 }
 
@@ -1044,7 +1064,7 @@
 }
 
 .trade-assurance-dropdown .dropdown-content a:hover {
-    color: rgb(120, 30, 255);
+    color: var(--color-primary);
 }
 
 .messages-icon svg,
@@ -1120,7 +1140,7 @@
 
 .messages-dropdown .view-more-link,
 .notifications-dropdown .view-more-link {
-    color: rgb(129, 55, 232);
+    color: var(--color-primary);
     text-decoration: none;
     font-weight: bold;
     font-size: 14px;
@@ -1151,7 +1171,7 @@
     position: absolute;
     top: -8px;
     right: -10px;
-    background-color: rgb(129, 55, 232);
+    background-color: var(--color-primary);
     color: white;
     border-radius: 50%;
     padding: 2px 6px;
@@ -1160,7 +1180,7 @@
 
 /* Category Navbar */
 .category-navbar {
-    background-color:rgb(129, 55, 232);
+    background-color: var(--color-primary);
     border-top: 1px solid #eee;
     border-bottom: 1px solid #ddd;
     color: white;
@@ -1196,7 +1216,7 @@
 }
 
 .category-list li a:hover {
-    color: rgb(120, 30, 255);
+    color: var(--color-primary);
 }
 
 
@@ -1239,7 +1259,7 @@
 
 .image-search-content .dropdown-icon {
     font-size: 48px;
-    color: rgb(120, 30, 255);
+    color: var(--color-primary);
     margin-bottom: 10px;
 }
 
@@ -1266,7 +1286,7 @@
 }
 
 .upload-btn {
-    background-color: rgb(120, 30, 255);
+    background-color: var(--color-primary);
     color: #fff;
     border: none;
     padding: 10px 20px;
@@ -1277,7 +1297,7 @@
 }
 
 .upload-btn:hover {
-    background-color: rgb(120, 30, 255);
+    background-color: var(--color-primary-hover);
 }
 
 .alibaba-lens h4 {
@@ -1288,7 +1308,7 @@
 .add-to-chrome-btn {
     display: inline-block;
     margin-top: 10px;
-    color: rgb(120, 30, 255);
+    color: var(--color-primary);
     text-decoration: none;
     font-weight: bold;
 }
@@ -1392,7 +1412,7 @@
 }
 
 .category-list .add-product-link {
-    background-color: rgb(120, 30, 255);
+    background-color: var(--color-primary);
     color: white !important; /* Use important to override default link color on hover */
     padding: 8px 12px;
     border-radius: 4px;
@@ -1401,7 +1421,7 @@
 }
 
 .category-list li a.add-product-link:hover {
-    background-color: rgb(120, 30, 255);
+    background-color: var(--color-primary-hover);
     text-decoration: none;
     color: white !important;
 }
@@ -1437,7 +1457,7 @@
     color: #333;
     margin-top: 0;
     margin-bottom: 15px;
-    border-bottom: 2px solid rgb(120, 30, 255);
+    border-bottom: 2px solid var(--color-primary);
     padding-bottom: 8px;
 }
 
@@ -1464,7 +1484,7 @@
 }
 
 .mega-menu-column ul ul li a:hover {
-    color: rgb(120, 30, 255);
+    color: var(--color-primary);
     text-decoration: underline;
 }
 

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
 import { fetchCategories } from '../redux/categorySlice';
+import useCategoryCounts from '../hooks/useCategoryCounts';
 import '../styles/CategoriesDropdown.css';
 
 
@@ -18,6 +19,7 @@ const CategoriesDropdown = () => {
   const dispatch = useDispatch();
   const { items, status, error } = useSelector((state) => state.categories || {});
   const categories = Array.isArray(items) ? items : [];
+  const { counts } = useCategoryCounts();
   const navigate = useNavigate();
 
   const handleCategoryClick = (categoryName) => {
@@ -73,14 +75,14 @@ const CategoriesDropdown = () => {
                       key={category._id || index}
                       className={`category-item ${activeCategory === index ? 'active' : ''}`}
                       onMouseEnter={() => setActiveCategory(index)}
-                      onClick={() => handleCategoryClick(category._id)}
+                      onClick={() => handleCategoryClick(category.name)}
                     >
                       <div className="category-header">
                         {/* Render category.icon if provided, else fallback */}
                         {category.icon ? (
                           <span className="category-icon">{category.icon}</span>
                         ) : null}
-                        <span className="category-name">{category._id} ({category.count})</span>
+                        <span className="category-name">{category.name} ({counts[category.name] || 0})</span>
                         {/* Sub-category logic can be re-added here if the API is extended */}
                         {false && (
                           <FaChevronRight className="chevron-icon" />

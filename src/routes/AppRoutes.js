@@ -52,17 +52,20 @@ import SecurityPage from '../pages/admin/SecurityPage';
 import IntegrationsPage from '../pages/admin/IntegrationsPage';
 import SupportPage from '../pages/admin/SupportPage';
 import AdminRoute from '../components/routes/AdminRoute';
+import CatalogCategoriesPage from '../pages/admin/CatalogCategoriesPage';
+import CatalogPresetImagesPage from '../pages/admin/CatalogPresetImagesPage';
 
 const AppRoutes = () => {
   const { currentUser } = useAuth();
   const location = useLocation();
   const isAuthPage = ['/login', '/register', '/role-selection', '/verify-phone'].includes(location.pathname);
   const isInfoPage = ['/', '/about', '/contact', '/terms', '/privacy-policy', '/help-center'].includes(location.pathname);
+  const isAdminPath = location.pathname.startsWith('/admin');
   
   return (
     <>
-      {!isAuthPage && <Header />}
-      <main className={`main-content ${isAuthPage ? 'auth-layout' : ''}`}>
+      {!isAuthPage && !isAdminPath && <Header />}
+      <main className={`${!isAdminPath ? 'main-content' : ''} ${isAuthPage ? 'auth-layout' : ''}`}>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
@@ -111,6 +114,8 @@ const AppRoutes = () => {
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="users" element={<UserManagementPage />} />
               <Route path="products" element={<ProductManagementPage />} />
+              <Route path="catalog/categories" element={<CatalogCategoriesPage />} />
+              <Route path="catalog/preset-images" element={<CatalogPresetImagesPage />} />
               <Route path="orders" element={<OrderManagementPage />} />
               <Route path="delivery" element={<DeliveryManagementPage />} />
               <Route path="finance" element={<FinancePage />} />

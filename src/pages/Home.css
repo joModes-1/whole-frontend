@@ -242,3 +242,9 @@
 }
 
 }
+
+/* Utility: Hide unexpected auto-generated spacer div after category section */
+/* The following element appears with obfuscated classnames from a 3rd-party renderer */
+.css-view-g5y9jx.r-borderRadius-1dzdj1l.r-height-7r4507.r-marginBlock-12kyg2d.r-marginInline-1xpp3t0.r-overflow-1udh08x {
+  display: none !important;
+}

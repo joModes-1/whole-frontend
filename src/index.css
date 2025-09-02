@@ -7,8 +7,8 @@
 /* Global color variables */
 :root {
   /* Brand */
-  --color-primary: #5B0FFF;
-  --color-primary-hover: #4B0DB3;
+  --color-primary: rgb(129, 55, 232);
+  --color-primary-hover: #8C66FF;
   --color-primary-contrast: #ffffff;
   --color-primary-soft: #8C66FF;
 

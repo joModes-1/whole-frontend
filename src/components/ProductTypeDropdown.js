@@ -1,21 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import './ProductTypeDropdown.css';
 
-const ProductTypeDropdown = ({ value, onChange, required = false }) => {
+const ProductTypeDropdown = ({ value, onChange, required = false, selectedCategory }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  const { items: categories } = useSelector((state) => state.categories);
+  
+  // Get subcategories for the selected category
+  const getSubcategories = () => {
+    if (!selectedCategory) return [];
+    
+    const category = categories.find(cat => cat.name === selectedCategory);
+    if (!category || !category.subcategories) return [];
+    
+    // Handle both string and object subcategories
+    return category.subcategories.map(sub => 
+      typeof sub === 'string' ? sub : (sub.name || sub._id || sub.toString())
+    );
+  };
 
-  // Common product types
-  const productTypes = [
-    'Physical Product',
-    'Digital Product',
-    'Service',
-    'Subscription',
-    'Bundle',
-    'Custom Product'
-  ];
-
-  const filteredTypes = productTypes.filter(type => 
+  const subcategories = getSubcategories();
+  
+  const filteredTypes = subcategories.filter(type => 
     type.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -63,6 +71,12 @@ const ProductTypeDropdown = ({ value, onChange, required = false }) => {
             />
           </div>
           <div className="dropdown-options">
+            {!selectedCategory && (
+              <div className="dropdown-message">Please select a category first</div>
+            )}
+            {selectedCategory && filteredTypes.length === 0 && (
+              <div className="dropdown-message">No subcategories available for this category</div>
+            )}
             {filteredTypes.map((type) => (
               <div 
                 key={type} 

@@ -39,13 +39,13 @@
 }
 
 .status-in-transit {
-  background-color: #e6f0ff;
-  color: #0264f1;
+  background-color: color-mix(in srgb, var(--color-primary) 12%, white);
+  color: var(--color-primary);
 }
 
 .status-out-for-delivery {
-  background-color: #e6f7ff;
-  color: #007bff;
+  background-color: color-mix(in srgb, var(--color-primary) 12%, white);
+  color: var(--color-primary);
 }
 
 .status-delivered {
@@ -75,12 +75,12 @@
 }
 
 .track-btn {
-  background-color: #0264f1;
-  color: white;
+  background-color: var(--color-primary);
+  color: var(--color-primary-contrast);
 }
 
 .track-btn:hover {
-  background-color: #014aab;
+  background-color: var(--color-primary-hover);
 }
 
 .details-btn {

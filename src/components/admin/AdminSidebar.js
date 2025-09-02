@@ -27,6 +27,16 @@ const AdminSidebar = () => {
             </NavLink>
           </li>
           <li>
+            <NavLink to="/admin/catalog/categories" className={({ isActive }) => (isActive ? 'active' : '')}>
+              Catalog: Categories
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/admin/catalog/preset-images" className={({ isActive }) => (isActive ? 'active' : '')}>
+              Catalog: Preset Images
+            </NavLink>
+          </li>
+          <li>
             <NavLink to="/admin/orders" className={({ isActive }) => (isActive ? 'active' : '')}>
               <FaShoppingCart />
               <span>Order Management</span>

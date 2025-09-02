@@ -191,12 +191,12 @@
 }
 
 .action-buttons button:first-child {
-  background-color: #007bff;
-  color: white;
+  background-color: var(--color-primary);
+  color: var(--color-primary-contrast);
 }
 
 .action-buttons button:first-child:hover {
-  background-color: #0056b3;
+  background-color: var(--color-primary-hover);
 }
 
 .action-buttons button:last-child {

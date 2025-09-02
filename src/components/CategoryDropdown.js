@@ -26,15 +26,18 @@ const CategoryDropdown = ({ value, onChange, required = false }) => {
   };
   
   const filteredCategories = categories.filter(category => 
-    category._id.toLowerCase().includes(searchTerm.toLowerCase())
+    category.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
+  // Normalize display value to a string even if parent passes an object
+  const displayValue = typeof value === 'object' && value !== null ? (value.name || '') : (value || '');
+
   return (
     <div className="category-dropdown">
       <div className="dropdown-header" onClick={handleToggle}>
         <input 
           type="text" 
-          value={value || ''} 
+          value={displayValue} 
           onChange={(e) => onChange(e.target.value)}
           placeholder="Select or type a category"
           required={required}
@@ -61,9 +64,9 @@ const CategoryDropdown = ({ value, onChange, required = false }) => {
               <div 
                 key={category._id} 
                 className="dropdown-option"
-                onClick={() => handleSelect(category._id)}
+                onClick={() => handleSelect(category.name)}
               >
-                {category._id}
+                {category.name}
               </div>
             ))}
           </div>

@@ -5,11 +5,10 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:400
 
 export const fetchCategories = createAsyncThunk('categories/fetchCategories', async (_, { rejectWithValue }) => {
   try {
-    // Correct endpoint per backend routes: /products/categories/counts
-    const response = await axios.get(`${API_BASE_URL}/products/categories/counts`);
-    // Backend returns an array of { _id: <category>, count: <number> }
-    // Normalize to an array to keep consumers simple
-    return Array.isArray(response.data) ? response.data : (response.data?.data || []);
+    // Fetch from categories collection endpoint
+    const response = await axios.get(`${API_BASE_URL}/categories`);
+    // Backend returns array of category objects with name and subcategories
+    return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
     return rejectWithValue(error.response?.data?.message || error.message);
   }

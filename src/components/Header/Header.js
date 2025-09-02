@@ -83,6 +83,11 @@ const Header = () => {
             </div>
           </div>
 
+        {/* Mobile-only search section below header on small screens */}
+        <div className="mobile-searchbar">
+          <LiveProductSearch />
+        </div>
+
         <nav className={`header-bottom ${isMobileMenuOpen ? 'mobile-menu-open' : ''}`}>
           <div className="nav-container">
             {/* Desktop Navigation */}

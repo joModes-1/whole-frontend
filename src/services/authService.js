@@ -8,129 +8,83 @@ import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000/api';
 
-// Firebase Authentication
+// Backend-first signup (creates Firebase user automatically)
 export const signup = async (userData) => {
   try {
-    console.log('Starting signup process...');
-    // 1. Create user in Firebase
-    const userCredential = await createUserWithEmailAndPassword(
-      auth,
-      userData.email,
-      userData.password
-    );
-    const firebaseUser = userCredential.user;
-    console.log('Firebase user created:', firebaseUser.uid);
-
-    // 2. Get Firebase ID token
-    const token = await firebaseUser.getIdToken();
-    console.log('Firebase ID token obtained.');
-
-    // 3. Complete registration on the backend to create the local DB user
-    console.log('Completing registration on backend...');
-    const backendResponse = await axios.post(
-      `${API_URL}/auth/complete-registration`, 
-      {
-        uid: firebaseUser.uid,
-        email: userData.email,
-        name: userData.name,
-        role: userData.role,
-        companyName: userData.companyName || '',
-        contactNumber: userData.contactNumber || '',
-        address: userData.address || ''
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    console.log('Backend registration complete:', backendResponse.data);
-
-    // 4. Return the user profile from our backend and the Firebase token
-    return {
-      user: backendResponse.data.user,
-      token: token,
-    };
-  } catch (error) {
-    console.error('Signup error details:', {
-      code: error.code,
-      message: error.message,
-      fullError: error
+    console.log('Starting signup process with backend...');
+    
+    // Call backend signup endpoint directly
+    const response = await axios.post(`${API_URL}/auth/signup`, {
+      name: userData.name,
+      email: userData.email,
+      password: userData.password,
+      role: userData.role,
+      phoneNumber: userData.phoneNumber || '',
+      companyName: userData.companyName || ''
     });
 
-    // Handle backend errors as well
+    console.log('Backend signup successful:', response.data);
+
+    // Store token and user data
+    const { token, user } = response.data;
+    setToken(token);
+    localStorage.setItem('user', JSON.stringify(user));
+
+    return {
+      user,
+      token
+    };
+
+  } catch (error) {
+    console.error('Signup error:', error);
+
+    // Handle backend errors
     if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
-      throw new Error(error.response.data.message || 'An error occurred during registration.');
+      const message = error.response.data.message || 'Registration failed';
+      throw new Error(message);
     }
 
-    // Map Firebase error codes to user-friendly messages
-    switch (error.code) {
-      case 'auth/email-already-in-use':
-        throw new Error('An account with this email already exists.');
-      case 'auth/invalid-email':
-        throw new Error('Please enter a valid email address.');
-      case 'auth/operation-not-allowed':
-        throw new Error('Email/password accounts are not enabled. Please contact support.');
-      case 'auth/weak-password':
-        throw new Error('Password is too weak. Please use a stronger password.');
-      default:
-        throw new Error(error.message || 'Registration failed. Please try again.');
-    }
+    throw new Error(error.message || 'Registration failed. Please try again.');
   }
 };
 
 export const login = async (email, password) => {
   try {
-    console.log('Starting login process...');
-    console.log('Email:', email);
-    console.log('Password length:', password.length);
-    console.log('Firebase auth instance:', auth);
+    console.log('Starting login process with backend...');
     
     // Validate inputs
     if (!email || !password) {
       throw new Error('Email and password are required');
     }
 
-    // Trim whitespace
-    email = email.trim();
-    password = password.trim();
+    // Call backend login endpoint
+    const response = await axios.post(`${API_URL}/auth/login`, {
+      email: email.trim(),
+      password: password.trim()
+    });
 
-    // Check if Firebase auth is initialized
-    if (!auth) {
-      throw new Error('Firebase auth is not initialized');
-    }
+    console.log('Backend login successful:', response.data);
 
-    console.log('Attempting Firebase signInWithEmailAndPassword...');
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    console.log('Login successful! User:', userCredential.user);
-    
-    console.log('Getting ID token...');
-    const token = await userCredential.user.getIdToken();
-    console.log('Token obtained successfully');
+    // Store token and user data
+    const { token, user } = response.data;
+    setToken(token);
+    localStorage.setItem('user', JSON.stringify(user));
 
-    // Get user's custom claims (roles)
-    const idTokenResult = await userCredential.user.getIdTokenResult();
-    const roles = idTokenResult.claims.roles || ['user'];
-    const userRole = roles.includes('seller') ? 'seller' : 
-                    roles.includes('admin') ? 'admin' : 'user';
-
-    const userData = {
-      token,
-      user: {
-        id: userCredential.user.uid,
-        email: userCredential.user.email,
-        name: userCredential.user.displayName || email.split('@')[0],
-        role: userRole
-      }
+    return {
+      user,
+      token
     };
-    console.log('Returning user data:', userData);
-    return userData;
+
   } catch (error) {
     console.error('Login error:', error);
-    throw error;
+
+    // Handle backend errors
+    if (error.response) {
+      const message = error.response.data.message || 'Login failed';
+      throw new Error(message);
+    }
+
+    throw new Error(error.message || 'Login failed. Please try again.');
   }
 };
 

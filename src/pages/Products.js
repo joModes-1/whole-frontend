@@ -64,20 +64,17 @@ const Products = () => {
 
     // If user is typing in the sidebar search input, fetch fresh results
     if (typeof reduxSearchTerm === 'string') {
-      const handle = setTimeout(() => {
-        const fetchParams = { page: 1, limit: 20 };
-        if (reduxSearchTerm.trim()) fetchParams.search = reduxSearchTerm.trim();
-        const key = JSON.stringify(fetchParams);
-        if (lastFetchRef.current !== key) {
-          lastFetchRef.current = key;
-          dispatch(resetProducts());
-          console.log('[Products.js] Sidebar search changed (debounced), fetching with params:', fetchParams);
-          dispatch(fetchProducts(fetchParams));
-        } else {
-          console.log('[Products.js] Skipping duplicate sidebar search fetch.');
-        }
-      }, 500); // 500ms debounce
-      return () => clearTimeout(handle);
+      const fetchParams = { page: 1, limit: 20 };
+      if (reduxSearchTerm.trim()) fetchParams.search = reduxSearchTerm.trim();
+      const key = JSON.stringify(fetchParams);
+      if (lastFetchRef.current !== key) {
+        lastFetchRef.current = key;
+        dispatch(resetProducts());
+        console.log('[Products.js] Sidebar search changed, fetching with params:', fetchParams);
+        dispatch(fetchProducts(fetchParams));
+      } else {
+        console.log('[Products.js] Skipping duplicate sidebar search fetch.');
+      }
     }
   }, [reduxSearchTerm, dispatch, location.search]);
 
@@ -106,7 +103,15 @@ const Products = () => {
     if (node) observer.current.observe(node);
   }, [status, hasMore, allProducts.length, dispatch]);
 
+  const { counts: categoryCounts, loading: loadingCounts } = useCategoryCounts();
+
   const categories = useMemo(() => {
+    const keys = Object.keys(categoryCounts || {});
+    if (keys.length > 0) {
+      const others = keys.filter(k => k !== 'All').sort((a, b) => a.localeCompare(b));
+      return ['All', ...others];
+    }
+    // Fallback: derive from loaded products (if counts not yet available)
     const categoriesSet = new Set();
     allProducts.forEach(product => {
       if (!product.category) return;
@@ -124,7 +129,15 @@ const Products = () => {
     const categoryArray = Array.from(categoriesSet);
     categoryArray.unshift('All');
     return categoryArray;
-  }, [allProducts]);
+  }, [categoryCounts, allProducts]);
+
+  // Debug: log categories and counts to console
+  useEffect(() => {
+    try {
+      console.log('[Products] Categories list:', categories);
+      console.log('[Products] Category counts map:', categoryCounts);
+    } catch (e) {}
+  }, [categories, categoryCounts]);
 
   const selectedCategories = useMemo(() => {
     return Array.isArray(reduxFiltersRaw.selectedCategories) ? reduxFiltersRaw.selectedCategories : ['All'];
@@ -174,7 +187,7 @@ const Products = () => {
     });
   }, [allProducts, selectedCategories, priceRange, availability]);
 
-  const { counts: categoryCounts, loading: loadingCounts } = useCategoryCounts();
+  // useCategoryCounts moved above to compute categories from API counts
 
   // Handle URL search parameters (react ONLY to location.search changes)
   useEffect(() => {
@@ -335,16 +348,17 @@ const Products = () => {
                   <div className="category-list">
                     {categories.map((cat) => {
                       const catKey = typeof cat === 'object' ? cat.name : cat;
+                      const idSafe = `category-${catKey}`.replace(/[^a-zA-Z0-9_-]/g, '-');
                       return (
                         <div key={catKey} className="category-item">
                           <input
-                            id={`category-${catKey}`}
+                            id={idSafe}
                             type="checkbox"
                             checked={selectedCategories.includes(catKey)}
                             onChange={() => toggleCategory(catKey)}
                             className="category-checkbox"
                           />
-                          <label htmlFor={`category-${catKey}`} className="category-label-container">
+                          <label htmlFor={idSafe} className="category-label-container">
                             <span className="category-name">{catKey}</span>
                             <span className="category-count-badge">
                               {loadingCounts ? '...' : (

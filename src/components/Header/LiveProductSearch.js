@@ -22,10 +22,10 @@ const LiveProductSearch = () => {
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search for productss..."
+          placeholder="Search for products..."
           className="header-search-input"
         />
-        <button type="submit" className="header-search-button">
+        <button type="submit" className="header-search-button" aria-label="Search products">
           <FaSearch />
         </button>
       </form>

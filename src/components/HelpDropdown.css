@@ -17,7 +17,7 @@
 }
 
 .help-btn:hover {
-  color: #007bff;
+  color: var(--color-primary);
 }
 
 .help-btn .icon {
@@ -30,7 +30,7 @@
   position: absolute;
   top: 100%;
   right: 0;
-  background: #ff0202;
+  background: var(--color-primary);
   box-shadow: 0 6px 12px rgba(0,0,0,0.1);
   border-radius: 6px;
   margin-top: 0.5rem;
@@ -46,13 +46,13 @@
   padding: 0.5rem 1rem;
   cursor: pointer;
   font-size: 0.95rem;
-  color: #333;
+  color: var(--color-primary-contrast);
   transition: background 0.3s ease, color 0.3s ease;
 }
 
 .dropdown-menu li:hover {
-  background-color: #f5f5f5;
-  color: #007bff;
+  background-color: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  color: var(--color-primary-contrast);
 }
 
 @keyframes fadeIn {

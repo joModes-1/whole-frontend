@@ -49,7 +49,7 @@
 }
 
 .stat-card h2 {
-  color: #3498db;
+  color: var(--color-primary);
   font-size: 2.5rem;
   margin-bottom: 0.5rem;
 }
@@ -131,7 +131,7 @@
 
 /* CTA Section */
 .about-cta {
-  background-color: #3498db;
+  background-color: var(--color-primary);
   color: white;
   padding: 4rem 1rem;
   text-align: center;
@@ -170,7 +170,7 @@
 
 .btn-primary {
   background-color: white;
-  color: #3498db;
+  color: var(--color-primary);
 }
 
 .btn-primary:hover {
@@ -184,7 +184,7 @@
 
 .btn-outline:hover {
   background-color: white;
-  color: #3498db;
+  color: var(--color-primary);
 }
 
 /* Responsive Design */

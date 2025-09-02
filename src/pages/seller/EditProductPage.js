@@ -115,10 +115,8 @@ const EditProductPage = () => {
           'Authorization': `Bearer ${token}`
         }
       });
-      setSuccess('Product updated successfully! Redirecting...');
-      setTimeout(() => {
-        navigate('/seller/products');
-      }, 2000);
+      setSuccess('Product updated successfully!');
+      navigate('/seller/products');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to update product.');
     } finally {
