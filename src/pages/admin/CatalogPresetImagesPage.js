@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { fetchCategories } from '../../services/catalogService';
 import { fetchPresetImagesAdmin, createPresetImage, updatePresetImage, deletePresetImage, createPresetImageWithFile, updatePresetImageWithFile } from '../../services/catalogService';
 
@@ -13,7 +13,7 @@ const CatalogPresetImagesPage = () => {
   const [editing, setEditing] = useState(null);
   const [filters, setFilters] = useState({ category: '', subcategory: '', q: '' });
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       setLoading(true);
       const [cats, imgs] = await Promise.all([
@@ -33,9 +33,11 @@ const CatalogPresetImagesPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters.category, filters.subcategory, filters.q]);
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [filters.category, filters.subcategory, filters.q]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const onSubmit = async (e) => {
     e.preventDefault();
