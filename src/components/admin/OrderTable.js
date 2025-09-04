@@ -41,7 +41,7 @@ const OrderTable = ({ orders }) => {
               <td>{order.customer}</td>
               <td>{order.seller}</td>
               <td>{order.date}</td>
-              <td>${order.total.toFixed(2)}</td>
+              <td>UGX {order.total.toFixed(2)}</td>
               <td>
                 <span className={`status-badge ${getStatusClass(order.status)}`}>
                   {order.status}

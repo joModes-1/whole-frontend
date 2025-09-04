@@ -386,8 +386,8 @@ const Products = () => {
                 </div>
                 <div className="filter-content">
                   <div className="price-range-values">
-                    <span>${priceRange[0]}</span>
-                    <span>${priceRange[1]}</span>
+                    <span>UGX {priceRange[0]}</span>
+                    <span>UGX {priceRange[1]}</span>
                   </div>
                   <input
                     type="range"
@@ -475,7 +475,7 @@ const Products = () => {
                 ))}
                 {priceRange[1] < 10000 && (
                   <span className="active-filter">
-                    Max: ${priceRange[1]}
+                    Max: UGX {priceRange[1]}
                     <button onClick={() => dispatch(setFilters({ ...reduxFiltersRaw, priceRange: [0, 10000] }))} className="remove-filter">
                       <FaTimes />
                     </button>

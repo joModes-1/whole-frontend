@@ -24,7 +24,7 @@ const ProductTable = ({ listings, onStatusUpdate }) => {
                 </div>
               </td>
               <td>{listing.vendor?.name || 'N/A'}</td>
-              <td>${listing.price.toFixed(2)}</td>
+              <td>UGX {listing.price.toFixed(2)}</td>
               <td>
                 <span className={`status-badge status-${listing.status}`}>
                   {listing.status}

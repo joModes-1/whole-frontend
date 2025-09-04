@@ -138,7 +138,7 @@ const SellerOrdersPage = () => {
                     </button>
                   </td>
                   <td>{format(new Date(order.createdAt), 'MMM dd, yyyy')}</td>
-                  <td>${order.totalAmount.toFixed(2)}</td>
+                  <td>UGX {order.totalAmount.toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>

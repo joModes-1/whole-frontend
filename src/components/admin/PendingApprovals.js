@@ -218,7 +218,7 @@ const PendingApprovals = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    ${product.price}
+                    UGX {product.price}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {format(new Date(product.createdAt), 'MMM d, yyyy')}

@@ -33,7 +33,7 @@ const AnalyticsPage = () => {
     {
       icon: <FaDollarSign />,
       title: 'Total Revenue',
-      value: '$1.2M',
+      value: 'UGX 1.2M',
       change: '+15.8%',
       changeType: 'increase',
     },

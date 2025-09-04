@@ -116,7 +116,7 @@ const OrderSuccess = () => {
           <h3>Order Summary</h3>
           <div className="summary-row">
             <span>Subtotal:</span>
-            <span>${order.totalAmount}</span>
+            <span>UGX {order.totalAmount}</span>
           </div>
           <div className="summary-row">
             <span>Shipping:</span>
@@ -124,7 +124,7 @@ const OrderSuccess = () => {
           </div>
           <div className="summary-row total">
             <span>Total:</span>
-            <span>${order.totalAmount}</span>
+            <span>UGX {order.totalAmount}</span>
           </div>
         </div>
       </div>

@@ -142,10 +142,10 @@ const OrderDetail = () => {
                   <span className="font-medium">Tax:</span> ${order.tax.toFixed(2)}
                 </p>
                 <p className="mb-2">
-                  <span className="font-medium">Shipping:</span> ${order.shippingCost.toFixed(2)}
+                  <span className="font-medium">Shipping:</span> UGX {order.shippingCost.toFixed(2)}
                 </p>
                 <p className="text-lg font-bold">
-                  Total: ${order.totalAmount.toFixed(2)}
+                  Total: UGX {order.totalAmount.toFixed(2)}
                 </p>
               </div>
             </div>

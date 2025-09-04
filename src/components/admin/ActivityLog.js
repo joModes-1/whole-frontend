@@ -117,9 +117,9 @@ const ActivityLog = () => {
       case 'NEW_USER':
         return `Role: ${activity.data.role}`;
       case 'NEW_ORDER':
-        return `Order total: $${activity.data.totalAmount}`;
+        return `Order total: UGX ${activity.data.totalAmount}`;
       case 'NEW_PRODUCT':
-        return `Price: $${activity.data.price}`;
+        return `Price: UGX ${activity.data.price}`;
       default:
         return '';
     }

@@ -119,7 +119,7 @@ const Orders = () => {
                   {order.items.length} {order.items.length === 1 ? 'item' : 'items'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  ${order.totalAmount.toFixed(2)}
+                  UGX {order.totalAmount.toFixed(2)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span

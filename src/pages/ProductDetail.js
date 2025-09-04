@@ -144,9 +144,9 @@ const ProductDetail = () => {
             </div>
 
             <div className="price-section">
-              <span className="current-price">${product.price.toFixed(2)}</span>
+              <span className="current-price">UGX {product.price.toFixed(2)}</span>
               {product.originalPrice && product.originalPrice > product.price && (
-                <span className="original-price">${product.originalPrice.toFixed(2)}</span>
+                <span className="original-price">UGX {product.originalPrice.toFixed(2)}</span>
               )}
             </div>
 
@@ -203,7 +203,7 @@ const ProductDetail = () => {
                   </div>
                   <div className="action-buttons">
                     <button className="btn-primary add-to-cart" onClick={handleAddToCart}>
-                      Add to Cart - ${(product.price * quantity).toFixed(2)}
+                      Add to Cart - UGX {(product.price * quantity).toFixed(2)}
                     </button>
                     <button className="btn-secondary request-quote" onClick={handleQuoteRequest}>
                       Request Quote

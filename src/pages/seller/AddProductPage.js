@@ -391,9 +391,9 @@ const AddProductPage = () => {
           </div>
 
           <div className="form-group">
-              <label htmlFor="price">Price (USD) *</label>
+              <label htmlFor="price">Price (UGX) *</label>
               <input type="number" name="price" id="price" value={productData.price} onChange={handleChange} required min="0" step="0.01" />
-              <p className="helper-text">Enter the price in USD. Use decimals for cents (e.g., 29.99)</p>
+              <p className="helper-text">Enter the price in UGX.</p>
           </div>
 
           <div className="form-group">

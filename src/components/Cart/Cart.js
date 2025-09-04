@@ -51,7 +51,7 @@ const Cart = () => {
             </div>
             <div className="item-details">
               <h3>{item.name}</h3>
-              <p className="item-price">${item.price.toFixed(2)}</p>
+              <p className="item-price">UGX {item.price.toFixed(2)}</p>
               <div className="quantity-controls">
                 <button
                   onClick={() => handleQuantityChange(item._id, item.quantity - 1)}
@@ -68,7 +68,7 @@ const Cart = () => {
               </div>
             </div>
             <div className="item-total">
-              <p>${(item.price * item.quantity).toFixed(2)}</p>
+              <p>UGX {(item.price * item.quantity).toFixed(2)}</p>
               <button
                 className="remove-item"
                 onClick={() => removeFromCart(item._id)}

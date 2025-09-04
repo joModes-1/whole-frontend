@@ -28,7 +28,7 @@ const TestProductCard = ({ product }) => {
           </p>
         </div>
         
-        <p className="test-product-price">${price.toFixed(2)}</p>
+        <p className="test-product-price">UGX {price.toFixed(2)}</p>
         <div className="test-button-container">
           <Link to={`/products/${product?._id || product?.id || ''}`} className="test-add-to-cart-btn">View</Link>
         </div>

@@ -105,7 +105,7 @@ const MyProductsPage = () => {
                                         />
                                     </td>
                                     <td>{product.name}</td>
-                                    <td>${product.price}</td>
+                                    <td>UGX {product.price}</td>
                                     <td>{product.category}</td>
                                     <td>
                                         <div className="product-actions">

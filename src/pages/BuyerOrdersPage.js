@@ -106,7 +106,7 @@ const BuyerOrdersPage = () => {
                   <td>{order.seller?.email || 'N/A'}</td>
                   <td>{order.status}</td>
                   <td>{format(new Date(order.createdAt), 'PP')}</td>
-                  <td>${order.totalAmount.toFixed(2)}</td>
+                  <td>UGX {order.totalAmount.toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>

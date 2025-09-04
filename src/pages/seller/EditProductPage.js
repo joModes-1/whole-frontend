@@ -144,7 +144,7 @@ const EditProductPage = () => {
         </div>
 
         <div className="form-group">
-            <label htmlFor="price">Price (USD)</label>
+            <label htmlFor="price">Price (UGX)</label>
             <input type="number" name="price" id="price" value={productData.price} onChange={handleChange} required min="0" step="0.01" />
         </div>
         <div className="form-group">

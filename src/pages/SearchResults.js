@@ -100,10 +100,10 @@ const SearchResults = () => {
               onChange={handleFilterChange}
             >
               <option value="">All Prices</option>
-              <option value="0-100">$0 - $100</option>
-              <option value="100-500">$100 - $500</option>
-              <option value="500-1000">$500 - $1000</option>
-              <option value="1000-999999">$1000+</option>
+              <option value="0-100">UGX 0 - UGX 100</option>
+              <option value="100-500">UGX 100 - UGX 500</option>
+              <option value="500-1000">UGX 500 - UGX 1000</option>
+              <option value="1000-999999">UGX 1000+</option>
             </select>
           </div>
 
