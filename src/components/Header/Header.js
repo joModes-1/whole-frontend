@@ -10,6 +10,8 @@ import LiveProductSearch from './LiveProductSearch';
 import './Header.css';
 import './mobileMenuOnly.css';
 
+const BUYER_ORDERS_PATH = process.env.REACT_APP_BUYER_ORDERS_PATH || '/orders';
+
 const Header = () => {
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { data: user } = useSelector(state => state.user);
@@ -103,7 +105,10 @@ const Header = () => {
               <li className="nav-item"><CategoriesDropdown /></li>
               <li className="nav-item"><TradeAssuranceDropdown /></li>
               {!isSeller && (
-                <li className="nav-item"><Link to="/sell-on-ujii" className="nav-link">Sell on Ujii</Link></li>
+                <>
+                  <li className="nav-item"><Link to={BUYER_ORDERS_PATH} className="nav-link"><FaList /> My Orders</Link></li>
+                  <li className="nav-item"><Link to="/sell-on-ujii" className="nav-link">Sell on Ujii</Link></li>
+                </>
               )}
               {isSeller && (
                 <>
@@ -119,7 +124,10 @@ const Header = () => {
             <ul className={`nav-links mobile-nav ${isMobileMenuOpen ? 'open' : ''}`}>
               <li className="nav-item"><Link to="/" className="nav-link" onClick={toggleMobileMenu}>Home</Link></li>
               {!isSeller && (
-                <li className="nav-item"><Link to="/sell-on-ujii" className="nav-link" onClick={toggleMobileMenu}>Sell on Ujii</Link></li>
+                <>
+                  <li className="nav-item"><Link to={BUYER_ORDERS_PATH} className="nav-link" onClick={toggleMobileMenu}>My Orders</Link></li>
+                  <li className="nav-item"><Link to="/sell-on-ujii" className="nav-link" onClick={toggleMobileMenu}>Sell on Ujii</Link></li>
+                </>
               )}
               {isSeller && (
                 <>

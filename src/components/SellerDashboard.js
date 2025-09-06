@@ -188,7 +188,7 @@ const SellerDashboard = () => {
                         value={selectedStatus[order._id] || order.status}
                         onChange={(e) => handleStatusChange(order._id, e.target.value)}
                         className="order-status-select"
-                        disabled={updating[order._id]}
+                        disabled={updating[order._id] || ['cancelled','delivered','refunded'].includes(order.status)}
                       >
                         <option value="pending">Pending</option>
                         <option value="processing">Processing</option>
@@ -199,7 +199,7 @@ const SellerDashboard = () => {
                       <button
                         className="btn btn-primary order-update-btn"
                         disabled={
-                          updating[order._id] || (selectedStatus[order._id] || order.status) === order.status
+                          updating[order._id] || (selectedStatus[order._id] || order.status) === order.status || ['cancelled','delivered','refunded'].includes(order.status)
                         }
                         onClick={() => updateOrderStatus(order._id)}
                       >

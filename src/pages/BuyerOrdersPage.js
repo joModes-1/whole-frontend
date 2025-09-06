@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import api from '../services/api';
 import { format } from 'date-fns';
 import OrderSkeleton from '../components/OrderSkeleton/OrderSkeleton';
 import './BuyerOrdersPage.css';
@@ -10,6 +10,8 @@ const BuyerOrdersPage = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [cancelling, setCancelling] = useState({});
+  const [success, setSuccess] = useState('');
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -21,13 +23,10 @@ const BuyerOrdersPage = () => {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
         
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000'}/orders/buyer`,
-          { 
-            headers: { Authorization: `Bearer ${token}` },
-            signal: controller.signal
-          }
-        );
+        const response = await api.get('/orders/buyer', {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
+        });
         
         clearTimeout(timeoutId);
         setOrders(response.data);
@@ -54,11 +53,60 @@ const BuyerOrdersPage = () => {
     }
   }, [token]);
 
+  const canCancel = (order) => {
+    return order && ['pending', 'confirmed'].includes(order.status);
+  };
+
+  const handleCancel = async (orderId) => {
+    if (!token) return;
+    const confirmMsg = 'Are you sure you want to cancel this order?';
+    if (!window.confirm(confirmMsg)) return;
+    setCancelling((prev) => ({ ...prev, [orderId]: true }));
+    try {
+      await api.post(`/orders/${orderId}/cancel`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      // Update UI: mark status to cancelled locally
+      setOrders((prev) => prev.map((o) => (o._id === orderId ? { ...o, status: 'cancelled' } : o)));
+      setSuccess('Order cancelled successfully.');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Persist a local notification for the buyer so it shows in Notifications
+      try {
+        const raw = localStorage.getItem('notifications');
+        const arr = raw ? JSON.parse(raw) : [];
+        const safeArr = Array.isArray(arr) ? arr : [];
+        const now = new Date();
+        safeArr.unshift({
+          title: 'Order Cancelled',
+          message: `Your order ${orderId} has been cancelled.`,
+          date: now.toISOString().slice(0, 10),
+          read: false,
+        });
+        localStorage.setItem('notifications', JSON.stringify(safeArr.slice(0, 50)));
+      } catch (_) {
+        // ignore localStorage errors
+      }
+    } catch (err) {
+      alert(
+        (err && err.response && err.response.data && err.response.data.message) ||
+          'Failed to cancel order. Please try again.'
+      );
+    } finally {
+      setCancelling((prev) => ({ ...prev, [orderId]: false }));
+    }
+  };
+
   return (
     <div className="seller-orders-page">
       <div className="seller-orders-header">
         <h1>My Orders</h1>
       </div>
+      {success && (
+        <div className="success-message" style={{ marginBottom: 16 }}>
+          {success}
+        </div>
+      )}
       
       <div className="buyer-info-card" style={{marginBottom: 24, padding: 16, background: '#f8f9fa', borderRadius: 8}}>
         <h3>Account Info</h3>
@@ -73,7 +121,11 @@ const BuyerOrdersPage = () => {
         ) : <div>No user info found.</div>}
       </div>
       
-      {loading ? (
+      {!token ? (
+        <div className="orders-table-container">
+          <div style={{marginTop: 32, fontWeight: 500, color: '#888', padding: '2rem', textAlign: 'center'}}>Please log in to view your orders.</div>
+        </div>
+      ) : loading ? (
         <OrderSkeleton count={5} />
       ) : error ? (
         <div className="error-message">{error}</div>
@@ -91,6 +143,7 @@ const BuyerOrdersPage = () => {
                 <th>Status</th>
                 <th>Date</th>
                 <th>Amount</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -107,6 +160,16 @@ const BuyerOrdersPage = () => {
                   <td>{order.status}</td>
                   <td>{format(new Date(order.createdAt), 'PP')}</td>
                   <td>UGX {order.totalAmount.toFixed(2)}</td>
+                  <td>
+                    <button
+                      className="btn btn-primary"
+                      disabled={!canCancel(order) || cancelling[order._id]}
+                      onClick={() => handleCancel(order._id)}
+                      title={canCancel(order) ? 'Cancel this order' : 'Cannot cancel at this stage'}
+                    >
+                      {cancelling[order._id] ? 'Cancelling...' : 'Cancel'}
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

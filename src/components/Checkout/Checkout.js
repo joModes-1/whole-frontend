@@ -21,10 +21,8 @@ const Checkout = () => {
   const [shippingInfo, setShippingInfo] = useState({
     fullName: '',
     address: '',
-    city: '',
     subCounty: '',
     district: '',
-    country: 'Uganda',
     phone: ''
   });
   const [paymentMethod, setPaymentMethod] = useState('');
@@ -114,10 +112,9 @@ const Checkout = () => {
             
             setShippingInfo(prev => ({
               ...prev,
-              city: locationData.city || prev.city,
               district: locationData.locality || prev.district,
               subCounty: locationData.localityInfo?.administrative?.[1]?.name || prev.subCounty,
-              country: locationData.countryName || prev.country
+              coordinates: { lat: position.coords.latitude, lng: position.coords.longitude }
             }));
           } catch (err) {
             console.error('Error getting location data:', err);
@@ -160,7 +157,8 @@ const Checkout = () => {
         items: formattedItems,
         shippingInfo: {
           ...shippingInfo,
-          address: `${shippingInfo.address}, ${shippingInfo.subCounty}, ${shippingInfo.district}`
+          address: `${shippingInfo.address}, ${shippingInfo.subCounty}, ${shippingInfo.district}`,
+          coordinates: shippingInfo.coordinates || null
         },
         paymentMethod,
         subtotal,
@@ -183,7 +181,7 @@ const Checkout = () => {
     }
     
     // Validate shipping info
-    if (!shippingInfo.fullName || !shippingInfo.phone || !shippingInfo.city || 
+    if (!shippingInfo.fullName || !shippingInfo.phone || 
         !shippingInfo.subCounty || !shippingInfo.district || !shippingInfo.address) {
       setError('Please fill in all shipping information fields.');
       return;
@@ -256,30 +254,22 @@ const Checkout = () => {
               <input type="tel" id="phone" name="phone" value={shippingInfo.phone} onChange={handleShippingChange} required />
             </div>
             <div className="form-group">
-              <label htmlFor="city">City</label>
-              <input type="text" id="city" name="city" value={shippingInfo.city} onChange={handleShippingChange} required />
+              <label htmlFor="district">District</label>
+              <input type="text" id="district" name="district" value={shippingInfo.district} onChange={handleShippingChange} required />
             </div>
-            {/* Location button right below City, aligned to the right */}
+            <div className="form-group">
+              <label htmlFor="subCounty">Sub County</label>
+              <input type="text" id="subCounty" name="subCounty" value={shippingInfo.subCounty} onChange={handleShippingChange} required />
+            </div>
+            {/* Location button right below Sub County, aligned to the right */}
             <div className="form-row-actions">
               <button type="button" className="location-button" onClick={handleGetLocation}>
                 Use My Current Location
               </button>
             </div>
             <div className="form-group">
-              <label htmlFor="subCounty">Sub County</label>
-              <input type="text" id="subCounty" name="subCounty" value={shippingInfo.subCounty} onChange={handleShippingChange} required />
-            </div>
-            <div className="form-group">
-              <label htmlFor="district">District</label>
-              <input type="text" id="district" name="district" value={shippingInfo.district} onChange={handleShippingChange} required />
-            </div>
-            <div className="form-group">
               <label htmlFor="address">Specific Address/Directions</label>
               <textarea id="address" name="address" value={shippingInfo.address} onChange={handleShippingChange} required />
-            </div>
-            <div className="form-group">
-              <label htmlFor="country">Country</label>
-              <input type="text" id="country" name="country" value={shippingInfo.country} onChange={handleShippingChange} required />
             </div>
             {/* standalone location button removed; now inline with address field */}
             <div className="form-group">
@@ -373,7 +363,7 @@ const Checkout = () => {
           </div>
           <div className="summary-total">
             <span>Total:</span>
-            <span>{formatUGX(total * 1.1)}</span>
+            <span>{formatUGX(total)}</span>
           </div>
         </section>
       </div>

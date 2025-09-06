@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { getOrderById } from '../../services/orderService';
@@ -37,6 +37,17 @@ const OrderSuccess = () => {
 
     fetchOrder();
   }, [clearCart, location.search]);
+
+  const IMAGES_BASE_URL = (process.env.REACT_APP_IMAGES_BASE_URL || 'http://localhost:4000/').replace(/\/$/, '/');
+
+  const formatUGX = useMemo(() => (amount) => {
+    const n = Number(amount || 0);
+    try {
+      return new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', maximumFractionDigits: 0 }).format(n);
+    } catch {
+      return `UGX ${Math.round(n).toLocaleString('en-UG')}`;
+    }
+  }, []);
 
   if (loading) {
     return (
@@ -91,40 +102,82 @@ const OrderSuccess = () => {
 
         <div className="shipping-info">
           <h3>Shipping Information</h3>
-          <p><strong>Name:</strong> {order.shippingInfo?.name || ''}</p>
-          <p><strong>Address:</strong> {order.shippingInfo?.address || ''}</p>
-          <p><strong>City:</strong> {order.shippingInfo?.city || ''}</p>
-          <p><strong>Country:</strong> {order.shippingInfo?.country || ''}</p>
-          <p><strong>Phone:</strong> {order.shippingInfo?.phone || ''}</p>
+          {(() => {
+            const addr = order.shippingAddress || order.shippingInfo || {};
+            const fullName = addr.fullName || order.buyer?.name || '';
+            const addressLine = addr.street || addr.address || '';
+            const district = addr.district || '';
+            const subCounty = addr.subCounty || addr.subcounty || '';
+            const phone = addr.phone || order.buyer?.phoneNumber || '';
+            return (
+              <>
+                <p><strong>Name:</strong> {fullName}</p>
+                <p><strong>Address:</strong> {addressLine}</p>
+                {district ? <p><strong>District:</strong> {district}</p> : null}
+                {subCounty ? <p><strong>Sub County:</strong> {subCounty}</p> : null}
+                {phone ? <p><strong>Phone:</strong> {phone}</p> : null}
+              </>
+            );
+          })()}
         </div>
 
         <div className="order-items">
           <h3>Order Items</h3>
-          {order.items.map((item) => (
-            <div key={item._id} className="order-item">
-              <img src={item.image} alt={item.name} />
-              <div className="item-details">
-                <h4>{item.name}</h4>
-                <p>Quantity: {item.quantity}</p>
-                <p>Price: ${item.price}</p>
+          {order.items.map((item) => {
+            const listing = item.listing || {};
+            const name = listing.title || listing.name || item.name || 'Product Name Not Available';
+            const unitPrice = item.unitPrice != null ? item.unitPrice : (item.price != null ? item.price : listing.price || 0);
+            // Resolve image: prefer item.images then listing.images then item.image/listing.mainImage/listing.image
+            let candidate = null;
+            if (Array.isArray(item.images) && item.images.length > 0) {
+              const f = item.images[0];
+              candidate = typeof f === 'string' ? f : (f?.secure_url || f?.url || f?.path || null);
+            }
+            if (!candidate && Array.isArray(listing.images) && listing.images.length > 0) {
+              const first = listing.images[0];
+              candidate = typeof first === 'string' ? first : (first?.secure_url || first?.url || first?.path || null);
+            }
+            if (!candidate) candidate = item.image || listing.mainImage || listing.image || listing.thumbnail || null;
+            let imageUrl = '/placeholder-image.svg';
+            if (candidate) {
+              if (typeof candidate === 'string' && (candidate.startsWith('http://') || candidate.startsWith('https://'))) {
+                imageUrl = candidate;
+              } else if (typeof candidate === 'string') {
+                imageUrl = `${IMAGES_BASE_URL}${candidate.replace(/^\//, '')}`;
+              }
+            }
+            return (
+              <div key={item._id} className="order-item">
+                <img src={imageUrl} alt={name} onError={(e)=>{ e.currentTarget.src = '/placeholder-image.svg'; }} />
+                <div className="item-details">
+                  <h4>{name}</h4>
+                  <p>Quantity: {item.quantity}</p>
+                  <p>Price: {formatUGX(unitPrice)}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="order-summary">
           <h3>Order Summary</h3>
           <div className="summary-row">
             <span>Subtotal:</span>
-            <span>UGX {order.totalAmount}</span>
+            <span>{formatUGX(order.subtotal ?? order.totalAmount)}</span>
           </div>
           <div className="summary-row">
             <span>Shipping:</span>
-            <span>Free</span>
+            <span>{order.shippingCost ? formatUGX(order.shippingCost) : 'Free'}</span>
           </div>
+          {order.tax != null && (
+            <div className="summary-row">
+              <span>Tax:</span>
+              <span>{formatUGX(order.tax)}</span>
+            </div>
+          )}
           <div className="summary-row total">
             <span>Total:</span>
-            <span>UGX {order.totalAmount}</span>
+            <span>{formatUGX(order.totalAmount)}</span>
           </div>
         </div>
       </div>
