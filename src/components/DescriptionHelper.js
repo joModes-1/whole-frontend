@@ -1,6 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { getDescriptionSuggestions, getDescriptionQuality, getDescriptionQualityText, getMissingKeywords } from '../utils/descriptionSuggestions';
+import { getDescriptionQuality, getDescriptionQualityText, getMissingKeywords } from '../utils/descriptionSuggestions';
 import './DescriptionHelper.css';
+
+// Category metadata structure
+const categoryMetadata = {
+  "Beverages": {
+    structuredFields: ['sizePackaging', 'weightVolume', 'gradeQuality', 'shelfLife']
+  },
+  "Cereals & Grains": {
+    structuredFields: ['sizePackaging', 'weightVolume', 'gradeQuality', 'shelfLife']
+  },
+  "Electronics": {
+    structuredFields: ['sizePackaging', 'weightVolume']
+  },
+  "Clothing": {
+    structuredFields: ['sizePackaging', 'gradeQuality']
+  },
+  "Home & Garden": {
+    structuredFields: ['sizePackaging', 'weightVolume']
+  },
+  "Sports": {
+    structuredFields: ['sizePackaging', 'weightVolume']
+  },
+  "Books": {
+    structuredFields: ['weightVolume', 'gradeQuality']
+  }
+};
 
 const DescriptionHelper = ({ category, description, onDescriptionChange }) => {
   const [suggestions, setSuggestions] = useState([]);
@@ -9,8 +34,25 @@ const DescriptionHelper = ({ category, description, onDescriptionChange }) => {
   
   useEffect(() => {
     if (category && description) {
-      // Get suggestions based on category
-      const newSuggestions = getDescriptionSuggestions(category, '');
+      // Generate suggestions based on category metadata
+      const categoryMeta = categoryMetadata[category] || {};
+      const structuredFields = categoryMeta.structuredFields || [];
+      
+      // Create suggestion templates based on structured fields
+      const newSuggestions = [
+        `High-quality ${category} product with detailed specifications`,
+        `Premium ${category} item with excellent features`,
+        `Top-grade ${category} with long shelf life`
+      ];
+      
+      // Add field-specific suggestions
+      if (structuredFields.length > 0) {
+        const fieldLabels = structuredFields.map(field => 
+          field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
+        );
+        newSuggestions.push(`Complete ${category} product with ${fieldLabels.join(', ')}`);
+      }
+      
       setSuggestions(newSuggestions);
       
       // Check for missing keywords

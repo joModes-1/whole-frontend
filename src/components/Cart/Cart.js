@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { getProductImage, getPlaceholderImage } from '../../utils/imageUtils';
@@ -6,6 +6,13 @@ import './Cart.css';
 
 const Cart = () => {
   const navigate = useNavigate();
+  const formatUGX = useCallback((amount) => {
+    try {
+      return new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', maximumFractionDigits: 0 }).format(Number(amount) || 0);
+    } catch {
+      return `UGX ${Math.round(Number(amount) || 0).toLocaleString('en-UG')}`;
+    }
+  }, []);
   const { cart, total, removeFromCart, updateQuantity } = useCart();
 
 
@@ -51,7 +58,7 @@ const Cart = () => {
             </div>
             <div className="item-details">
               <h3>{item.name}</h3>
-              <p className="item-price">UGX {item.price.toFixed(2)}</p>
+              <p className="item-price">{formatUGX(item.price)}</p>
               <div className="quantity-controls">
                 <button
                   onClick={() => handleQuantityChange(item._id, item.quantity - 1)}
@@ -68,7 +75,7 @@ const Cart = () => {
               </div>
             </div>
             <div className="item-total">
-              <p>UGX {(item.price * item.quantity).toFixed(2)}</p>
+              <p>{formatUGX(item.price * item.quantity)}</p>
               <button
                 className="remove-item"
                 onClick={() => removeFromCart(item._id)}
@@ -82,7 +89,7 @@ const Cart = () => {
       <div className="cart-summary">
         <div className="summary-row">
           <span>Subtotal:</span>
-          <span>${total.toFixed(2)}</span>
+          <span>{formatUGX(total)}</span>
         </div>
         <div className="summary-row">
           <span>Shipping:</span>
@@ -90,7 +97,7 @@ const Cart = () => {
         </div>
         <div className="summary-row total">
           <span>Total:</span>
-          <span>${total.toFixed(2)}</span>
+          <span>{formatUGX(total)}</span>
         </div>
         <button
           className="checkout-button"

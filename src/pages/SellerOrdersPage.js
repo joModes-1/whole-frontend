@@ -82,10 +82,41 @@ const SellerOrdersPage = () => {
     }
   };
 
+  const refreshOrders = async () => {
+    if (token) {
+      try {
+        setLoading(true);
+        setError('');
+        
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000'}/orders/seller`,
+          { 
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+        
+        setOrders(response.data);
+      } catch (err) {
+        if (err.response) {
+          setError(err.response.data.message || `Error: ${err.response.status} - ${err.response.statusText}`);
+        } else if (err.request) {
+          setError('Network error. Please check your connection.');
+        } else {
+          setError(err.message || 'Failed to fetch orders');
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   return (
     <div className="seller-orders-page">
       <div className="seller-orders-header">
         <h1>All Orders</h1>
+        <button className="btn btn-secondary" onClick={refreshOrders} disabled={loading}>
+          {loading ? 'Refreshing...' : 'Refresh Orders'}
+        </button>
       </div>
       
       {loading ? (

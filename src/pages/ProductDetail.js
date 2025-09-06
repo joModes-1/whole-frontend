@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ProductSkeleton from '../components/ProductSkeleton/ProductSkeleton';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -17,6 +17,13 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mainImage, setMainImage] = useState('');
+  const formatUGX = useCallback((amount) => {
+    try {
+      return new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', maximumFractionDigits: 0 }).format(Number(amount) || 0);
+    } catch {
+      return `UGX ${Math.round(Number(amount) || 0).toLocaleString('en-UG')}`;
+    }
+  }, []);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -67,10 +74,6 @@ const ProductDetail = () => {
       addToCart(itemToAdd);
       navigate('/cart');
     }
-  };
-
-  const handleQuoteRequest = () => {
-    navigate('/rfq/new', { state: { product } });
   };
 
   if (loading) {
@@ -144,9 +147,9 @@ const ProductDetail = () => {
             </div>
 
             <div className="price-section">
-              <span className="current-price">UGX {product.price.toFixed(2)}</span>
+              <span className="current-price">{formatUGX(product.price)}</span>
               {product.originalPrice && product.originalPrice > product.price && (
-                <span className="original-price">UGX {product.originalPrice.toFixed(2)}</span>
+                <span className="original-price">{formatUGX(product.originalPrice)}</span>
               )}
             </div>
 
@@ -203,19 +206,13 @@ const ProductDetail = () => {
                   </div>
                   <div className="action-buttons">
                     <button className="btn-primary add-to-cart" onClick={handleAddToCart}>
-                      Add to Cart - UGX {(product.price * quantity).toFixed(2)}
-                    </button>
-                    <button className="btn-secondary request-quote" onClick={handleQuoteRequest}>
-                      Request Quote
+                      Add to Cart - {formatUGX(product.price * quantity)}
                     </button>
                   </div>
                 </div>
               ) : (
                 <div className="out-of-stock-section">
                   <p className="stock-message">This item is currently out of stock</p>
-                  <button className="btn-secondary" onClick={handleQuoteRequest}>
-                    Request Quote for Restock
-                  </button>
                 </div>
               )}
             </div>

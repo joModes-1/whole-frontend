@@ -30,20 +30,20 @@ const PresetImageSelector = ({ selectedCategory, selectedSubcategory, onImageSel
           subcategory: selectedSubcategory
         };
 
-        let response;
+        let response = {};
         const canNameFilter = debouncedName && debouncedName.length >= 3;
 
-        // 1) Try with name filter (only if sufficiently long)
+        // Only fetch with name filter if name is provided
         if (canNameFilter) {
           response = await fetchPresetImages({ ...baseParams, productName: debouncedName });
-        }
-
-        // 2) If no results (or we didn't try name), fall back to category/subcategory only
-        if (!response || !Array.isArray(response.images) || response.images.length === 0) {
+        } else {
+          // If no name filter, fetch all images for category/subcategory
           response = await fetchPresetImages(baseParams);
         }
 
         setPresetImages(response.images || []);
+
+
       } catch (err) {
         setError('Failed to load preset images');
         console.error('Error loading preset images:', err);

@@ -55,7 +55,7 @@
 .logo-mobile {
     font-size: 21px;
     font-weight: 800;
-    color: var(--color-primary-soft);
+    color: var(--color-primary);
     margin: 0;
     letter-spacing: -0.5px;
 }
@@ -270,24 +270,28 @@
 
 /* Mobile Navigation - Hidden by default */
 .mobile-nav {
-    display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 280px;
     height: 100vh;
-    background: #fff;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-    z-index: 2000;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
+    background-color: white;
+    display: flex; /* ensure visible even if .nav-links is hidden on mobile */
     flex-direction: column;
-    padding: 80px 20px 20px;
-    overflow-y: auto;
+    align-items: flex-start;
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 2000; /* above the overlay (1500) */
 }
 
 .header-bottom.mobile-menu-open .mobile-nav {
-    display: flex;
+    transform: translateX(0);
+}
+
+/* Also allow direct open class on the drawer */
+.mobile-nav.open {
     transform: translateX(0);
 }
 
@@ -956,6 +960,20 @@
     
     .nav-links.open {
         display: flex;
+    }
+
+    /* Ensure our slide-in mobile drawer remains visible and fixed */
+    .mobile-nav {
+        display: flex; /* override the generic .nav-links hidden state */
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: auto;
+        bottom: 0;
+        width: 280px;
+        height: 100vh;
+        box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        z-index: 2000; /* keep above overlay */
     }
     
     .nav-item {
