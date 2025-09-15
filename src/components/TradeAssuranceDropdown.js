@@ -62,6 +62,7 @@ const TradeAssuranceDropdown = () => {
       
       {isOpen && (
         <div style={{
+          position: 'absolute',
           top: '100%',
           right: 0,
           maxWidth: '320px',

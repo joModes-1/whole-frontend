@@ -245,6 +245,11 @@
     padding: 12px 0;
 }
 
+/* Start a right-aligned group from this item onward (desktop only) */
+.desktop-nav .nav-right-start {
+    margin-left: auto;
+}
+
 .nav-item {
     position: relative;
 }

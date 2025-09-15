@@ -87,28 +87,31 @@ const Notification = () => {
       </div>
 
       <div className="my-orders-panel">
-        <div className="my-orders-header">
-          <h3>My Orders</h3>
-          <Link to="/orders" className="btn btn-primary">View All</Link>
+        <div className="my-orders-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 24, marginBottom: 8 }}>
+          <h3 style={{ margin: 0 }}>My Orders</h3>
+          <Link to="/orders" className="auth-link auth-link-primary">View All</Link>
         </div>
         {loadingOrders ? (
-          <div className="orders-loading">Loading your orders...</div>
+          <div className="notification-empty">Loading your orders...</div>
         ) : ordersError ? (
-          <div className="orders-error">{ordersError}</div>
+          <div className="notification-empty">{ordersError}</div>
         ) : !token ? (
-          <div className="orders-empty">Please log in to view your orders.</div>
+          <div className="notification-empty">Please log in to view your orders.</div>
         ) : orders.length === 0 ? (
-          <div className="orders-empty">You have no orders yet.</div>
+          <div className="notification-empty">You have no orders yet.</div>
         ) : (
-          <div className="orders-compact-list">
+          <div className="notification-list">
             {orders.slice(0, 3).map((order) => (
-              <div key={order._id} className="order-row">
-                <div className="order-number">{order.orderNumber || order._id}</div>
-                <div className={`order-status status-${order.status}`}>{order.status}</div>
-                <div className="order-date">
+              <div key={order._id} className="notification-item">
+                <div className="notification-title">
+                  Order {order.orderNumber || order._id} • UGX {Number(order.totalAmount || 0).toLocaleString('en-UG')}
+                </div>
+                <div className="notification-message">
+                  Status: {order.status}
+                </div>
+                <div className="notification-date">
                   {order.createdAt ? format(new Date(order.createdAt), 'MMM dd, yyyy') : ''}
                 </div>
-                <div className="order-amount">UGX {Number(order.totalAmount || 0).toLocaleString('en-UG')}</div>
               </div>
             ))}
           </div>

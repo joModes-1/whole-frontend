@@ -81,22 +81,31 @@ const OrderSuccess = () => {
     );
   }
 
+  const isPaymentConfirmed = (order.status && String(order.status).toLowerCase() === 'confirmed') || order.isPaid === true || (order.paymentDetails && String(order.paymentDetails.paymentStatus).toLowerCase() === 'confirmed');
+
   return (
     <div className="order-success-container">
-      <div className="success-message">
-        <div className="success-icon">✓</div>
-        <h1>Order Placed Successfully!</h1>
-        <p>Thank you for your purchase. Your order has been received.</p>
-      </div>
-
+      {isPaymentConfirmed ? (
+        <div className="success-message">
+          <div className="success-icon">✓</div>
+          <h1>Payment Successful!</h1>
+          <p>Thank you for your purchase. Your order has been received and payment confirmed.</p>
+        </div>
+      ) : (
+        <div className="pending-message">
+          <div className="success-icon" style={{background:'#fff3cd', color:'#856404'}}>⧗</div>
+          <h1>Payment Pending</h1>
+          <p>Your order was created and is awaiting mobile money authorization. If you already approved it on your phone, this page will update once confirmed.</p>
+        </div>
+      )}
       <div className="order-details">
         <h2>Order Details</h2>
         <div className="order-info">
           <p><strong>Order ID:</strong> {order._id}</p>
           <p><strong>Date:</strong> {new Date(order.createdAt).toLocaleDateString()}</p>
           <p><strong>Status:</strong> <span className={`status ${order.status}`}>{order.status}</span></p>
-          <p><strong>Payment Status:</strong> <span className={`status ${order.isPaid ? 'paid' : 'pending'}`}>
-            {order.isPaid ? 'Paid' : 'Pending'}
+          <p><strong>Payment Status:</strong> <span className={`status ${isPaymentConfirmed ? 'paid' : 'pending'}`}>
+            {isPaymentConfirmed ? 'Paid' : 'Pending'}
           </span></p>
         </div>
 
@@ -179,6 +188,86 @@ const OrderSuccess = () => {
             <span>Total:</span>
             <span>{formatUGX(order.totalAmount)}</span>
           </div>
+        </div>
+        <div className="order-details">
+          <div className="detail-row">
+            <span className="label">Order Number:</span>
+            <span className="value">{order.orderNumber}</span>
+          </div>
+          {/* Debug: Log order data */}
+          {console.log('Order data:', order)}
+          {console.log('Delivery confirmation:', order.deliveryConfirmation)}
+          
+          {/* QR Code for Delivery Confirmation */}
+          {order.deliveryConfirmation && order.deliveryConfirmation.qrCode && order.status !== 'delivered' && (
+            <div className="qr-code-section">
+              <h3>Delivery Confirmation QR Code</h3>
+              <p className="qr-description">
+                Show this QR code to the delivery person when your order arrives. 
+                They will scan it to confirm delivery.
+              </p>
+              <div className="qr-code-container">
+                <img 
+                  src={order.deliveryConfirmation.qrCode} 
+                  alt="Delivery Confirmation QR Code"
+                  className="qr-code-image"
+                />
+              </div>
+              <p className="qr-note">
+                <strong>Note:</strong> Keep this QR code accessible until your order is delivered.
+              </p>
+            </div>
+          )}
+          
+          {/* Fallback message if QR code is missing */}
+          {(!order.deliveryConfirmation || !order.deliveryConfirmation.qrCode) && order.status !== 'delivered' && (
+            <div className="qr-code-section" style={{background: '#fff3cd', borderColor: '#ffeaa7'}}>
+              <h3>⚠️ QR Code Generation Pending</h3>
+              <p className="qr-description">
+                Your delivery QR code is being generated. Click the button below to generate it now.
+              </p>
+              <button 
+                onClick={async () => {
+                  try {
+                    const { generateQRCode } = await import('../../services/qrService');
+                    const result = await generateQRCode(order._id);
+                    if (result.success) {
+                      window.location.reload();
+                    }
+                  } catch (error) {
+                    console.error('QR generation failed:', error);
+                    alert('Failed to generate QR code. Please try refreshing the page.');
+                  }
+                }}
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: '#28a745',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  marginRight: '0.5rem'
+                }}
+              >
+                Generate QR Code
+              </button>
+              <button onClick={() => window.location.reload()} style={{
+                padding: '0.5rem 1rem',
+                background: '#ffc107',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}>
+                Refresh Page
+              </button>
+            </div>
+          )}
+          {order.status === 'delivered' && order.deliveryConfirmation && order.deliveryConfirmation.confirmedAt && (
+            <div className="delivery-confirmed">
+              <h3>✅ Delivery Confirmed</h3>
+              <p>Delivered on: {new Date(order.deliveryConfirmation.confirmedAt).toLocaleString()}</p>
+            </div>
+          )}
         </div>
       </div>
 

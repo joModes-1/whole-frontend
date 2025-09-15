@@ -103,21 +103,20 @@ const Header = () => {
             {/* Desktop Navigation */}
             <ul className="nav-links desktop-nav">
               <li className="nav-item"><CategoriesDropdown /></li>
-              <li className="nav-item"><TradeAssuranceDropdown /></li>
               {!isSeller && (
                 <>
-                  <li className="nav-item"><Link to={BUYER_ORDERS_PATH} className="nav-link"><FaList /> My Orders</Link></li>
-                  <li className="nav-item"><Link to="/sell-on-ujii" className="nav-link">Sell on Ujii</Link></li>
+                  <li className="nav-item nav-right-start"><Link to={BUYER_ORDERS_PATH} className="nav-link"><FaList /> My Orders</Link></li>
                 </>
               )}
               {isSeller && (
                 <>
-                  <li className="nav-item"><Link to="/seller/dashboard" className="nav-link"><FaChartBar /> Dashboard</Link></li>
+                  <li className="nav-item nav-right-start"><Link to="/seller/dashboard" className="nav-link"><FaChartBar /> Dashboard</Link></li>
                   <li className="nav-item"><Link to="/seller/products" className="nav-link"><FaBox /> My Products</Link></li>
                   <li className="nav-item"><Link to="/seller/orders" className="nav-link"><FaList /> Orders</Link></li>
                 </>
               )}
               <li className="nav-item"><Link to="/help-center" className="nav-link">Help Center</Link></li>
+              <li className="nav-item"><TradeAssuranceDropdown /></li>
             </ul>
 
             {/* Mobile Navigation */}
@@ -126,7 +125,6 @@ const Header = () => {
               {!isSeller && (
                 <>
                   <li className="nav-item"><Link to={BUYER_ORDERS_PATH} className="nav-link" onClick={toggleMobileMenu}>My Orders</Link></li>
-                  <li className="nav-item"><Link to="/sell-on-ujii" className="nav-link" onClick={toggleMobileMenu}>Sell on Ujii</Link></li>
                 </>
               )}
               {isSeller && (

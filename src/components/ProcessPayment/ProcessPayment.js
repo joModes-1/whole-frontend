@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
 import { useCart } from '../../context/CartContext';
@@ -16,6 +16,10 @@ const ProcessPayment = () => {
   const [order, setOrder] = useState(null);
   const [orderId, setOrderId] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');   
+  // Refs to prevent duplicate polling in StrictMode and overlapping requests
+  const pollStartedRef = useRef(false);
+  const pollIntervalRef = useRef(null);
+  const verifyInFlightRef = useRef(false);
 
   // UGX currency formatter
   const formatUGX = useCallback((amount) => {
@@ -40,6 +44,13 @@ const ProcessPayment = () => {
       return;
     }
     
+    // If this is a COD order, redirect directly to order success
+    if (method === 'cod') {
+      clearCart();
+      navigate(`/order-success?order_id=${id}`);
+      return;
+    }
+    
     setOrderId(id);
     setPaymentMethod(method);
     
@@ -53,14 +64,53 @@ const ProcessPayment = () => {
         // If this is a Pesapal callback, verify payment regardless of status (backend is source of truth)
         if (pesapalTrackingId) {
           try {
+            if (verifyInFlightRef.current) return; // avoid overlap
+            verifyInFlightRef.current = true;
             const response = await verifyPesapal(id, pesapalTrackingId, method);
             if (response.success) {
               clearCart(); // Clear cart only after successful payment
               navigate(`/order-success?order_id=${id}`);
             }
+            verifyInFlightRef.current = false;
           } catch (err) {
             console.error('Error verifying Pesapal payment:', err);
             setError('Payment verification failed. Please contact support.');
+            verifyInFlightRef.current = false;
+          }
+        } else if (method === 'pesapal' || method === 'mtn' || method === 'airtel') {
+          // No callback params present; user may have returned manually.
+          // Try to poll using stored transactionRef from initiation.
+          const storedRef = sessionStorage.getItem(`pesapal_tx_${id}`);
+          if (storedRef) {
+            if (!pollStartedRef.current) {
+              pollStartedRef.current = true;
+              let attempts = 0;
+              const maxAttempts = 36; // ~3 minutes at 5s interval
+              pollIntervalRef.current = setInterval(async () => {
+                attempts += 1;
+                try {
+                  if (verifyInFlightRef.current) return; // prevent overlap
+                  verifyInFlightRef.current = true;
+                  const resp = await verifyPesapal(id, storedRef, method);
+                  verifyInFlightRef.current = false;
+                  if (resp && resp.success) {
+                    if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+                    pollIntervalRef.current = null;
+                    clearCart();
+                    navigate(`/order-success?order_id=${id}`);
+                  }
+                } catch (e) {
+                  verifyInFlightRef.current = false;
+                  // Continue polling on transient errors
+                  console.warn('Verify poll error:', e?.message || e);
+                } finally {
+                  if (attempts >= maxAttempts) {
+                    if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+                    pollIntervalRef.current = null;
+                  }
+                }
+              }, 5000);
+            }
           }
         }
       } catch (err) {
@@ -73,7 +123,14 @@ const ProcessPayment = () => {
     };
     
     fetchOrder();
-  }, [location, navigate, clearCart]);
+    // Cleanup on unmount to avoid orphaned intervals
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+    };
+  }, [location.search, navigate, clearCart]);
 
   // Handle Stripe payment
   const handleStripePayment = async () => {
@@ -159,6 +216,11 @@ const ProcessPayment = () => {
         order.buyer?.phone || order?.buyer?.phone,
         paymentMethod
       );
+
+      // Persist transaction reference for post-redirect verification polling
+      if (response && response.transactionRef) {
+        sessionStorage.setItem(`pesapal_tx_${orderId}`, response.transactionRef);
+      }
 
       if (response.paymentLink) {
         window.location.href = response.paymentLink; // Redirect to Pesapal hosted payment page

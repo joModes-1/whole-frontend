@@ -143,6 +143,7 @@ const BuyerOrdersPage = () => {
                 <th>Status</th>
                 <th>Date</th>
                 <th>Amount</th>
+                <th>QR Code</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -160,6 +161,75 @@ const BuyerOrdersPage = () => {
                   <td>{order.status}</td>
                   <td>{format(new Date(order.createdAt), 'PP')}</td>
                   <td>UGX {order.totalAmount.toFixed(2)}</td>
+                  <td>
+                    {/* QR Code Column */}
+                    {order.status === 'delivered' ? (
+                      <span style={{color: '#28a745', fontWeight: 'bold'}}>✅ Delivered</span>
+                    ) : order.deliveryConfirmation && order.deliveryConfirmation.qrCode ? (
+                      <div style={{textAlign: 'center'}}>
+                        <img 
+                          src={order.deliveryConfirmation.qrCode} 
+                          alt="Delivery QR Code"
+                          style={{
+                            width: '60px', 
+                            height: '60px', 
+                            cursor: 'pointer',
+                            border: '2px solid #e3f2fd',
+                            borderRadius: '4px'
+                          }}
+                          onClick={() => {
+                            // Open QR code in modal or new window
+                            const newWindow = window.open('', '_blank', 'width=400,height=400');
+                            newWindow.document.write(`
+                              <html>
+                                <head><title>Delivery QR Code - Order ${order.orderNumber}</title></head>
+                                <body style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;font-family:Arial,sans-serif;">
+                                  <h3>Delivery QR Code</h3>
+                                  <p>Order: ${order.orderNumber}</p>
+                                  <img src="${order.deliveryConfirmation.qrCode}" style="max-width:300px;height:auto;" />
+                                  <p style="text-align:center;margin-top:20px;color:#666;">Show this QR code to the delivery person</p>
+                                </body>
+                              </html>
+                            `);
+                          }}
+                          title="Click to view full size QR code"
+                        />
+                        <div style={{fontSize: '0.8em', color: '#666', marginTop: '4px'}}>
+                          Click to enlarge
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        style={{
+                          padding: '4px 8px',
+                          fontSize: '0.8em',
+                          background: '#ffc107',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer'
+                        }}
+                        onClick={async () => {
+                          try {
+                            const { generateQRCode } = await import('../services/qrService');
+                            const result = await generateQRCode(order._id);
+                            if (result.success) {
+                              // Update the order in state with new QR code
+                              setOrders(prev => prev.map(o => 
+                                o._id === order._id 
+                                  ? {...o, deliveryConfirmation: result.deliveryConfirmation}
+                                  : o
+                              ));
+                            }
+                          } catch (error) {
+                            console.error('QR generation failed:', error);
+                            alert('Failed to generate QR code. Please try again.');
+                          }
+                        }}
+                      >
+                        Generate QR
+                      </button>
+                    )}
+                  </td>
                   <td>
                     <button
                       className="btn btn-primary"

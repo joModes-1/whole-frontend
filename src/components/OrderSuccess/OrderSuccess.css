@@ -298,4 +298,87 @@
   .order-summary {
     padding: 1rem;
   }
+}
+
+/* QR Code Styles */
+.qr-code-section {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f8f9ff 0%, #e8f4fd 100%);
+  border: 2px solid #e3f2fd;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.qr-code-section h3 {
+  color: #1976d2;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+.qr-description {
+  color: #666;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.qr-code-container {
+  display: flex;
+  justify-content: center;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.qr-code-image {
+  max-width: 200px;
+  height: auto;
+  border-radius: 4px;
+}
+
+.qr-note {
+  color: #555;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+  font-style: italic;
+}
+
+.delivery-confirmed {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #e8f5e8 0%, #f1f8e9 100%);
+  border: 2px solid #c8e6c9;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.delivery-confirmed h3 {
+  color: #2e7d32;
+  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+}
+
+.delivery-confirmed p {
+  color: #388e3c;
+  margin: 0;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .qr-code-section {
+    padding: 1rem;
+    margin: 1.5rem 0;
+  }
+  
+  .qr-code-image {
+    max-width: 150px;
+  }
+  
+  .delivery-confirmed {
+    padding: 1rem;
+    margin: 1.5rem 0;
+  }
 } 

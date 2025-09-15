@@ -305,7 +305,13 @@ const Checkout = () => {
                   className={`payment-option-btn ${paymentMethod === 'cod' ? 'selected' : ''}`}
                   onClick={() => handlePaymentMethodChange('cod')}
                 >
-                  {/* No local icon available; show text only */}
+                  <img
+                    src="https://img.icons8.com/ios-filled/50/cash-on-delivery.png"
+                    width="50"
+                    height="50"
+                    alt="cash-on-delivery"
+                    onError={(e)=>{ e.currentTarget.src = '/images/cash-on-delivery.svg'; }}
+                  />
                   <span>Cash on Delivery</span>
                 </button>
               </div>
