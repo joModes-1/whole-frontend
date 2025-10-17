@@ -360,16 +360,6 @@ const Products = () => {
                           />
                           <label htmlFor={idSafe} className="category-label-container">
                             <span className="category-name">{catKey}</span>
-                            <span className="category-count-badge">
-                              {loadingCounts ? '...' : (
-                                catKey === 'All'
-                                  ? categories.filter(c => c !== 'All').reduce((sum, c) => {
-                                    const cName = typeof c === 'object' ? c.name : c;
-                                    return sum + (categoryCounts[cName] || 0);
-                                  }, 0)
-                                  : categoryCounts[catKey] || 0
-                              )}
-                            </span>
                           </label>
                         </div>
                       );

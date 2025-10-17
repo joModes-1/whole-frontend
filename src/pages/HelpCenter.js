@@ -119,7 +119,7 @@ const HelpCenter = () => {
               <button type="submit" className="help-contact-button" disabled={status.state === 'loading' || !accessKey}>
                 {status.state === 'loading' ? 'Sending…' : 'Send Message'}
               </button>
-              <a href="/contact" className="help-secondary-link">Or go to Contact page</a>
+              <a href="/admin" className="help-secondary-link">Or go to Contact page</a>
             </div>
 
             {status.state === 'success' && (

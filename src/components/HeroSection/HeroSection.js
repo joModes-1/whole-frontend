@@ -108,12 +108,26 @@ const HeroSection = ({ featuredProducts = [] }) => {
       <div className="hero-recommendations hide-on-mobile">
         <h4>You may like</h4>
         <div className="recommendations-grid">
-          {featuredProducts.slice(5, 10).map((product) => (
-            <Link to={`/products/${product._id || product.id}`} key={product._id || product.id} className="recommendation-card">
-              <img src={getImageUrl(product) || 'https://via.placeholder.com/150'} alt={product.name} />
-              <p>{product.name}</p>
-            </Link>
-          ))}
+          {featuredProducts.length > 0 ? (
+            // If we have enough products, show 5-10
+            featuredProducts.slice(
+              Math.min(5, featuredProducts.length - 1), 
+              Math.min(10, featuredProducts.length)
+            ).map((product) => (
+              <Link to={`/products/${product._id || product.id}`} key={product._id || product.id} className="recommendation-card">
+                <img src={getImageUrl(product) || 'https://via.placeholder.com/150'} alt={product.name} />
+                <p>{product.name}</p>
+              </Link>
+            ))
+          ) : (
+            // Fallback: Show placeholder recommendations
+            [...Array(5)].map((_, i) => (
+              <div key={`placeholder-${i}`} className="recommendation-card">
+                <img src={placeholderImages[i % placeholderImages.length]} alt="Placeholder" />
+                <p>Featured product coming soon</p>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

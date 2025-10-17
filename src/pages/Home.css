@@ -1,7 +1,8 @@
 /* Base Styles & Variables */
 :root {
-  --primary: #4a6bff;
-  --primary-light: #eef2ff;
+  /* Map to global brand variables defined in src/index.css */
+  --primary: var(--color-primary);
+  --primary-light: #f2ecff; /* light tint of primary */
   --secondary: #667eea;
   --accent: #00c9a7;
   --text: #2d3748;
@@ -139,6 +140,32 @@
 
 .category-card-item:hover .category-card-subtitle {
   color: var(--primary);
+}
+
+/* Footer row inside category card: subtitle + count badge */
+.category-card-footer {
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.category-count-badge {
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-primary-contrast, #fff);
+  background: var(--primary);
+  padding: 4px 10px;
+  border-radius: 999px;
+  box-shadow: var(--shadow-sm);
+  white-space: nowrap;
+}
+
+.category-count-badge.is-zero {
+  background: #e9ecf5;
+  color: #5b6b88;
 }
 
 /* Loading and Error States */

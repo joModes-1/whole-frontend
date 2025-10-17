@@ -30,6 +30,7 @@ import SellerDashboard from '../components/SellerDashboard';
 import EditProductPage from '../pages/seller/EditProductPage';
 import MyProductsPage from '../pages/seller/MyProductsPage';
 import AddProductPage from '../pages/seller/AddProductPage';
+import CreateHotDeal from '../pages/CreateHotDeal';
 import EditProfilePage from '../pages/EditProfilePage';
 import SellerOrdersPage from '../pages/SellerOrdersPage';
 import BuyerOrdersPage from '../pages/BuyerOrdersPage';
@@ -105,6 +106,7 @@ const AppRoutes = () => {
           <Route path="/seller/products/edit/:id" element={<PrivateRoute roles={['seller']}><EditProductPage /></PrivateRoute>} />
           <Route path="/seller/products" element={<PrivateRoute roles={['seller']}><MyProductsPage /></PrivateRoute>} />
           <Route path="/seller/products/add" element={<PrivateRoute roles={['seller']}><AddProductPage /></PrivateRoute>} />
+          <Route path="/seller/hot-deals/create" element={<PrivateRoute roles={['seller']}><CreateHotDeal /></PrivateRoute>} />
           <Route path="/seller/orders" element={<PrivateRoute roles={['seller']}><SellerOrdersPage /></PrivateRoute>} />
           
           {/* Admin Protected Routes */}

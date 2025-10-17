@@ -163,11 +163,15 @@ export const AuthProvider = ({ children }) => {
       const idToken = await result.user.getIdToken();
       console.log('ID Token retrieved, sending to backend...');
 
-      const response = await api.post('/auth/google-signin', { idToken, role });
+      const response = await api.post('/auth/google-signin', { role }, {
+        headers: {
+          Authorization: `Bearer ${idToken}`
+        }
+      });
       console.log('Backend response successful:', response.data);
 
-      // Use the Firebase ID token for subsequent authenticated requests
-      login(response.data.user, idToken);
+      // Use the backend JWT token for subsequent authenticated requests
+      login(response.data.user, response.data.token);
       return response.data.user;
     } catch (error) {
       console.error('Google Sign-In Error:', error);

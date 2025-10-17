@@ -82,14 +82,15 @@ const OrderSuccess = () => {
   }
 
   const isPaymentConfirmed = (order.status && String(order.status).toLowerCase() === 'confirmed') || order.isPaid === true || (order.paymentDetails && String(order.paymentDetails.paymentStatus).toLowerCase() === 'confirmed');
+  const isCOD = order.paymentMethod && String(order.paymentMethod).toLowerCase() === 'cod';
 
   return (
     <div className="order-success-container">
-      {isPaymentConfirmed ? (
+      {isPaymentConfirmed || isCOD ? (
         <div className="success-message">
           <div className="success-icon">✓</div>
-          <h1>Payment Successful!</h1>
-          <p>Thank you for your purchase. Your order has been received and payment confirmed.</p>
+          <h1>{isCOD ? 'Order Successful!' : 'Payment Successful!'}</h1>
+          <p>{isCOD ? 'Thank you for your order! Payment will be collected upon delivery.' : 'Thank you for your purchase. Your order has been received and payment confirmed.'}</p>
         </div>
       ) : (
         <div className="pending-message">
@@ -104,8 +105,8 @@ const OrderSuccess = () => {
           <p><strong>Order ID:</strong> {order._id}</p>
           <p><strong>Date:</strong> {new Date(order.createdAt).toLocaleDateString()}</p>
           <p><strong>Status:</strong> <span className={`status ${order.status}`}>{order.status}</span></p>
-          <p><strong>Payment Status:</strong> <span className={`status ${isPaymentConfirmed ? 'paid' : 'pending'}`}>
-            {isPaymentConfirmed ? 'Paid' : 'Pending'}
+          <p><strong>Payment Status:</strong> <span className={`status ${isPaymentConfirmed || isCOD ? 'paid' : 'pending'}`}>
+            {isCOD ? 'Cash on Delivery' : (isPaymentConfirmed ? 'Paid' : 'Pending')}
           </span></p>
         </div>
 
@@ -175,15 +176,9 @@ const OrderSuccess = () => {
             <span>{formatUGX(order.subtotal ?? order.totalAmount)}</span>
           </div>
           <div className="summary-row">
-            <span>Shipping:</span>
-            <span>{order.shippingCost ? formatUGX(order.shippingCost) : 'Free'}</span>
+            <span>Delivery Fee:</span>
+            <span>{order.shippingCost ? formatUGX(order.shippingCost) : formatUGX(5000)}</span>
           </div>
-          {order.tax != null && (
-            <div className="summary-row">
-              <span>Tax:</span>
-              <span>{formatUGX(order.tax)}</span>
-            </div>
-          )}
           <div className="summary-row total">
             <span>Total:</span>
             <span>{formatUGX(order.totalAmount)}</span>

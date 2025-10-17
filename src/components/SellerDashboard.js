@@ -3,7 +3,7 @@ import ProductSkeleton from './ProductSkeleton/ProductSkeleton';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { FaPlus, FaMoneyBillWave, FaShoppingCart, FaChartLine } from 'react-icons/fa';
+import { FaPlus, FaMoneyBillWave, FaShoppingCart, FaChartLine, FaFire } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchSellerDashboardStats } from '../redux/sellerDashboardSlice';
@@ -98,9 +98,14 @@ const SellerDashboard = () => {
     <div className="seller-dashboard">
       <div className="dashboard-header">
         <h1 className="dashboard-title">Seller Dashboard</h1>
-        <Link to="/seller/products/add" className="create-product-link">
-          <FaPlus /> Add New Product
-        </Link>
+        <div className="dashboard-actions">
+          <Link to="/seller/products/add" className="create-product-link">
+            <FaPlus /> Add New Product
+          </Link>
+          <Link to="/seller/hot-deals/create" className="create-hot-deal-link">
+            <FaFire /> Create Hot Deal
+          </Link>
+        </div>
       </div>
 
       {/* Summary Cards */}

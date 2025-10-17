@@ -7,6 +7,7 @@ import ProductTypeDropdown from '../../components/ProductTypeDropdown';
 // Removed ConditionDropdown in favor of a simple New/Old selector for cereals/grains
 import DescriptionHelper from '../../components/DescriptionHelper';
 import PresetImageSelector from '../../components/PresetImageSelector';
+// import LocationCompletionForm from '../../components/LocationCompletion/LocationCompletionForm';
 import './AddProductPage.css';
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -111,6 +112,8 @@ const AddProductPage = () => {
   const navigate = useNavigate();
   const { token } = useAuth();
   const [userSelectedCategory, setUserSelectedCategory] = useState(false);
+  const [showLocationCompletion, setShowLocationCompletion] = useState(false);
+  const [missingFields, setMissingFields] = useState([]);
 
   // Determine if selected category is cereals/grains (flexible match)
   const isCerealsGrains = useMemo(() => {
@@ -473,7 +476,15 @@ const AddProductPage = () => {
       console.error('Detailed error adding product:', err);
       if (err.response) {
         console.error('Error Response Data:', err.response.data);
-        setError(err.response.data.message || `Server Error: ${err.response.status}`);
+        
+        // Check if the error is due to missing business information
+        if (err.response.data.requiresCompletion && err.response.data.missingFields) {
+          setMissingFields(err.response.data.missingFields);
+          setShowLocationCompletion(true);
+          setError('');
+        } else {
+          setError(err.response.data.message || `Server Error: ${err.response.status}`);
+        }
       } else if (err.request) {
         console.error('Error Request:', err.request);
         setError('Network Error: No response from server. Please ensure the backend is running.');
@@ -492,9 +503,9 @@ const AddProductPage = () => {
       
       {/* Stepper */}
       <div className="stepper">
-        <div className={`step ${currentStep === 1 ? 'active' : ''}`}>1. Category & Condition</div>
-        <div className={`step ${currentStep === 2 ? 'active' : ''}`}>2. Details & Specs</div>
-        <div className={`step ${currentStep === 3 ? 'active' : ''}`}>3. Images</div>
+        <div className={`step ${currentStep === 1 ? 'active' : ''}`} data-step="Category & Condition">1</div>
+        <div className={`step ${currentStep === 2 ? 'active' : ''}`} data-step="Details & Specs">2</div>
+        <div className={`step ${currentStep === 3 ? 'active' : ''}`} data-step="Images">3</div>
       </div>
 
       {error && <div className="error-message">{error}</div>}
@@ -701,6 +712,7 @@ const AddProductPage = () => {
           </div>
         </form>
       )}
+
     </div>
   );
 };

@@ -268,15 +268,29 @@
   align-items: center;
 }
 
+.summary-breakdown {
+  border-top: 1.5px solid #e3eaf1;
+  padding-top: 1.25rem;
+}
+
+.summary-line {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+  color: #666;
+}
+
 .summary-total {
   display: flex;
   justify-content: space-between;
-  padding-top: 1.25rem;
+  padding-top: 0.75rem;
   border-top: 1.5px solid #e3eaf1;
   font-size: 1.25rem;
   font-weight: 700;
   color: #1976d2;
   letter-spacing: 0.01em;
+  margin-top: 0.75rem;
 }
 
 .place-order-button {

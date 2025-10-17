@@ -86,6 +86,9 @@ const ProductCard = forwardRef(({ product }, ref) => {
         aria-label={product.name}
       >
         <img src={imageUrl} alt={product.name} className="productCard-img" />
+        {product.isHotDeal && (
+          <div className="hot-deal-badge">HOT DEAL</div>
+        )}
       </div>
 
       {/* Info section */}
@@ -106,7 +109,18 @@ const ProductCard = forwardRef(({ product }, ref) => {
           </p>
         </div>
         
-        <p className="product-price">{formatUGX(product.price)}</p>
+        {/* Price section with hot deals support */}
+        <div className="product-price-section">
+          {product.isHotDeal && product.originalPrice ? (
+            <div className="hot-deal-price">
+              <span className="original-price">{formatUGX(product.originalPrice)}</span>
+              <span className="current-price">{formatUGX(product.price)}</span>
+              <span className="discount-badge">-{product.discountPercentage}%</span>
+            </div>
+          ) : (
+            <p className="product-price">{formatUGX(product.price)}</p>
+          )}
+        </div>
         <div className="button-container">
           <button
             className={`add-to-cart-btn ${isOutOfStock ? 'out-of-stock' : ''}`}

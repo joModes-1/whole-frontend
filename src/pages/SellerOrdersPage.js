@@ -56,29 +56,58 @@ const SellerOrdersPage = () => {
     }
   }, [token]);
 
-  const handleStatusChange = (orderId, status) => {
-    setSelectedStatus({ ...selectedStatus, [orderId]: status });
+  const handleStatusChange = (orderId, value) => {
+    setSelectedStatus(prev => ({ ...prev, [orderId]: value }));
   };
 
   const updateOrderStatus = async (orderId) => {
-    setUpdating(u => ({ ...u, [orderId]: true }));
+    setUpdating(prev => ({ ...prev, [orderId]: true }));
     try {
       await axios.patch(
         `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000'}/orders/${orderId}/status`,
         { status: selectedStatus[orderId] },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      // Refetch orders
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000'}/orders/seller`,
+      
+      // Update local state
+      setOrders(prev => prev.map(order => 
+        order._id === orderId 
+          ? { ...order, status: selectedStatus[orderId] }
+          : order
+      ));
+      
+      // Clear selection
+      setSelectedStatus(prev => ({ ...prev, [orderId]: '' }));
+    } catch (err) {
+      console.error('Error updating order status:', err);
+      alert('Failed to update order status');
+    } finally {
+      setUpdating(prev => ({ ...prev, [orderId]: false }));
+    }
+  };
+
+  const confirmDelivery = async (orderId) => {
+    setUpdating(prev => ({ ...prev, [orderId]: true }));
+    try {
+      await axios.patch(
+        `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000'}/orders/${orderId}/status`,
+        { status: 'delivered' },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setOrders(response.data);
-      setError('');
+      
+      // Update local state
+      setOrders(prev => prev.map(order => 
+        order._id === orderId 
+          ? { ...order, status: 'delivered', deliveryConfirmation: { confirmedAt: new Date() } }
+          : order
+      ));
+      
+      alert('Delivery confirmed successfully!');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update status');
+      console.error('Error confirming delivery:', err);
+      alert('Failed to confirm delivery');
     } finally {
-      setUpdating(u => ({ ...u, [orderId]: false }));
+      setUpdating(prev => ({ ...prev, [orderId]: false }));
     }
   };
 
@@ -154,19 +183,30 @@ const SellerOrdersPage = () => {
                       disabled={updating[order._id]}
                     >
                       <option value="pending">Pending</option>
+                      <option value="confirmed">Confirmed</option>
                       <option value="processing">Processing</option>
-                      <option value="shipped">Shipped</option>
                       <option value="delivered">Delivered</option>
                       <option value="cancelled">Cancelled</option>
                     </select>
-                    <button
-                      className="btn btn-primary order-update-btn"
-                      style={{ marginLeft: 8 }}
-                      disabled={updating[order._id] || (selectedStatus[order._id] || order.status) === order.status}
-                      onClick={() => updateOrderStatus(order._id)}
-                    >
-                      {updating[order._id] ? 'Updating...' : 'Update'}
-                    </button>
+                    {order.status === 'processing' ? (
+                      <button
+                        className="btn btn-success"
+                        style={{ marginLeft: 8 }}
+                        disabled={updating[order._id]}
+                        onClick={() => confirmDelivery(order._id)}
+                      >
+                        {updating[order._id] ? 'Confirming...' : 'Confirm Delivery'}
+                      </button>
+                    ) : (
+                      <button
+                        className="btn btn-primary order-update-btn"
+                        style={{ marginLeft: 8 }}
+                        disabled={updating[order._id] || (selectedStatus[order._id] || order.status) === order.status}
+                        onClick={() => updateOrderStatus(order._id)}
+                      >
+                        {updating[order._id] ? 'Updating...' : 'Update'}
+                      </button>
+                    )}
                   </td>
                   <td>{format(new Date(order.createdAt), 'MMM dd, yyyy')}</td>
                   <td>UGX {order.totalAmount.toFixed(2)}</td>

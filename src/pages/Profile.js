@@ -159,22 +159,22 @@ const Profile = () => {
               disabled={uploading}
             />
             {user.profilePicture ? (
-  <img
-    key={user.profilePicture}
-    src={`http://localhost:4000${user.profilePicture}`}
-    alt={user.name || 'Profile'}
-    className={`profile-image profile-image-small ${uploading ? 'uploading' : ''}`}
-    onLoad={() => console.log('Profile image loaded successfully:', `http://localhost:4000${user.profilePicture}`)}
-    onError={(e) => {
-      console.error('Profile image failed to load:', `http://localhost:4000${user.profilePicture}`);
-      console.error('Image error:', e);
-    }}
-  />
-) : (
-  <FaUser className="profile-icon profile-image-small" />
-)}
-{uploading && <div className="spinner-overlay"></div>}
-<div className="edit-overlay">Click to change</div>
+              <img
+                key={user.profilePicture}
+                src={`http://localhost:4000${user.profilePicture}`}
+                alt={user.name || 'Profile'}
+                className={`profile-image profile-image-small ${uploading ? 'uploading' : ''}`}
+                onLoad={() => console.log('Profile image loaded successfully:', `http://localhost:4000${user.profilePicture}`)}
+                onError={(e) => {
+                  console.error('Profile image failed to load:', `http://localhost:4000${user.profilePicture}`);
+                  console.error('Image error:', e);
+                }}
+              />
+            ) : (
+              <FaUser className="profile-icon profile-image-small" />
+            )}
+            {uploading && <div className="spinner-overlay"></div>}
+            <div className="edit-overlay">Click to change</div>
           </div>
           <h1 className="profile-name">{user.name}</h1>
           <span className={`profile-role ${user.role || ''}`}>
@@ -198,6 +198,35 @@ const Profile = () => {
             <label>Member Since</label>
             <p>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Not available'}</p>
           </div>
+
+          {/* Business Location - Only for sellers */}
+          {user.role === 'seller' && (
+            <div className="detail-item">
+              <label>Business Location</label>
+              {user.businessLocation && user.businessLocation.formattedAddress ? (
+                <div className="business-location-info">
+                  <p>{user.businessLocation.formattedAddress}</p>
+                  {user.businessLocation.city && (
+                    <p className="location-details">
+                      {user.businessLocation.city}
+                      {user.businessLocation.state && `, ${user.businessLocation.state}`}
+                      {user.businessLocation.country && `, ${user.businessLocation.country}`}
+                    </p>
+                  )}
+                  <span className="location-status verified">
+                    📍 Location Set
+                  </span>
+                </div>
+              ) : (
+                <div className="business-location-missing">
+                  <p>No business location set</p>
+                  <span className="location-status missing">
+                    ⚠️ Location Required for Product Listings
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
 
           {user.address && (
             <div className="detail-item">

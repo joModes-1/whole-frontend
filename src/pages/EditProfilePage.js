@@ -16,7 +16,6 @@ const EditProfilePage = () => {
   const [profileImageFile, setProfileImageFile] = useState(null);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  
   // Loading and error states
   const [loading] = useState(false);
   const [message, setMessage] = useState('');
@@ -161,6 +160,7 @@ const EditProfilePage = () => {
       setPasswordUpdateLoading(false);
     }
   };
+
 
   // Handle back navigation
   const handleGoBack = () => {
@@ -320,7 +320,6 @@ const EditProfilePage = () => {
             </button>
           </form>
         </div>
-        
         {/* Navigation Buttons */}
         <div className="edit-profile-actions">
           <button 

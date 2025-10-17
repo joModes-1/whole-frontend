@@ -20,29 +20,63 @@
 
 /* Simple Stepper */
 .stepper {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  display: flex;
+  justify-content: space-between;
   margin-bottom: 2rem;
+  position: relative;
+}
+
+.stepper::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #e5e7eb;
+  z-index: 1;
 }
 
 .stepper .step {
+  position: relative;
+  z-index: 2;
   text-align: center;
-  padding: 1rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 12px;
-  background: #f9fafb;
-  color: #6b7280;
+  padding: 0.5rem 1rem;
+  background: white;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-weight: 600;
+  color: #6b7280;
+  border: 2px solid #e5e7eb;
   transition: all 0.3s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.stepper .step::after {
+  content: attr(data-step);
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: #6b7280;
+  white-space: nowrap;
 }
 
 .stepper .step.active {
   background: var(--color-primary, #5B0FFF);
-  color: var(--color-primary-contrast, #ffffff);
+  color: white;
   border-color: var(--color-primary);
   box-shadow: 0 4px 6px rgba(91, 15, 255, 0.15);
+}
+
+.stepper .step.active::after {
+  color: var(--color-primary);
+  font-weight: 600;
 }
 
 .add-product-container h3 {

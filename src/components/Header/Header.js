@@ -77,7 +77,7 @@ const Header = () => {
                 ) : (
                   <div className="header-auth-links">
                     <Link to="/login" className="auth-link">Login</Link>
-                    <Link to="/register" className="auth-link auth-link-primary">Register</Link>
+                    <Link to="/role-selection" className="auth-link auth-link-primary">Register</Link>
                   </div>
                 )}
                 <div className="cart-icon">
@@ -141,7 +141,7 @@ const Header = () => {
               ) : (
                 <>
                   <li className="nav-item"><Link to="/login" className="nav-link" onClick={toggleMobileMenu}>Login</Link></li>
-                  <li className="nav-item"><Link to="/register" className="nav-link" onClick={toggleMobileMenu}>Register</Link></li>
+                  <li className="nav-item"><Link to="/role-selection" className="nav-link" onClick={toggleMobileMenu}>Register</Link></li>
                 </>
               )}
             </ul>

@@ -169,15 +169,7 @@ const Login = () => {
               <span>OR</span>
             </div>
             
-            <button 
-              type="button" 
-              className="google-button" 
-              onClick={handleGoogleLogin} 
-              disabled={loading}
-            >
-              <FaGoogle className="google-icon" />
-              Continue with Google
-            </button>
+            
             
             <p className="signup-link">
               Don't have an account? <Link to="/role-selection">Sign up</Link>

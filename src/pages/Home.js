@@ -20,15 +20,15 @@ import './Home.css';
 const Home = () => {
   const navigate = useNavigate();
   const [handpickedProducts, setHandpickedProducts] = useState([]);
-  const [featuredCategories, setFeaturedCategories] = useState([]);
+  const [featuredCategories, setFeaturedCategories] = useState([]); // [name]
   const [hotDeals, setHotDeals] = useState([]);
   const [trendingProducts, setTrendingProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Category icons mapping
-  const getCategoryIcon = (category) => {
-    const categoryLower = category.toLowerCase();
+  const getCategoryIcon = (categoryName) => {
+    const categoryLower = categoryName.toLowerCase();
     if (categoryLower.includes('electronic') || categoryLower.includes('tech')) return FiMonitor;
     if (categoryLower.includes('phone') || categoryLower.includes('mobile')) return FiSmartphone;
     if (categoryLower.includes('fashion') || categoryLower.includes('clothing')) return FiShoppingBag;
@@ -40,8 +40,8 @@ const Home = () => {
     return FiTag; // Default icon
   };
 
-  const handleCategoryClick = (category) => {
-    navigate(`/products?category=${encodeURIComponent(category)}`);
+  const handleCategoryClick = (categoryName) => {
+    navigate(`/products?category=${encodeURIComponent(categoryName)}`);
   };
 
   useEffect(() => {
@@ -51,37 +51,43 @@ const Home = () => {
       
       try {
         // Fetch all data in parallel for better performance
-        const [productsRes, categoriesRes, trendingRes] = await Promise.allSettled([
+        const [productsRes, categoriesRes, trendingRes, hotDealsRes] = await Promise.allSettled([
           axios.get(`${process.env.REACT_APP_API_BASE_URL}/products?page=1&limit=20`),
           axios.get(`${process.env.REACT_APP_API_BASE_URL}/products/categories/counts`),
-          axios.get(`${process.env.REACT_APP_API_BASE_URL}/products/trending`)
+          axios.get(`${process.env.REACT_APP_API_BASE_URL}/products/trending`),
+          axios.get(`${process.env.REACT_APP_API_BASE_URL}/products/hot-deals?limit=12`)
         ]);
 
         // Process products
         const allProducts = productsRes.status === 'fulfilled' ? 
           (productsRes.value.data?.products || []) : [];
 
-        // Process categories with fallback
+        // Process categories with fallback - show all categories even with 0 products (names only)
         let categoryList = [];
         if (categoriesRes.status === 'fulfilled') {
           const categoryData = categoriesRes.value.data?.data || {};
           categoryList = Object.keys(categoryData)
-            .filter(cat => cat !== 'All' && categoryData[cat] > 0)
-            .slice(0, 6); // Reduced to 6 for better performance
+            .filter((name) => name !== 'All')
+            .slice(0, 12); // show up to 12 categories
         }
         
         // Fallback: derive from products if categories failed
         if (categoryList.length === 0 && allProducts.length > 0) {
-          categoryList = [...new Set(allProducts.map(p => p.category).filter(Boolean))].slice(0, 6);
+          const names = [...new Set(allProducts.map(p => p.category).filter(Boolean))];
+          categoryList = names.slice(0, 12);
         }
 
         // Process trending products
         const trendingProductsData = trendingRes.status === 'fulfilled' ? 
           (trendingRes.value.data?.products || []) : [];
 
+        // Process hot deals
+        const hotDealsData = hotDealsRes.status === 'fulfilled' ? 
+          (hotDealsRes.value.data?.products || []) : [];
+
         // Set state efficiently
         setHandpickedProducts(allProducts.slice(0, 12));
-        setHotDeals(allProducts.slice(6, 12));
+        setHotDeals(hotDealsData);
         setTrendingProducts(trendingProductsData.slice(0, 8));
         setFeaturedCategories(categoryList);
 
@@ -138,8 +144,8 @@ const Home = () => {
         <section className="home-category-showcase">
           <h2 className="section-title">Shop by Category</h2>
           <div className="category-grid">
-            {featuredCategories.map(category => {
-              const IconComponent = getCategoryIcon(category);
+            {featuredCategories.map((category) => {
+              const IconComponent = getCategoryIcon(category || '');
               return (
                 <div 
                   key={category} 
@@ -153,7 +159,7 @@ const Home = () => {
                     }
                   }}
                 >
-                  <div className="category-card-image-placeholder">
+                  <div className="category-card-image-placeholder" aria-hidden="true">
                     <IconComponent size={32} />
                   </div>
                   <h3>{category}</h3>

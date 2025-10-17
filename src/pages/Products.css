@@ -357,15 +357,6 @@
   font-size: 0.95rem;
 }
 
-.category-count-badge {
-  background-color: rgba(91, 15, 255, 0.12);
-  color: var(--color-primary);
-  padding: 0.2rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
 /* Price Range Slider - Custom Nordic Style */
 .price-range-container {
   padding: 0.5rem 0;

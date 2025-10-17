@@ -198,15 +198,63 @@
 }
 
 .upload-error-message {
-  color: #e74c3c;
-  background-color: #fbeaea;
-  border: 1px solid #e74c3c;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  margin-top: 1rem;
-  font-size: 0.9rem;
+  color: var(--danger);
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
   text-align: center;
-  width: 100%;
+}
+
+.business-location-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.business-location-info p {
+  margin: 0;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.location-details {
+  font-size: 0.875rem;
+  color: var(--muted);
+  font-weight: 400 !important;
+}
+
+.business-location-missing {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.business-location-missing p {
+  margin: 0;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.location-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  width: fit-content;
+}
+
+.location-status.verified {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.location-status.missing {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
 .profile-name {

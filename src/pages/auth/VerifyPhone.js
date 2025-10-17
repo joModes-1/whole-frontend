@@ -35,17 +35,17 @@ const VerifyPhone = () => {
   // Check if we're in test mode and fetch the verification code
   useEffect(() => {
     const isTestMode = process.env.REACT_APP_TEST_MODE === 'true';
-    if (isTestMode && formData && formData.phoneNumber) {
-      // In test mode, fetch the verification code from the backend
+    if (isTestMode && formData && formData.phoneNumber && !testModeCode) {
+      // In test mode, fetch the verification code from the backend (only once)
       fetchTestModeCode(formData.phoneNumber);
     }
-  }, [formData]);
+  }, [formData?.phoneNumber, testModeCode]); // Only depend on phoneNumber and testModeCode
 
   // Redirect if essential data is missing
   useEffect(() => {
     if (!formData || !formData.phoneNumber) {
       console.error('Missing required data for verification, redirecting.');
-      navigate('/register');
+      navigate('/role-selection', { replace: true });
     }
   }, [formData, navigate]);
 
@@ -75,11 +75,26 @@ const VerifyPhone = () => {
         setIsLoading(false);
         return;
       }
+      
+      // Prepare registration data
+      const registrationData = {
+        ...formData,
+        code: verificationCode
+      };
+      
+      // For sellers, include business data in the registration
+      if (formData.role === 'seller' && formData.businessInfo) {
+        registrationData.businessLocation = formData.businessLocation;
+        registrationData.businessInfo = formData.businessInfo;
+        // Use business phone if provided, otherwise use main phone
+        registrationData.phoneNumber = formData.businessPhone || formData.phoneNumber;
+      }
+      
       // Send all form data + code to backend for verification and registration
       const response = await fetch(`${API_BASE_URL}/auth/verify-code-and-register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, code: verificationCode })
+        body: JSON.stringify(registrationData)
       });
       const data = await response.json();
       if (!response.ok || !data.success) {
@@ -96,9 +111,16 @@ const VerifyPhone = () => {
           await login(data.user, idToken);
         }
         if (data.user && data.user.role === 'seller') {
-          navigate('/seller/dashboard', { replace: true });
+          // For sellers, check if they completed business setup
+          if (data.user.businessLocation && data.user.businessLocation.formattedAddress) {
+            navigate('/seller/dashboard', { replace: true });
+          } else {
+            // Redirect to seller onboarding if business info is incomplete
+            navigate('/seller/onboarding', { replace: true });
+          }
         } else {
-          navigate('/profile', { replace: true });
+          // For buyers, redirect to home page
+          navigate('/', { replace: true });
         }
       } catch (signInError) {
         // If sign-in fails, fallback to login page
@@ -152,9 +174,16 @@ const VerifyPhone = () => {
       const data = await response.json();
       if (response.ok && data.code) {
         setTestModeCode(data.code);
+      } else {
+        // If test mode is not enabled, just log it once
+        console.log('Test mode not available:', data.error || 'Test mode is disabled');
+        // Set a placeholder to prevent repeated calls
+        setTestModeCode(''); 
       }
     } catch (error) {
-      console.error('Failed to fetch test mode code:', error);
+      console.log('Test mode not available');
+      // Set a placeholder to prevent repeated calls
+      setTestModeCode('');
     }
   };
 
@@ -168,7 +197,7 @@ const VerifyPhone = () => {
           Please enter it below to complete your registration.
         </p>
         
-        {testModeCode && (
+        {testModeCode && testModeCode.length > 0 && (
           <div className="test-mode-notification">
             <p><strong>Test Mode:</strong> The verification code is <strong>{testModeCode}</strong></p>
           </div>

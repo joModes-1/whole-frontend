@@ -5,6 +5,7 @@ import { useCart } from '../../context/CartContext';
 import { createOrder } from '../../services/orderService';
 import api from '../../services/api';
 import { loadStripe } from '@stripe/stripe-js';
+import { normalizeUgandanPhone, isValidUgandanPhone } from '../../utils/phoneUtils';
 import './Checkout.css';
 
 const stripePromise = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY
@@ -16,7 +17,7 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:400
 const Checkout = () => {
   const navigate = useNavigate();
   const { cart, total, clearCart } = useCart();
-  const { token, user } = useAuth();
+  const { user } = useAuth();
 
   const [shippingInfo, setShippingInfo] = useState({
     fullName: '',
@@ -28,8 +29,10 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [saveAddress, setSaveAddress] = useState(true);
-  const [isProfileLoading, setIsProfileLoading] = useState(false);
+  const [saveAddress, setSaveAddress] = useState(false);
+  const [shippingCost, setShippingCost] = useState(5000); // Base delivery fee in UGX
+  const [taxAmount, setTaxAmount] = useState(0); // No tax for COD
+  const [isProfileLoading] = useState(false);
 
   // Currency formatter for UGX (no cents)
   const formatUGX = useCallback((amount) => {
@@ -41,89 +44,81 @@ const Checkout = () => {
   }, []);
 
   useEffect(() => {
+    // No tax calculation - tax is removed
+    setTaxAmount(0);
+  }, [total]);
+
+  // Pre-populate shipping info with user's default location
+  useEffect(() => {
+    if (user) {
+      const userLocation = user.role === 'seller' ? user.businessLocation : user.deliveryAddress;
+      
+      if (userLocation) {
+        setShippingInfo(prev => ({
+          ...prev,
+          fullName: user.name || prev.fullName,
+          phone: user.phoneNumber || prev.phone,
+          // Use formatted address if available, otherwise use individual address field
+          address: userLocation.formattedAddress || userLocation.address || prev.address,
+          district: userLocation.city || prev.district,
+          subCounty: userLocation.state || prev.subCounty,
+          // Store coordinates for location-based calculations
+          coordinates: userLocation.coordinates?.coordinates || prev.coordinates
+        }));
+      } else {
+        // If no location data, just pre-fill name and phone
+        setShippingInfo(prev => ({
+          ...prev,
+          fullName: user.name || prev.fullName,
+          phone: user.phoneNumber || prev.phone
+        }));
+      }
+    }
+  }, [user]);
+
+  const calculateShippingAndTax = useCallback(() => {
+    // Calculate shipping cost based on location and cart total
+    let shipping = 5000; // Base shipping cost in UGX
+      
+    // Add distance-based cost for certain districts
+    const distantDistricts = ['Gulu', 'Mbarara', 'Jinja', 'Mbale', 'Arua'];
+    if (distantDistricts.includes(shippingInfo.district)) {
+      shipping += 3000; // Additional UGX 3,000 for distant districts
+    }
+      
+    // Free shipping for orders above UGX 100,000
+    if (total >= 100000) {
+      shipping = 0;
+    }
+    
+    setShippingCost(shipping);
+    setTaxAmount(0);
+  }, [total, shippingInfo.district]);
+
+  useEffect(() => {
     if (cart && cart.length > 0) {
       console.log('Cart items:', cart);
       console.log('Cart total:', total);
+      
+      // Calculate shipping and tax
+      calculateShippingAndTax();
     }
-  }, [cart, total]);
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (!token || !user) return;
-      setIsProfileLoading(true);
-      try {
-        const fullName = user?.name || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || '';
-        const phone = user?.contactNumber || user?.phone || user?.phoneNumber || '';
-        const addr = user?.address || {};
-        const next = {
-          fullName,
-          phone,
-          address: addr?.street || addr?.line1 || addr?.address || '',
-          city: addr?.city || '',
-          state: addr?.state || addr?.region || '',
-          subCounty: addr?.subCounty || addr?.subcounty || '',
-          district: addr?.district || addr?.province || '',
-          country: addr?.country || 'Uganda',
-        };
-        // Only fill fields that are currently empty, so we don't overwrite user's typing
-        setShippingInfo(prev => ({
-          ...prev,
-          fullName: prev.fullName || next.fullName,
-          phone: prev.phone || next.phone,
-          address: prev.address || next.address,
-          city: prev.city || next.city,
-          state: prev.state || next.state,
-          subCounty: prev.subCounty || next.subCounty,
-          district: prev.district || next.district,
-          country: prev.country || next.country,
-        }));
-        if (!user || !user._id) {
-          setError('Could not load your user user. Please refresh or contact support.');
-        }
-      } catch (err) {
-        console.error('Error processing user:', err);
-        setError('Failed to process your user information. Using default shipping info.');
-      } finally {
-        setIsProfileLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, [token, user]);
-
-  const handleShippingChange = (e) => {
-    setShippingInfo({ ...shippingInfo, [e.target.name]: e.target.value });
-  };
-
-  const handlePaymentMethodChange = (method) => {
-    setError('');
-    setPaymentMethod(method);
-  };
+  }, [cart, total, shippingInfo.district, calculateShippingAndTax]);
 
   const handleGetLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          try {
-            const response = await fetch(
-              `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=en`
-            );
-            const locationData = await response.json();
-            
-            setShippingInfo(prev => ({
-              ...prev,
-              district: locationData.locality || prev.district,
-              subCounty: locationData.localityInfo?.administrative?.[1]?.name || prev.subCounty,
-              coordinates: { lat: position.coords.latitude, lng: position.coords.longitude }
-            }));
-          } catch (err) {
-            console.error('Error getting location data:', err);
-            setError('Could not retrieve location details. Please fill in manually.');
-          }
+        (position) => {
+          // Store as [longitude, latitude] for GeoJSON compatibility
+          setShippingInfo(prev => ({
+            ...prev,
+            coordinates: [position.coords.longitude, position.coords.latitude]
+          }));
+          alert('Location captured successfully!');
         },
         (error) => {
           console.error('Error getting location:', error);
-          setError('Could not get your location. Please fill in manually.');
+          alert('Unable to get your location. Please ensure location permissions are enabled.');
         }
       );
     } else {
@@ -133,45 +128,47 @@ const Checkout = () => {
 
   const formatOrderData = useCallback(() => {
     try {
-      const tax = total * 0.1; // 10% tax
-      const subtotal = total;
       if (!cart || cart.length === 0) throw new Error('Cart is empty');
 
       const sellerId = cart[0]?.seller?._id || cart[0]?.seller;
       if (!sellerId) throw new Error('Seller information is missing from cart items.');
 
-      const formattedItems = cart.map(item => ({
-        listing: item._id,
-        name: item.name,
-        quantity: item.quantity,
-        unitPrice: item.price,
-        subtotal: item.price * item.quantity,
-        seller: item.seller?._id || item.seller
-      }));
+      const orderPayload = {
+        seller: sellerId,
+        items: cart.map(item => ({
+          listing: item._id,
+          quantity: item.quantity,
+          unitPrice: item.price,
+          subtotal: item.price * item.quantity
+        })),
+        shippingInfo,
+        shippingMethod: 'standard',
+        notes: '',
+        saveAddress,
+        paymentMethod,
+        shippingCost,
+        taxAmount,
+        totalAmount: total + shippingCost
+      };
 
       if (!user || !user._id) throw new Error('User user information is missing or invalid.');
 
-      const orderPayload = {
+      return {
         buyer: user._id,
         seller: sellerId,
-        items: formattedItems,
+        ...orderPayload,
         shippingInfo: {
           ...shippingInfo,
           address: `${shippingInfo.address}, ${shippingInfo.subCounty}, ${shippingInfo.district}`,
           coordinates: shippingInfo.coordinates || null
         },
-        paymentMethod,
-        subtotal,
-        tax,
-        totalAmount: subtotal + tax,
         status: 'pending'
       };
-      return orderPayload;
     } catch (error) {
       console.error('Error in formatOrderData:', error);
       throw error;
     }
-  }, [cart, total, user, shippingInfo, paymentMethod]);
+  }, [cart, total, user, shippingInfo, paymentMethod, shippingCost, taxAmount, saveAddress]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -187,6 +184,12 @@ const Checkout = () => {
       return;
     }
     
+    // Validate phone number format
+    if (!isValidUgandanPhone(shippingInfo.phone)) {
+      setError('Please enter a valid Ugandan phone number (e.g., 0700000000 or +256700000000).');
+      return;
+    }
+    
     if (!user) {
       setError('User user is not loaded. Cannot proceed.');
       return;
@@ -196,10 +199,19 @@ const Checkout = () => {
     setError('');
 
     try {
+      // Normalize phone number before creating order
+      const normalizedShippingInfo = {
+        ...shippingInfo,
+        phone: normalizeUgandanPhone(shippingInfo.phone)
+      };
+      
       const orderPayload = formatOrderData();
       if (!orderPayload) {
         throw new Error("Could not format order data.");
       }
+      
+      // Update the order payload with normalized phone
+      orderPayload.shippingInfo.phone = normalizedShippingInfo.phone;
 
       const newOrder = await createOrder(orderPayload);
 
@@ -227,12 +239,45 @@ const Checkout = () => {
     }
   };
 
+  // Handle input changes for shipping form
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setShippingInfo(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Handle payment method selection
+  const handlePaymentMethodChange = (method) => {
+    setPaymentMethod(method);
+  };
+
+  // Function to reload user's default address
+  const loadDefaultAddress = () => {
+    if (user) {
+      const userLocation = user.role === 'seller' ? user.businessLocation : user.deliveryAddress;
+      
+      if (userLocation) {
+        setShippingInfo(prev => ({
+          ...prev,
+          fullName: user.name || '',
+          phone: user.phoneNumber || '',
+          address: userLocation.formattedAddress || userLocation.address || '',
+          district: userLocation.city || '',
+          subCounty: userLocation.state || '',
+          coordinates: userLocation.coordinates?.coordinates || null
+        }));
+      }
+    }
+  };
+
   if (isProfileLoading || !user) {
     return (
       <div className="checkout-container" style={{minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
         <div className="user-loading-message">
           <div className="spinner" style={{marginBottom: 18}}></div>
-          <span style={{fontSize: '1.15rem', color: '#0264f1', fontWeight: 500}}>Loading your user...</span>
+          <span style={{fontSize: '1.15rem', color: '#0264f1', fontWeight: 500}}>Loading your profile...</span>
         </div>
       </div>
     );
@@ -244,22 +289,61 @@ const Checkout = () => {
         {/* Shipping Form */}
         <section className="shipping-form">
           <h3>Shipping Information</h3>
+          {user && (user.businessLocation || user.deliveryAddress) && (
+            <div className="info-message" style={{
+              backgroundColor: '#e8f4fd', 
+              border: '1px solid #0264f1', 
+              borderRadius: '8px', 
+              padding: '12px', 
+              marginBottom: '20px',
+              fontSize: '14px',
+              color: '#0264f1',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <span>ℹ️ We've pre-filled your shipping information from your account. You can edit it if needed.</span>
+              <button 
+                type="button" 
+                onClick={loadDefaultAddress}
+                style={{
+                  background: 'none',
+                  border: '1px solid #0264f1',
+                  color: '#0264f1',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  fontSize: '12px',
+                  cursor: 'pointer'
+                }}
+              >
+                Reload Default
+              </button>
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="checkout-form">
             <div className="form-group">
               <label htmlFor="fullName">Full Name</label>
-              <input type="text" id="fullName" name="fullName" value={shippingInfo.fullName} onChange={handleShippingChange} required />
+              <input type="text" id="fullName" name="fullName" value={shippingInfo.fullName} onChange={handleInputChange} required />
             </div>
             <div className="form-group">
               <label htmlFor="phone">Phone Number</label>
-              <input type="tel" id="phone" name="phone" value={shippingInfo.phone} onChange={handleShippingChange} required />
+              <input 
+                type="tel" 
+                id="phone" 
+                name="phone" 
+                value={shippingInfo.phone} 
+                onChange={handleInputChange} 
+                placeholder="0700000000 or +256700000000"
+                required 
+              />
             </div>
             <div className="form-group">
               <label htmlFor="district">District</label>
-              <input type="text" id="district" name="district" value={shippingInfo.district} onChange={handleShippingChange} required />
+              <input type="text" id="district" name="district" value={shippingInfo.district} onChange={handleInputChange} required />
             </div>
             <div className="form-group">
               <label htmlFor="subCounty">Sub County</label>
-              <input type="text" id="subCounty" name="subCounty" value={shippingInfo.subCounty} onChange={handleShippingChange} required />
+              <input type="text" id="subCounty" name="subCounty" value={shippingInfo.subCounty} onChange={handleInputChange} required />
             </div>
             {/* Location button right below Sub County, aligned to the right */}
             <div className="form-row-actions">
@@ -269,7 +353,7 @@ const Checkout = () => {
             </div>
             <div className="form-group">
               <label htmlFor="address">Specific Address/Directions</label>
-              <textarea id="address" name="address" value={shippingInfo.address} onChange={handleShippingChange} required />
+              <textarea id="address" name="address" value={shippingInfo.address} onChange={handleInputChange} required />
             </div>
             {/* standalone location button removed; now inline with address field */}
             <div className="form-group">
@@ -367,9 +451,19 @@ const Checkout = () => {
               );
             })}
           </div>
-          <div className="summary-total">
-            <span>Total:</span>
-            <span>{formatUGX(total)}</span>
+          <div className="summary-breakdown">
+            <div className="summary-line">
+              <span>Subtotal:</span>
+              <span>{formatUGX(total)}</span>
+            </div>
+            <div className="summary-line">
+              <span>Delivery Fee:</span>
+              <span>{formatUGX(shippingCost)}</span>
+            </div>
+            <div className="summary-total">
+              <span>Total:</span>
+              <span>{formatUGX(total + shippingCost)}</span>
+            </div>
           </div>
         </section>
       </div>

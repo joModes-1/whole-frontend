@@ -1,100 +1,97 @@
-import React from 'react';
+import { memo } from 'react';
 import { NavLink } from 'react-router-dom';
-import { FaShoppingCart, FaTruck, FaMoneyBillWave, FaBullhorn, FaFileAlt, FaChartLine, FaShieldAlt, FaCog, FaQuestionCircle } from 'react-icons/fa';
 import './AdminSidebar.css';
 
-const AdminSidebar = () => {
+const AdminSidebar = memo(() => {
+  const isActiveHandler = ({ isActive }) => {
+    return isActive ? 'active' : '';
+  };
+
+  const ariaCurrentHandler = ({ isActive }) => {
+    return isActive ? 'page' : undefined;
+  };
+
   return (
-    <aside className="admin-sidebar">
+    <aside className="admin-sidebar" aria-label="Admin Panel" role="navigation">
       <div className="admin-sidebar-header">
-        <h3>Admin Panel</h3>
+        <h3 id="admin-panel-header" aria-label="Admin Panel Header">Admin Panel</h3>
       </div>
-      <nav className="admin-sidebar-nav">
-        <ul>
+      <nav className="admin-sidebar-nav" aria-label="Admin navigation">
+        <ul role="list">
           <li>
-            <NavLink to="/admin/dashboard" className={({ isActive }) => isActive ? 'active' : ''}>
-              Dashboard
+            <NavLink to="/admin/dashboard" className={isActiveHandler} aria-current={ariaCurrentHandler}>
+              <span aria-label="Dashboard">Dashboard</span>
             </NavLink>
           </li>
           <li>
-            <NavLink to="/admin/users" className={({ isActive }) => isActive ? 'active' : ''}>
-              User Management
+            <NavLink to="/admin/users" className={isActiveHandler} aria-current={ariaCurrentHandler}>
+              <span aria-label="User Management">User Management</span>
             </NavLink>
           </li>
           <li>
-            <NavLink to="/admin/products" className={({ isActive }) => isActive ? 'active' : ''}>
-              Product Management
+            <NavLink to="/admin/products" className={isActiveHandler} aria-current={ariaCurrentHandler}>
+              <span aria-label="Product Management">Product Management</span>
             </NavLink>
           </li>
           <li>
-            <NavLink to="/admin/catalog/categories" className={({ isActive }) => (isActive ? 'active' : '')}>
-              Catalog: Categories
+            <NavLink to="/admin/catalog/categories" className={isActiveHandler} aria-current={ariaCurrentHandler}>
+              <span aria-label="Catalog: Categories">Catalog: Categories</span>
             </NavLink>
           </li>
           <li>
-            <NavLink to="/admin/catalog/preset-images" className={({ isActive }) => (isActive ? 'active' : '')}>
-              Catalog: Preset Images
+            <NavLink to="/admin/catalog/preset-images" className={isActiveHandler} aria-current={ariaCurrentHandler}>
+              <span aria-label="Catalog: Preset Images">Catalog: Preset Images</span>
             </NavLink>
           </li>
           <li>
-            <NavLink to="/admin/orders" className={({ isActive }) => (isActive ? 'active' : '')}>
-              <FaShoppingCart />
-              <span>Order Management</span>
+            <NavLink to="/admin/orders" className={isActiveHandler} aria-current={ariaCurrentHandler}>
+              <span aria-label="Order Management">Order Management</span>
             </NavLink>
           </li>
           <li>
-            <NavLink to="/admin/delivery" className={({ isActive }) => (isActive ? 'active' : '')}>
-              <FaTruck />
-              <span>Delivery</span>
+            <NavLink to="/admin/delivery" className={isActiveHandler} aria-current={ariaCurrentHandler}>
+              <span aria-label="Delivery">Delivery</span>
             </NavLink>
           </li>
           <li>
-            <NavLink to="/admin/finance" className={({ isActive }) => (isActive ? 'active' : '')}>
-              <FaMoneyBillWave />
-              <span>Finance</span>
+            <NavLink to="/admin/finance" className={isActiveHandler} aria-current={ariaCurrentHandler}>
+              <span aria-label="Finance">Finance</span>
             </NavLink>
           </li>
           <li>
-            <NavLink to="/admin/marketing" className={({ isActive }) => (isActive ? 'active' : '')}>
-              <FaBullhorn />
-              <span>Marketing</span>
+            <NavLink to="/admin/marketing" className={isActiveHandler} aria-current={ariaCurrentHandler}>
+              <span aria-label="Marketing">Marketing</span>
             </NavLink>
           </li>
           <li>
-            <NavLink to="/admin/content" className={({ isActive }) => (isActive ? 'active' : '')}>
-              <FaFileAlt />
-              <span>Content</span>
+            <NavLink to="/admin/content" className={isActiveHandler} aria-current={ariaCurrentHandler}>
+              <span aria-label="Content">Content</span>
             </NavLink>
           </li>
           <li>
-            <NavLink to="/admin/analytics" className={({ isActive }) => (isActive ? 'active' : '')}>
-              <FaChartLine />
-              <span>Analytics</span>
+            <NavLink to="/admin/analytics" className={isActiveHandler} aria-current={ariaCurrentHandler}>
+              <span aria-label="Analytics">Analytics</span>
             </NavLink>
           </li>
           <li>
-            <NavLink to="/admin/security" className={({ isActive }) => (isActive ? 'active' : '')}>
-              <FaShieldAlt />
-              <span>Security</span>
+            <NavLink to="/admin/security" className={isActiveHandler} aria-current={ariaCurrentHandler}>
+              <span aria-label="Security">Security</span>
             </NavLink>
           </li>
           <li>
-            <NavLink to="/admin/integrations" className={({ isActive }) => (isActive ? 'active' : '')}>
-              <FaCog />
-              <span>Integrations</span>
+            <NavLink to="/admin/integrations" className={isActiveHandler} aria-current={ariaCurrentHandler}>
+              <span aria-label="Integrations">Integrations</span>
             </NavLink>
           </li>
           <li>
-            <NavLink to="/admin/support" className={({ isActive }) => (isActive ? 'active' : '')}>
-              <FaQuestionCircle />
-              <span>Support</span>
+            <NavLink to="/admin/support" className={isActiveHandler} aria-current={ariaCurrentHandler}>
+              <span aria-label="Support">Support</span>
             </NavLink>
           </li>
-          {/* More links will be added here */}
         </ul>
       </nav>
     </aside>
   );
-};
+});
 
 export default AdminSidebar;
