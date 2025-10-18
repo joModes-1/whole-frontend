@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../config/firebase';
 
-import { FaGoogle, FaEnvelope, FaLock } from 'react-icons/fa';
+import { FaEnvelope, FaLock } from 'react-icons/fa';
 import './Auth.css';
 import PasswordInput from '../../components/common/PasswordInput';
 import BackButton from '../../components/common/BackButton';
@@ -15,7 +15,7 @@ import { fetchUserProfile } from '../../redux/userSlice';
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, googleSignIn } = useAuth();
+  const { login } = useAuth();
   const dispatch = useDispatch();
   const [formData, setFormData] = useState({
     email: '',
@@ -85,28 +85,28 @@ const Login = () => {
     }
   };
 
-  const handleGoogleLogin = (e) => {
-    setError('');
-    setLoading(true);
-    // Call signInWithPopup directly in response to the click event
-    googleSignIn()
-      .then(user => {
-        const from = location.state?.from?.pathname;
-        if (from) {
-          navigate(from, { replace: true });
-        } else if (user.role === 'seller') {
-          navigate('/seller/dashboard', { replace: true });
-        } else {
-          navigate('/', { replace: true });
-        }
-      })
-      .catch(() => {
-        setError('Failed to login with Google. Please try again.');
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
+  // const handleGoogleLogin = (e) => {
+  //   setError('');
+  //   setLoading(true);
+  //   // Call signInWithPopup directly in response to the click event
+  //   googleSignIn()
+  //     .then(user => {
+  //       const from = location.state?.from?.pathname;
+  //       if (from) {
+  //         navigate(from, { replace: true });
+  //       } else if (user.role === 'seller') {
+  //         navigate('/seller/dashboard', { replace: true });
+  //       } else {
+  //         navigate('/', { replace: true });
+  //       }
+  //     })
+  //     .catch(() => {
+  //       setError('Failed to login with Google. Please try again.');
+  //     })
+  //     .finally(() => {
+  //       setLoading(false);
+  //     });
+  // };
 
   // Add auth-page class to body when component mounts
   useEffect(() => {

@@ -22,8 +22,6 @@ L.Marker.prototype.options.icon = DefaultIcon;
 
 // Component to handle map click events
 const LocationPickerEvents = ({ onLocationSelect }) => {
-  const map = useMap();
-  
   useMapEvents({
     click: (e) => {
       const { lat, lng } = e.latlng;
@@ -64,7 +62,7 @@ const LeafletLocationSelector = ({
   const searchController = useRef(null);
 
   // Clean up place name by removing generic terms
-  const cleanPlaceName = (name) => {
+  const cleanPlaceName = useCallback((name) => {
     if (!name) return '';
     
     // Remove common generic terms
@@ -93,7 +91,7 @@ const LeafletLocationSelector = ({
     cleanName = cleanName.replace(/,\s*,/g, ',').replace(/^\s*,\s*|\s*,\s*$/g, '').trim();
     
     return cleanName;
-  };
+  }, []);
 
   // Advanced search for places using multiple strategies
   const searchPlaces = useCallback(async (query) => {
@@ -258,48 +256,10 @@ const LeafletLocationSelector = ({
       setIsLoading(false);
       searchController.current = null;
     }
-  }, []);
-
-  // Reverse geocode coordinates to get address
-  const reverseGeocode = useCallback(async (coordinates) => {
-    setIsLoading(true);
-    
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?` +
-        `format=json&` +
-        `lat=${coordinates.lat}&` +
-        `lon=${coordinates.lng}&` +
-        `addressdetails=1`,
-        {
-          headers: {
-            'Accept': 'application/json',
-            'User-Agent': 'B2B-Platform/1.0'
-          }
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Reverse geocoding failed');
-      }
-
-      const data = await response.json();
-      
-      const locationData = parseLocationData(data, coordinates);
-      setSelectedLocation(locationData);
-      setAddress(locationData.formattedAddress);
-      setMarkerPosition(coordinates);
-      onLocationSelect(locationData);
-    } catch (error) {
-      console.error('Reverse geocode error:', error);
-      setMapError('Failed to get address for this location');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [onLocationSelect]);
+  }, [cleanPlaceName]);
 
   // Parse location data from Nominatim response
-  const parseLocationData = (data, coordinates) => {
+  const parseLocationData = useCallback((data, coordinates) => {
     const address = data.address || {};
     const tags = data.tags || {};
     
@@ -338,7 +298,46 @@ const LeafletLocationSelector = ({
     };
 
     return location;
-  };
+  }, [cleanPlaceName]);
+
+  // Reverse geocode coordinates to get address
+  const reverseGeocode = useCallback(async (coordinates) => {
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?` +
+        `format=json&` +
+        `lat=${coordinates.lat}&` +
+        `lon=${coordinates.lng}&` +
+        `addressdetails=1`,
+        {
+          headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'B2B-Platform/1.0'
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Reverse geocoding failed');
+      }
+
+      const data = await response.json();
+      
+      const locationData = parseLocationData(data, coordinates);
+      setSelectedLocation(locationData);
+      setAddress(locationData.formattedAddress);
+      setMarkerPosition(coordinates);
+      onLocationSelect(locationData);
+    } catch (error) {
+      console.error('Reverse geocode error:', error);
+      setMapError('Failed to get address for this location');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [onLocationSelect, parseLocationData]);
+
 
   // Handle address input change
   const handleAddressChange = (e) => {

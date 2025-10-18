@@ -103,7 +103,7 @@ const Products = () => {
     if (node) observer.current.observe(node);
   }, [status, hasMore, allProducts.length, dispatch]);
 
-  const { counts: categoryCounts, loading: loadingCounts } = useCategoryCounts();
+  const { counts: categoryCounts } = useCategoryCounts();
 
   const categories = useMemo(() => {
     const keys = Object.keys(categoryCounts || {});

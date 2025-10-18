@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FaPercent, FaGift, FaTruck, FaDollarSign, FaCalendarAlt, FaInfoCircle, FaPlus, FaList } from 'react-icons/fa';
+import { FaPercent, FaGift, FaTruck, FaDollarSign, FaCalendarAlt, FaInfoCircle } from 'react-icons/fa';
 import './CreateHotDeal.css';
 
 const CreateHotDeal = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState([]);
-  const [mode, setMode] = useState('existing'); // 'existing' or 'new'
+  // const [mode, setMode] = useState('existing'); // 'existing' or 'new' - unused for now
   const [formData, setFormData] = useState({
     // Product selection (existing mode)
     productId: '',

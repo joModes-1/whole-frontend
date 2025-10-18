@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+// import { useAuth } from '../../context/AuthContext';
 import { API_BASE_URL } from '../../config';
 import './Auth.css';
 import '../SellerOnboarding.css';
@@ -12,7 +12,7 @@ import { normalizeUgandanPhone, isValidUgandanPhone } from '../../utils/phoneUti
 const Register = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { googleSignIn } = useAuth();
+  // const { googleSignIn } = useAuth(); // Not used currently
   // const [authReady, setAuthReady] = useState(false);
   
   // Get auth instance from Firebase config
@@ -277,38 +277,38 @@ const Register = () => {
     }
   };
 
-  const handleGoogleLogin = (e) => {
-    e.preventDefault();
-    setError('');
-    setIsLoading(true);
-    
-    // Call signInWithPopup directly in response to the click event
-    googleSignIn(formData.role)
-      .then(user => {
-        console.log('Google sign-in successful:', user);
-        console.log('User role from backend:', user.role);
-        console.log('Expected role from form:', formData.role);
-        
-        // Navigate directly based on role - no need to login again
-        if (user.role === 'seller') {
-          console.log('Navigating to seller dashboard');
-          navigate('/seller/dashboard', { replace: true });
-        } else if (user.role === 'buyer') {
-          console.log('Navigating to home page for buyer');
-          navigate('/', { replace: true });
-        } else {
-          console.log('Unknown role, navigating to home page');
-          navigate('/', { replace: true });
-        }
-      })
-      .catch((error) => {
-        console.error('Google sign-in error:', error);
-        setError('Failed to sign up with Google. Please try again.');
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  };
+  // const handleGoogleLogin = (e) => {
+  //   e.preventDefault();
+  //   setError('');
+  //   setIsLoading(true);
+  //   
+  //   // Call signInWithPopup directly in response to the click event
+  //   googleSignIn(formData.role)
+  //     .then(user => {
+  //       console.log('Google sign-in successful:', user);
+  //       console.log('User role from backend:', user.role);
+  //       console.log('Expected role from form:', formData.role);
+  //       
+  //       // Navigate directly based on role - no need to login again
+  //       if (user.role === 'seller') {
+  //         console.log('Navigating to seller dashboard');
+  //         navigate('/seller/dashboard', { replace: true });
+  //       } else if (user.role === 'buyer') {
+  //         console.log('Navigating to home page for buyer');
+  //         navigate('/', { replace: true });
+  //       } else {
+  //         console.log('Unknown role, navigating to home page');
+  //         navigate('/', { replace: true });
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       console.error('Google sign-in error:', error);
+  //       setError('Failed to sign up with Google. Please try again.');
+  //     })
+  //     .finally(() => {
+  //       setIsLoading(false);
+  //     });
+  // };
 
 
   return (

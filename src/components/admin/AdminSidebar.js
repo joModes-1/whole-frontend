@@ -17,7 +17,7 @@ const AdminSidebar = memo(() => {
         <h3 id="admin-panel-header" aria-label="Admin Panel Header">Admin Panel</h3>
       </div>
       <nav className="admin-sidebar-nav" aria-label="Admin navigation">
-        <ul role="list">
+        <ul>
           <li>
             <NavLink to="/admin/dashboard" className={isActiveHandler} aria-current={ariaCurrentHandler}>
               <span aria-label="Dashboard">Dashboard</span>

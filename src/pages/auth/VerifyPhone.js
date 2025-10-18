@@ -39,7 +39,7 @@ const VerifyPhone = () => {
       // In test mode, fetch the verification code from the backend (only once)
       fetchTestModeCode(formData.phoneNumber);
     }
-  }, [formData?.phoneNumber, testModeCode]); // Only depend on phoneNumber and testModeCode
+  }, [formData?.phoneNumber, testModeCode, formData]); // Add formData dependency
 
   // Redirect if essential data is missing
   useEffect(() => {

@@ -21,7 +21,7 @@ const DeliveryManagement = () => {
     licenseNumber: '',
     zone: ''
   });
-  const [generatedPassword, setGeneratedPassword] = useState(null);  // Track generated password
+  // const [generatedPassword, setGeneratedPassword] = useState(null);  // Not needed - using local variable instead
 
   useEffect(() => {
     fetchDeliveryPersonnel();
@@ -45,11 +45,6 @@ const DeliveryManagement = () => {
     
     if (!formData.name || !formData.email || !formData.phoneNumber) {
       toast.error('Please fill in all required fields');
-      return;
-    }
-
-    if (!editingId && !formData.password) {
-      toast.error('Password is required for new delivery personnel');
       return;
     }
 
@@ -158,7 +153,6 @@ const DeliveryManagement = () => {
     });
     setEditingId(null);
     setShowAddForm(false);
-    setGeneratedPassword(null);
   };
 
   const getVehicleIcon = (type) => {

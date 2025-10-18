@@ -112,8 +112,9 @@ const AddProductPage = () => {
   const navigate = useNavigate();
   const { token } = useAuth();
   const [userSelectedCategory, setUserSelectedCategory] = useState(false);
-  const [showLocationCompletion, setShowLocationCompletion] = useState(false);
-  const [missingFields, setMissingFields] = useState([]);
+  // TODO: Implement location completion modal for missing business info
+  // const [showLocationCompletion, setShowLocationCompletion] = useState(false);
+  // const [missingFields, setMissingFields] = useState([]);
 
   // Determine if selected category is cereals/grains (flexible match)
   const isCerealsGrains = useMemo(() => {
@@ -479,9 +480,10 @@ const AddProductPage = () => {
         
         // Check if the error is due to missing business information
         if (err.response.data.requiresCompletion && err.response.data.missingFields) {
-          setMissingFields(err.response.data.missingFields);
-          setShowLocationCompletion(true);
-          setError('');
+          // TODO: Implement location completion modal
+          // setMissingFields(err.response.data.missingFields);
+          // setShowLocationCompletion(true);
+          setError('Please complete your business location information in your profile.');
         } else {
           setError(err.response.data.message || `Server Error: ${err.response.status}`);
         }
