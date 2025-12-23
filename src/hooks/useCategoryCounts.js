@@ -12,7 +12,7 @@ export default function useCategoryCounts() {
     const baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000/api';
 
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 15000);
+    const timer = setTimeout(() => controller.abort(), 60000);
 
     // Fetch both categories and product counts in parallel
     Promise.all([

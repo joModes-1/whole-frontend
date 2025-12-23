@@ -10,7 +10,8 @@ import LiveProductSearch from './LiveProductSearch';
 import './Header.css';
 import './mobileMenuOnly.css';
 
-const BUYER_ORDERS_PATH = process.env.REACT_APP_BUYER_ORDERS_PATH || '/orders';
+// Always use relative paths in the header (prevents rendering full localhost URLs as text)
+const BUYER_ORDERS_PATH = '/orders';
 
 const Header = () => {
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -58,21 +59,28 @@ const Header = () => {
               </Link>
             </div>
 
-            {/* The one and only search bar */}
+            {/* Desktop search bar */}
             <div className="search-container-header">
               <LiveProductSearch />
             </div>
+            
+            {/* Mobile logo */}
             <div className="logo-mobile-container">
               <Link to="/" className="logo-link">
                 <span className="logo-mobile">Ujii</span>
               </Link>
             </div>
+            
             <div className="header-actions">
               <div className="header-icons">
                 {isAuthenticated ? (
                   <>
-                    <Link to="/profile" className="header-icon" aria-label="Profile"><FaUserCircle /></Link>
-                    <Link to="/notifications" className="header-icon" aria-label="Notifications"><FaBell /></Link>
+                    <Link to="/profile" className="header-icon" aria-label="Profile">
+                      <FaUserCircle />
+                    </Link>
+                    <Link to="/notifications" className="header-icon" aria-label="Notifications">
+                      <FaBell />
+                    </Link>
                   </>
                 ) : (
                   <div className="header-auth-links">
@@ -81,76 +89,143 @@ const Header = () => {
                   </div>
                 )}
                 <div className="cart-icon">
-                  <Link to="/cart" className="header-icon" aria-label="Cart"><FaShoppingCart /></Link>
+                  <Link to="/cart" className="header-icon" aria-label="Cart">
+                    <FaShoppingCart />
+                  </Link>
                   {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
                 </div>
-                <button onClick={toggleMobileMenu} className="mobile-menu-toggle" aria-label="Toggle menu">
+                <button 
+                  onClick={toggleMobileMenu} 
+                  className="mobile-menu-toggle" 
+                  aria-label="Toggle menu"
+                  aria-expanded={isMobileMenuOpen}
+                >
                   {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
                 </button>
               </div>
             </div>
           </div>
-          {/* Mobile Menu Overlay */}
-          <div className={`mobile-menu-overlay ${isMobileMenuOpen ? 'mobile-menu-open' : ''}`} onClick={toggleMobileMenu}></div>
 
-        {/* Mobile-only search section below header on small screens */}
-        <div className="mobile-searchbar">
-          <LiveProductSearch />
-        </div>
-
-        <nav className={`header-bottom ${isMobileMenuOpen ? 'mobile-menu-open' : ''}`}>
-          <div className="nav-container">
-            {/* Desktop Navigation */}
-            <ul className="nav-links desktop-nav">
-              <li className="nav-item"><CategoriesDropdown /></li>
-              {!isSeller && (
-                <>
-                  <li className="nav-item nav-right-start"><Link to={BUYER_ORDERS_PATH} className="nav-link"><FaList /> My Orders</Link></li>
-                </>
-              )}
-              {isSeller && (
-                <>
-                  <li className="nav-item nav-right-start"><Link to="/seller/dashboard" className="nav-link"><FaChartBar /> Dashboard</Link></li>
-                  <li className="nav-item"><Link to="/seller/products" className="nav-link"><FaBox /> My Products</Link></li>
-                  <li className="nav-item"><Link to="/seller/orders" className="nav-link"><FaList /> Orders</Link></li>
-                </>
-              )}
-              <li className="nav-item"><Link to="/help-center" className="nav-link">Help Center</Link></li>
-              <li className="nav-item"><TradeAssuranceDropdown /></li>
-            </ul>
-
-            {/* Mobile Navigation */}
-            <ul className={`nav-links mobile-nav ${isMobileMenuOpen ? 'open' : ''}`}>
-              <li className="nav-item"><Link to="/" className="nav-link" onClick={toggleMobileMenu}>Home</Link></li>
-              {!isSeller && (
-                <>
-                  <li className="nav-item"><Link to={BUYER_ORDERS_PATH} className="nav-link" onClick={toggleMobileMenu}>My Orders</Link></li>
-                </>
-              )}
-              {isSeller && (
-                <>
-                  <li className="nav-item"><Link to="/seller/dashboard" className="nav-link" onClick={toggleMobileMenu}>Dashboard</Link></li>
-                  <li className="nav-item"><Link to="/seller/products" className="nav-link" onClick={toggleMobileMenu}>My Products</Link></li>
-                  <li className="nav-item"><Link to="/seller/orders" className="nav-link" onClick={toggleMobileMenu}>Orders</Link></li>
-                </>
-              )}
-              <li className="nav-item"><Link to="/help-center" className="nav-link" onClick={toggleMobileMenu}>Help Center</Link></li>
-              <hr />
-              {isAuthenticated ? (
-                <li className="nav-item" onClick={() => { handleLogout(); toggleMobileMenu(); }}><span className="nav-link">Logout</span></li>
-              ) : (
-                <>
-                  <li className="nav-item"><Link to="/login" className="nav-link" onClick={toggleMobileMenu}>Login</Link></li>
-                  <li className="nav-item"><Link to="/role-selection" className="nav-link" onClick={toggleMobileMenu}>Register</Link></li>
-                </>
-              )}
-            </ul>
+          {/* Mobile-only search section */}
+          <div className="mobile-searchbar">
+            <LiveProductSearch />
           </div>
-        </nav>
+
+          {/* Desktop Navigation */}
+          <nav className="header-bottom">
+            <div className="nav-container">
+              <ul className="nav-links desktop-nav">
+                <li className="nav-item"><CategoriesDropdown /></li>
+                {!isSeller && (
+                  <li className="nav-item nav-right-start">
+                    <Link to={BUYER_ORDERS_PATH} className="nav-link">
+                      <FaList /> My Orders
+                    </Link>
+                  </li>
+                )}
+                {isSeller && (
+                  <>
+                    <li className="nav-item nav-right-start">
+                      <Link to="/seller/dashboard" className="nav-link">
+                        <FaChartBar /> Dashboard
+                      </Link>
+                    </li>
+                    <li className="nav-item">
+                      <Link to="/seller/products" className="nav-link">
+                        <FaBox /> My Products
+                      </Link>
+                    </li>
+                    <li className="nav-item">
+                      <Link to="/seller/orders" className="nav-link">
+                        <FaList /> Orders
+                      </Link>
+                    </li>
+                  </>
+                )}
+                <li className="nav-item">
+                  <Link to="/help-center" className="nav-link">Help Center</Link>
+                </li>
+                <li className="nav-item"><TradeAssuranceDropdown /></li>
+              </ul>
+            </div>
+          </nav>
         </div>
+
+        {/* Mobile Menu Overlay */}
+        <div 
+          className={`mobile-menu-overlay ${isMobileMenuOpen ? 'mobile-menu-open' : ''}`} 
+          onClick={toggleMobileMenu}
+          aria-hidden="true"
+        />
+
+        {/* Mobile Navigation Drawer */}
+        <nav className={`mobile-nav ${isMobileMenuOpen ? 'open' : ''}`}>
+          <div className="mobile-nav-header">
+            <h3>Menu</h3>
+            <button 
+              onClick={toggleMobileMenu} 
+              className="mobile-nav-close"
+              aria-label="Close menu"
+            >
+              <FaTimes />
+            </button>
+          </div>
+          <ul className="mobile-nav-links">
+            <li className="nav-item">
+              <Link to="/" className="nav-link" onClick={toggleMobileMenu}>Home</Link>
+            </li>
+            {!isSeller && (
+              <li className="nav-item">
+                <Link to={BUYER_ORDERS_PATH} className="nav-link" onClick={toggleMobileMenu}>
+                  <FaList /> My Orders
+                </Link>
+              </li>
+            )}
+            {isSeller && (
+              <>
+                <li className="nav-item">
+                  <Link to="/seller/dashboard" className="nav-link" onClick={toggleMobileMenu}>
+                    <FaChartBar /> Dashboard
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link to="/seller/products" className="nav-link" onClick={toggleMobileMenu}>
+                    <FaBox /> My Products
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link to="/seller/orders" className="nav-link" onClick={toggleMobileMenu}>
+                    <FaList /> Orders
+                  </Link>
+                </li>
+              </>
+            )}
+            <li className="nav-item">
+              <Link to="/help-center" className="nav-link" onClick={toggleMobileMenu}>Help Center</Link>
+            </li>
+            <hr className="mobile-nav-divider" />
+            {isAuthenticated ? (
+              <li className="nav-item">
+                <button 
+                  className="nav-link nav-link-button" 
+                  onClick={() => { handleLogout(); toggleMobileMenu(); }}
+                >
+                  Logout
+                </button>
+              </li>
+            ) : (
+              <>
+                <li className="nav-item">
+                  <Link to="/login" className="nav-link" onClick={toggleMobileMenu}>Login</Link>
+                </li>
+                <li className="nav-item">
+                  <Link to="/role-selection" className="nav-link" onClick={toggleMobileMenu}>Register</Link>
+                </li>
+              </>
+            )}
+          </ul>
+        </nav>
       </header>
-      
-      
     </>
   );
 };

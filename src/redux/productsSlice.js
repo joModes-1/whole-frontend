@@ -36,9 +36,9 @@ export const fetchProducts = createAsyncThunk('products/fetchProducts', async (p
     const requestUrl = `${API_BASE_URL}/products`;
     console.log(`[Slice] Step 4: Preparing to send API request to ${requestUrl}`);
     
-    // Timeout and abort support to avoid infinite loading (30s)
+    // Timeout and abort support to avoid infinite loading (1m)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    const timeoutId = setTimeout(() => controller.abort(), 60000);
     let response;
     try {
       // Use AbortController for timeout; avoid axios timeout to prevent double-abort races
@@ -104,6 +104,7 @@ const getInitialProductsState = () => {
     hasFetched: false,
     initialized: false,
     allProducts: [], // Ensure allProducts is always an array
+    currentRequestId: null,
   });
 
   try {
@@ -146,6 +147,7 @@ const productsSlice = createSlice({
       state.error = null;
       state.hasFetched = false;
       state.initialized = false;
+      state.currentRequestId = null;
     },
     hydrateProducts: (state, action) => {
       // action.payload should be an array of products
@@ -163,25 +165,44 @@ const productsSlice = createSlice({
     setFilters: (state, action) => {
       state.filters = action.payload;
     },
+    setLoadingMore: (state) => {
+      state.status = 'loadingMore';
+    },
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchProducts.pending, (state, action) => {
+        state.currentRequestId = action.meta.requestId;
         const arg = action.meta.arg;
         const isInitialLoad = (typeof arg === 'number' && arg === 1) || (typeof arg === 'object' && (arg?.page || 1) === 1);
-        console.log('Pending fetchProducts with arg:', arg, 'isInitialLoad:', isInitialLoad);
-        state.status = isInitialLoad ? 'loading' : 'loadingMore';
-        if (isInitialLoad) {
+        const hasExistingProducts = state.ids.length > 0;
+        console.log('Pending fetchProducts with arg:', arg, 'isInitialLoad:', isInitialLoad, 'hasExistingProducts:', hasExistingProducts);
+        
+        // Only show loading skeleton if this is truly an initial load with no existing products
+        // For category switches, keep existing products visible until new ones load
+        if (isInitialLoad && !hasExistingProducts) {
+          state.status = 'loading';
           productsAdapter.removeAll(state);
+        } else if (!isInitialLoad) {
+          state.status = 'loadingMore';
+        } else {
+          // Category switch with existing products - keep current status to avoid skeleton
+          state.status = 'succeeded';
         }
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
+        // Ignore out-of-order responses (e.g., user types quickly and older request finishes later)
+        if (state.currentRequestId && state.currentRequestId !== action.meta.requestId) {
+          console.log('[Slice] Ignoring stale fetchProducts response:', action.meta.requestId);
+          return;
+        }
         const { items, page, hasMore } = action.payload;
         state.status = 'succeeded';
         state.page = page;
         state.hasMore = hasMore;
         state.hasFetched = true;
         state.initialized = true;
+        state.currentRequestId = null;
         if (page === 1) {
           productsAdapter.setAll(state, items);
         } else {
@@ -189,8 +210,13 @@ const productsSlice = createSlice({
         }
       })
       .addCase(fetchProducts.rejected, (state, action) => {
+        if (state.currentRequestId && state.currentRequestId !== action.meta.requestId) {
+          console.log('[Slice] Ignoring stale fetchProducts error:', action.meta.requestId);
+          return;
+        }
         state.status = 'failed';
         state.error = action.payload || action.error.message || 'Failed to fetch products';
+        state.currentRequestId = null;
       });
   },
 });
@@ -201,5 +227,5 @@ export const {
   selectIds: selectProductIds,
 } = productsAdapter.getSelectors((state) => state.products);
 
-export const { resetProducts, setSearchTerm, setFilters, hydrateProducts } = productsSlice.actions;
+export const { resetProducts, setSearchTerm, setFilters, hydrateProducts, setLoadingMore } = productsSlice.actions;
 export default productsSlice.reducer;

@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FaUser, FaLock, FaSave, FaUpload, FaArrowLeft } from 'react-icons/fa';
+import { FaUser, FaLock, FaSave, FaUpload, FaArrowLeft, FaMapMarkerAlt, FaMap } from 'react-icons/fa';
 import api from '../services/api';
+import LeafletLocationSelector from '../components/LocationSelector/LeafletLocationSelector';
 import './EditProfile.css';
 
 const EditProfilePage = () => {
@@ -16,6 +17,10 @@ const EditProfilePage = () => {
   const [profileImageFile, setProfileImageFile] = useState(null);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [businessLocation, setBusinessLocation] = useState('');
+  const [locationUpdateLoading, setLocationUpdateLoading] = useState(false);
+  const [showLocationMap, setShowLocationMap] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState(null);
   // Loading and error states
   const [loading] = useState(false);
   const [message, setMessage] = useState('');
@@ -29,6 +34,14 @@ const EditProfilePage = () => {
     if (user) {
       setName(user.name || '');
       setProfileImagePreview(user.profilePicture || '');
+      setBusinessLocation(user.businessLocation?.formattedAddress || '');
+      if (user.businessLocation?.coordinates) {
+        setSelectedLocation({
+          lat: user.businessLocation.coordinates.coordinates[1],
+          lng: user.businessLocation.coordinates.coordinates[0],
+          formattedAddress: user.businessLocation.formattedAddress
+        });
+      }
     }
   }, [user]);
 
@@ -47,8 +60,9 @@ const EditProfilePage = () => {
     
     try {
       const response = await api.put('/profile', { name });
-      if (updateUser) {
-        updateUser(response.data);
+      const updatedUser = response.data.user || response.data;
+      if (updateUser && updatedUser) {
+        updateUser(updatedUser);
       }
       setMessage('Name updated successfully!');
     } catch (err) {
@@ -108,14 +122,19 @@ const EditProfilePage = () => {
           'Content-Type': 'multipart/form-data'
         }
       });
-      if (updateUser) {
-        updateUser(response.data);
+      
+      // Update with the user object from response
+      const updatedUser = response.data.user || response.data;
+      if (updateUser && updatedUser) {
+        updateUser(updatedUser);
       }
+      
       setMessage('Profile picture updated successfully!');
       setProfileImageFile(null);
-      setProfileImagePreview('');
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+      
+      // Update preview with new picture from response
+      if (updatedUser?.profilePicture) {
+        setProfileImagePreview(updatedUser.profilePicture);
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to upload profile picture.');
@@ -126,6 +145,62 @@ const EditProfilePage = () => {
   };
 
   // Handle password change
+  // Handle location update
+  const handleLocationUpdate = async (e) => {
+    e.preventDefault();
+    
+    if (!selectedLocation && !businessLocation.trim()) {
+      setError('Please select or enter a valid location.');
+      return;
+    }
+    
+    setLocationUpdateLoading(true);
+    setError('');
+    setMessage('');
+    
+    try {
+      const locationData = selectedLocation ? {
+        businessLocation: {
+          formattedAddress: selectedLocation.formattedAddress || businessLocation,
+          city: selectedLocation.city || businessLocation.split(',')[0] || '',
+          country: selectedLocation.country || 'Uganda',
+          coordinates: {
+            type: 'Point',
+            coordinates: [selectedLocation.lng, selectedLocation.lat]
+          }
+        }
+      } : {
+        businessLocation: {
+          formattedAddress: businessLocation,
+          city: businessLocation.split(',')[0] || '',
+          country: 'Uganda'
+        }
+      };
+      
+      const response = await api.put('/profile', locationData);
+      const updatedUser = response.data.user || response.data;
+      
+      if (updateUser && updatedUser) {
+        updateUser(updatedUser);
+      }
+      
+      setMessage('Location updated successfully!');
+      setShowLocationMap(false);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to update location. Please try again.');
+      console.error('Location update error:', err);
+    } finally {
+      setLocationUpdateLoading(false);
+    }
+  };
+
+  // Handle location selection from map
+  const handleLocationSelect = (location) => {
+    setSelectedLocation(location);
+    setBusinessLocation(location.formattedAddress || `${location.lat}, ${location.lng}`);
+    setShowLocationMap(false);
+  };
+
   const handlePasswordChange = async (e) => {
     e.preventDefault();
     
@@ -227,7 +302,7 @@ const EditProfilePage = () => {
             <div className="profile-preview-container">
               {profileImagePreview ? (
                 <img 
-                  src={profileImagePreview} 
+                  src={profileImagePreview.startsWith('http') ? profileImagePreview : `http://localhost:4000${profileImagePreview.startsWith('/') ? '' : '/'}${profileImagePreview}`} 
                   alt="Profile preview" 
                   className="profile-preview-image"
                 />
@@ -269,6 +344,54 @@ const EditProfilePage = () => {
             </button>
           </form>
         </div>
+        
+        {/* Location Update Section - Only for sellers */}
+        {user?.role === 'seller' && (
+          <div className="edit-profile-section">
+            <div className="section-header">
+              <FaMapMarkerAlt className="section-icon" />
+              <h3>Update Business Location</h3>
+            </div>
+            <form onSubmit={handleLocationUpdate} className="edit-profile-form">
+              <div className="form-group">
+                <label htmlFor="businessLocation">Business Address</label>
+                <input 
+                  type="text" 
+                  id="businessLocation" 
+                  value={businessLocation} 
+                  onChange={(e) => setBusinessLocation(e.target.value)} 
+                  placeholder="Enter your business address (e.g., Kampala, Uganda)"
+                  className="form-input"
+                  disabled={locationUpdateLoading}
+                />
+                <p className="form-help-text">This location will be displayed on your product listings</p>
+              </div>
+              <button 
+                type="button"
+                className="btn-secondary"
+                onClick={() => setShowLocationMap(true)}
+                style={{ marginBottom: '12px', width: '100%' }}
+              >
+                <FaMap className="btn-icon" /> Select on Map
+              </button>
+              <button 
+                type="submit" 
+                className="btn-primary" 
+                disabled={locationUpdateLoading || !businessLocation}
+              >
+                {locationUpdateLoading ? (
+                  <>
+                    <span className="spinner"></span> Updating...
+                  </>
+                ) : (
+                  <>
+                    <FaMapMarkerAlt className="btn-icon" /> Update Location
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        )}
         
         {/* Change Password Section */}
         <div className="edit-profile-section">
@@ -331,6 +454,30 @@ const EditProfilePage = () => {
           </button>
         </div>
       </div>
+      
+      {/* Location Map Modal */}
+      {showLocationMap && (
+        <div className="location-map-modal">
+          <div className="location-map-container">
+            <div className="location-map-header">
+              <h3>Select Your Business Location</h3>
+              <button 
+                className="close-btn"
+                onClick={() => setShowLocationMap(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="location-map-body">
+              <LeafletLocationSelector
+                initialLocation={selectedLocation}
+                onLocationSelect={handleLocationSelect}
+                required={false}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

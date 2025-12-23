@@ -15,13 +15,18 @@ const BuyerOrdersPage = () => {
 
   useEffect(() => {
     const fetchOrders = async () => {
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         setError('');
         
         // Add timeout to prevent infinite loading
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 60000); // 1 minute timeout
         
         const response = await api.get('/orders/buyer', {
           headers: { Authorization: `Bearer ${token}` },
@@ -29,7 +34,22 @@ const BuyerOrdersPage = () => {
         });
         
         clearTimeout(timeoutId);
-        setOrders(response.data);
+        
+        // Handle different response structures
+        let ordersData = [];
+        if (Array.isArray(response.data)) {
+          ordersData = response.data;
+        } else if (response.data && Array.isArray(response.data.orders)) {
+          ordersData = response.data.orders;
+        } else if (response.data && response.data.data && Array.isArray(response.data.data)) {
+          ordersData = response.data.data;
+        } else {
+          console.warn('Unexpected response structure:', response.data);
+          ordersData = [];
+        }
+        
+        console.log('Fetched orders:', ordersData.length, 'orders');
+        setOrders(ordersData);
       } catch (err) {
         // Better error handling
         if (err.name === 'AbortError') {
@@ -41,16 +61,13 @@ const BuyerOrdersPage = () => {
         } else {
           setError(err.message || 'Failed to fetch orders');
         }
+        setOrders([]); // Set empty array on error
       } finally {
         setLoading(false);
       }
     };
     
-    if (token) {
-      fetchOrders();
-    } else {
-      setLoading(false);
-    }
+    fetchOrders();
   }, [token]);
 
   const canCancel = (order) => {
@@ -131,7 +148,21 @@ const BuyerOrdersPage = () => {
         <div className="error-message">{error}</div>
       ) : orders.length === 0 ? (
         <div className="orders-table-container">
-          <div style={{marginTop: 32, fontWeight: 500, color: '#888', padding: '2rem', textAlign: 'center'}}>You have not placed any orders yet.</div>
+          <div style={{
+            marginTop: 32, 
+            fontWeight: 500, 
+            color: '#888', 
+            padding: '3rem 2rem', 
+            textAlign: 'center',
+            fontSize: '1.1rem',
+            background: '#f8f9fa',
+            borderRadius: '8px',
+            border: '1px solid #e9ecef'
+          }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📦</div>
+            <div style={{ marginBottom: '0.5rem', fontWeight: 600, color: '#495057' }}>No Orders Yet</div>
+            <div>You haven't placed any orders yet. Start shopping to see your orders here!</div>
+          </div>
         </div>
       ) : (
         <div className="orders-table-container">

@@ -140,8 +140,13 @@ const Register = () => {
       return;
     }
     setError('');
-    // Both buyers and sellers go to step 2
-    setCurrentStep(2);
+    // Go directly to step 2 for sellers, or proceed to location for buyers
+    if (formData.role === 'seller') {
+      setCurrentStep(2);
+    } else {
+      // For buyers, go to location step (which will be step 2)
+      setCurrentStep(2);
+    }
   };
 
   const handleBuyerLocationContinue = () => {
@@ -216,11 +221,13 @@ const Register = () => {
 
       console.log('Sending verification code...');
       try {
-        // Only send phone for code
+        // Send phone for code verification
         const response = await fetch(`${API_BASE_URL}/auth/send-verification-code`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phoneNumber })
+          body: JSON.stringify({ 
+            phoneNumber
+          })
         });
         const data = await response.json();
         if (!response.ok || !data.success) {

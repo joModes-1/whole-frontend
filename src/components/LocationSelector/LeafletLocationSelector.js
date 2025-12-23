@@ -54,7 +54,7 @@ const LeafletLocationSelector = ({
   const [showMap, setShowMap] = useState(true); // Open map by default
   const [mapError, setMapError] = useState('');
   const [markerPosition, setMarkerPosition] = useState(
-    initialLocation?.coordinates || { lat: 0.3476, lng: 32.5825 } // Kampala, Uganda
+    initialLocation ? { lat: initialLocation.lat, lng: initialLocation.lng } : { lat: 0.3476, lng: 32.5825 } // Kampala, Uganda
   );
   const [searchFocused, setSearchFocused] = useState(false);
   
@@ -278,13 +278,17 @@ const LeafletLocationSelector = ({
       cleanedAddress = cleanPlaceName(cleanedAddress);
     }
     
+    const coords = coordinates || {
+      lat: parseFloat(data.lat),
+      lng: parseFloat(data.lon)
+    };
+    
     const location = {
       formattedAddress: cleanedAddress,
       placeId: data.place_id || '',
-      coordinates: coordinates || {
-        lat: parseFloat(data.lat),
-        lng: parseFloat(data.lon)
-      },
+      lat: coords.lat,
+      lng: coords.lng,
+      coordinates: coords,
       address: [
         address.house_number,
         address.road,
@@ -374,6 +378,8 @@ const LeafletLocationSelector = ({
     const locationData = {
       formattedAddress: cleanAddress,
       placeId: suggestion.place_id,
+      lat: coordinates.lat,
+      lng: coordinates.lng,
       coordinates,
       address: [
         suggestion.address.house_number,
@@ -563,7 +569,7 @@ const LeafletLocationSelector = ({
             )}
             <div><strong>Address:</strong> {selectedLocation.formattedAddress}</div>
             {selectedLocation.city && <div><strong>City:</strong> {selectedLocation.city}</div>}
-            <div><strong>Coordinates:</strong> {selectedLocation.coordinates.lat.toFixed(6)}, {selectedLocation.coordinates.lng.toFixed(6)}</div>
+            <div><strong>Coordinates:</strong> {(selectedLocation.coordinates?.lat || selectedLocation.lat || 0).toFixed(6)}, {(selectedLocation.coordinates?.lng || selectedLocation.lng || 0).toFixed(6)}</div>
           </div>
         </div>
       )}

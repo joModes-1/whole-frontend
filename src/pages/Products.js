@@ -62,19 +62,21 @@ const Products = () => {
     // Avoid double-fetch when URL already drives the search
     if (reduxSearchTerm === urlSearch) return;
 
-    // If user is typing in the sidebar search input, fetch fresh results
+    // If user is typing in the sidebar search input, fetch fresh results (debounced)
     if (typeof reduxSearchTerm === 'string') {
-      const fetchParams = { page: 1, limit: 20 };
-      if (reduxSearchTerm.trim()) fetchParams.search = reduxSearchTerm.trim();
-      const key = JSON.stringify(fetchParams);
-      if (lastFetchRef.current !== key) {
+      const term = reduxSearchTerm.trim();
+      const key = JSON.stringify({ page: 1, term });
+
+      const timeoutId = setTimeout(() => {
+        if (lastFetchRef.current === key) return;
         lastFetchRef.current = key;
         dispatch(resetProducts());
-        console.log('[Products.js] Sidebar search changed, fetching with params:', fetchParams);
-        dispatch(fetchProducts(fetchParams));
-      } else {
-        console.log('[Products.js] Skipping duplicate sidebar search fetch.');
-      }
+        // The thunk reads `searchTerm` from Redux state, so we only need to reset + fetch page 1
+        console.log('[Products.js] Sidebar search changed, fetching page 1 for term:', term);
+        dispatch(fetchProducts({ page: 1 }));
+      }, 300);
+
+      return () => clearTimeout(timeoutId);
     }
   }, [reduxSearchTerm, dispatch, location.search]);
 
@@ -189,46 +191,26 @@ const Products = () => {
 
   // useCategoryCounts moved above to compute categories from API counts
 
-  // Handle URL search parameters (react ONLY to location.search changes)
+  // URL params should NOT drive refetching on every filter click.
+  // We only use URL params to initialize filters/search (deep links), then filtering is client-side.
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const category = params.get('category');
     const search = params.get('search');
 
-    // If no URL filters, do nothing here
-    if (!category && !search) return;
-
-    console.log('[Products] URL params detected:', { category, search });
-
-    // Sync search term only if different
-    if (typeof search === 'string' && search !== reduxSearchTerm) {
+    // Sync search term from URL (optional deep link)
+    if (typeof search === 'string' && search.length) {
       dispatch(setSearchTerm(search));
     }
 
-    // Sync category only if different (guard undefined)
-    const selectedCatsSafe = Array.isArray(reduxFiltersRaw.selectedCategories) ? reduxFiltersRaw.selectedCategories : ['All'];
-    if (category) {
-      if (!selectedCatsSafe.includes(category)) {
-        dispatch(setFilters({ ...reduxFiltersRaw, selectedCategories: [category] }));
-      }
-    } else if (selectedCatsSafe[0] !== 'All') {
-      dispatch(setFilters({ ...reduxFiltersRaw, selectedCategories: ['All'] }));
+    // Initialize category from URL only if present and current selection is still "All"
+    if (category && selectedCategories?.length === 1 && selectedCategories[0] === 'All') {
+      dispatch(setFilters({ ...reduxFiltersRaw, selectedCategories: [category] }));
     }
-
-    // Fetch once for this URL state (guard against duplicate fetches)
-    const fetchParams = { page: 1, limit: 20 };
-    if (category) fetchParams.category = category;
-    if (search) fetchParams.search = search;
-    const key = JSON.stringify(fetchParams);
-    if (lastFetchRef.current !== key) {
-      lastFetchRef.current = key;
-      dispatch(resetProducts());
-      console.log('[Products] Fetching products with params:', fetchParams);
-      dispatch(fetchProducts(fetchParams));
-    } else {
-      console.log('[Products] Skipping duplicate URL-driven fetch.');
-    }
-  }, [location.search, dispatch, reduxFiltersRaw, reduxSearchTerm]);
+    // NOTE: we do NOT reset selectedCategories when no URL category exists.
+    // NOTE: we do NOT fetch/reset here — categories are filtered from already-fetched products.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search, dispatch]);
 
   const toggleCategory = (category) => {
     let updated = [];
@@ -245,6 +227,7 @@ const Products = () => {
       if (updated.length === 0) updated = ['All'];
     }
 
+    // Client-side filtering: update Redux filters without navigation/refetch.
     dispatch(setFilters({ ...reduxFiltersRaw, selectedCategories: updated }));
   };
 

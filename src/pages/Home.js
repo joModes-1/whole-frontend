@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import HeroSection from '../components/HeroSection/HeroSection';
+import FeaturedProductsLayout from '../components/FeaturedProductsLayout/FeaturedProductsLayout';
 import ProductCard from '../components/ProductCard/ProductCard';
 import ProductSkeleton from '../components/ProductSkeleton/ProductSkeleton';
+import { getProductImage } from '../utils/imageUtils';
 import { 
   FiTag,
   FiShoppingBag,
@@ -21,6 +23,7 @@ const Home = () => {
   const navigate = useNavigate();
   const [handpickedProducts, setHandpickedProducts] = useState([]);
   const [featuredCategories, setFeaturedCategories] = useState([]); // [name]
+  const [categoryImages, setCategoryImages] = useState({}); // { [categoryName]: imageUrl }
   const [hotDeals, setHotDeals] = useState([]);
   const [trendingProducts, setTrendingProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -91,6 +94,21 @@ const Home = () => {
         setTrendingProducts(trendingProductsData.slice(0, 8));
         setFeaturedCategories(categoryList);
 
+        // Build a category -> image map from products we already fetched
+        // Pick the first product with a real image for each category.
+        const imgMap = {};
+        for (const cat of categoryList) {
+          const match = allProducts.find((p) => (p?.category || '').toLowerCase() === String(cat).toLowerCase());
+          if (match) {
+            const img = getProductImage(match);
+            // Avoid placeholder data URIs if possible
+            if (img && typeof img === 'string' && !img.startsWith('data:image/svg+xml')) {
+              imgMap[cat] = img;
+            }
+          }
+        }
+        setCategoryImages(imgMap);
+
       } catch (err) {
         console.error('[Home] Error fetching home page data:', err);
         setError('Failed to load the marketplace. Please try again later.');
@@ -146,6 +164,7 @@ const Home = () => {
           <div className="category-grid">
             {featuredCategories.map((category) => {
               const IconComponent = getCategoryIcon(category || '');
+              const imgUrl = categoryImages?.[category];
               return (
                 <div 
                   key={category} 
@@ -160,7 +179,20 @@ const Home = () => {
                   }}
                 >
                   <div className="category-card-image-placeholder" aria-hidden="true">
+                    {imgUrl ? (
+                      <img
+                        src={imgUrl}
+                        alt={category}
+                        className="category-card-image"
+                        loading="lazy"
+                        onError={(e) => {
+                          // Fallback to icon if image fails
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    ) : (
                     <IconComponent size={32} />
+                    )}
                   </div>
                   <h3>{category}</h3>
                   <p className="category-card-subtitle">Explore {category}</p>
@@ -179,6 +211,9 @@ const Home = () => {
             ))}
           </div>
         </section>
+
+        {/* Featured Products Layout - Categories, Frequently Searched, Discover Manufacturers */}
+        <FeaturedProductsLayout />
 
         {/* Trending Products Section */}
         <section className="home-product-showcase">

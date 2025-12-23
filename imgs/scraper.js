@@ -26,7 +26,7 @@ const MAX_URLS = 1200; // unused in category mode, kept for site mode
 // Download config
 const INCLUDE_EXTS = [".jpg", ".jpeg", ".png", ".webp"]; // file types to save
 const CONCURRENCY = 5; // simultaneous downloads
-const TIMEOUT_MS = 15000; // request timeout
+const TIMEOUT_MS = 60000; // request timeout
 const MAX_RETRIES = 3; // per image
 const BACKOFF_BASE_MS = 800; // retry backoff base
 

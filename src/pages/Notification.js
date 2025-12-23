@@ -1,39 +1,28 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
+import { FaBell, FaBox, FaCheckCircle, FaTruck, FaInfoCircle } from 'react-icons/fa';
 import './Notification.css';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
-const sampleNotifications = [
-  {
-    id: 1,
-    title: 'Order Shipped',
-    message: 'Your order #12345 has been shipped and is on its way!',
-    date: '2025-07-05',
-    read: false
-  },
-  {
-    id: 2,
-    title: 'Refund Processed',
-    message: 'Your refund for order #12321 has been processed.',
-    date: '2025-07-04',
-    read: true
-  },
-  {
-    id: 3,
-    title: 'Welcome to Ujii!',
-    message: 'Thanks for signing up. Enjoy shopping with us!',
-    date: '2025-07-01',
-    read: true
+// Helper to get notification icon based on type
+const getNotificationIcon = (type) => {
+  switch(type) {
+    case 'welcome': return <FaBell className="notification-icon welcome" />;
+    case 'order': return <FaBox className="notification-icon order" />;
+    case 'shipping': return <FaTruck className="notification-icon shipping" />;
+    case 'success': return <FaCheckCircle className="notification-icon success" />;
+    default: return <FaInfoCircle className="notification-icon info" />;
   }
-];
+};
 
 const Notification = () => {
   const { user, token } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [ordersError, setOrdersError] = useState('');
+  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
     const fetchBuyerOrders = async () => {
@@ -57,30 +46,79 @@ const Notification = () => {
   }, [token, user]);
 
   // Load saved notifications from localStorage
-  const savedNotifs = useMemo(() => {
-    try {
-      const raw = localStorage.getItem('notifications');
-      const parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
+  useEffect(() => {
+    const loadNotifications = () => {
+      try {
+        const raw = localStorage.getItem('userNotifications');
+        const parsed = raw ? JSON.parse(raw) : [];
+        setNotifications(Array.isArray(parsed) ? parsed : []);
+      } catch {
+        setNotifications([]);
+      }
+    };
+    loadNotifications();
   }, []);
 
-  const allNotifications = [...savedNotifs, ...sampleNotifications];
+  const markAsRead = (notificationId) => {
+    const updatedNotifications = notifications.map(notif => 
+      notif.id === notificationId ? { ...notif, read: true } : notif
+    );
+    setNotifications(updatedNotifications);
+    localStorage.setItem('userNotifications', JSON.stringify(updatedNotifications));
+  };
+
+  const clearAllNotifications = () => {
+    setNotifications([]);
+    localStorage.setItem('userNotifications', JSON.stringify([]));
+  };
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
     <div className="notification-page-container">
-      <h2>Notifications</h2>
+      <div className="notification-header">
+        <h2>
+          <FaBell className="header-icon" /> 
+          Notifications
+          {unreadCount > 0 && (
+            <span className="unread-badge">{unreadCount}</span>
+          )}
+        </h2>
+        {notifications.length > 0 && (
+          <button 
+            className="clear-all-btn"
+            onClick={clearAllNotifications}
+          >
+            Clear All
+          </button>
+        )}
+      </div>
+      
       <div className="notification-list">
-        {allNotifications.length === 0 ? (
-          <div className="notification-empty">No notifications yet.</div>
+        {notifications.length === 0 ? (
+          <div className="notification-empty">
+            <FaBell className="empty-icon" />
+            <p>No notifications yet</p>
+            <span>You'll see new notifications here when you have them</span>
+          </div>
         ) : (
-          allNotifications.map((notif, idx) => (
-            <div key={notif.id || idx} className={`notification-item${notif.read ? ' read' : ''}`}>
-              <div className="notification-title">{notif.title}</div>
-              <div className="notification-message">{notif.message}</div>
-              <div className="notification-date">{notif.date}</div>
+          notifications.map((notif, idx) => (
+            <div 
+              key={notif.id || idx} 
+              className={`notification-item${notif.read ? ' read' : ''}`}
+              onClick={() => !notif.read && markAsRead(notif.id)}
+            >
+              <div className="notification-content">
+                {getNotificationIcon(notif.type)}
+                <div className="notification-details">
+                  <div className="notification-title">{notif.title}</div>
+                  <div className="notification-message">{notif.message}</div>
+                  <div className="notification-date">
+                    {notif.date ? format(new Date(notif.date), 'MMM dd, yyyy h:mm a') : ''}
+                  </div>
+                </div>
+              </div>
+              {!notif.read && <span className="unread-dot"></span>}
             </div>
           ))
         )}

@@ -30,7 +30,7 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [saveAddress, setSaveAddress] = useState(false);
-  const [shippingCost, setShippingCost] = useState(5000); // Base delivery fee in UGX
+  const [shippingCost, setShippingCost] = useState(0); // Will be calculated dynamically
   const [taxAmount, setTaxAmount] = useState(0); // No tax for COD
   const [isProfileLoading] = useState(false);
 
@@ -76,24 +76,37 @@ const Checkout = () => {
     }
   }, [user]);
 
-  const calculateShippingAndTax = useCallback(() => {
-    // Calculate shipping cost based on location and cart total
-    let shipping = 5000; // Base shipping cost in UGX
-      
-    // Add distance-based cost for certain districts
-    const distantDistricts = ['Gulu', 'Mbarara', 'Jinja', 'Mbale', 'Arua'];
-    if (distantDistricts.includes(shippingInfo.district)) {
-      shipping += 3000; // Additional UGX 3,000 for distant districts
-    }
-      
-    // Free shipping for orders above UGX 100,000
-    if (total >= 100000) {
-      shipping = 0;
+  const calculateShippingAndTax = useCallback(async () => {
+    try {
+      // Try to calculate based on coordinates first
+      if (shippingInfo.coordinates && shippingInfo.coordinates.length === 2) {
+        const response = await api.post('/delivery-settings/calculate-fee', {
+          coordinates: shippingInfo.coordinates,
+          orderTotal: total
+        });
+        setShippingCost(response.data.deliveryFee);
+      } 
+      // Fallback to district-based calculation
+      else if (shippingInfo.district) {
+        const response = await api.post('/delivery-settings/calculate-fee-by-district', {
+          district: shippingInfo.district,
+          orderTotal: total
+        });
+        setShippingCost(response.data.deliveryFee);
+      } 
+      // Default to base fee from settings
+      else {
+        const response = await api.get('/delivery-settings/settings');
+        setShippingCost(response.data.baseDeliveryFee);
+      }
+    } catch (error) {
+      console.error('Error calculating delivery fee:', error);
+      // Fallback to a default fee if API fails
+      setShippingCost(5000);
     }
     
-    setShippingCost(shipping);
-    setTaxAmount(0);
-  }, [total, shippingInfo.district]);
+    setTaxAmount(0); // No tax
+  }, [total, shippingInfo.district, shippingInfo.coordinates]);
 
   useEffect(() => {
     if (cart && cart.length > 0) {
@@ -103,7 +116,7 @@ const Checkout = () => {
       // Calculate shipping and tax
       calculateShippingAndTax();
     }
-  }, [cart, total, shippingInfo.district, calculateShippingAndTax]);
+  }, [cart, total, shippingInfo.district, shippingInfo.coordinates, calculateShippingAndTax]);
 
   const handleGetLocation = () => {
     if (navigator.geolocation) {
@@ -458,7 +471,7 @@ const Checkout = () => {
             </div>
             <div className="summary-line">
               <span>Delivery Fee:</span>
-              <span>{formatUGX(shippingCost)}</span>
+              <span>{shippingCost === 0 && total >= 100000 ? 'FREE' : formatUGX(shippingCost)}</span>
             </div>
             <div className="summary-total">
               <span>Total:</span>

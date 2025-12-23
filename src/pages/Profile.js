@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaUser } from 'react-icons/fa';
+import { FaUser, FaMapMarkerAlt, FaEdit } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchUserProfile, clearUser, setUser } from '../redux/userSlice';
 import { useAuth } from '../context/AuthContext';
+import LeafletLocationSelector from '../components/LocationSelector/LeafletLocationSelector';
+import api from '../services/api';
 import './Profile.css';
 import ProfileSkeleton from '../components/Header/ProfileSkeleton';
 
@@ -18,6 +20,10 @@ const Profile = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [showLocationMap, setShowLocationMap] = useState(false);
+  const [locationUpdateLoading, setLocationUpdateLoading] = useState(false);
+  const [locationMessage, setLocationMessage] = useState('');
+  const [locationError, setLocationError] = useState('');
   const fileInputRef = useRef(null);
 
   // Always fetch user profile when user ID changes (prevents stale data after login/logout)
@@ -61,6 +67,21 @@ const Profile = () => {
     const file = event.target.files[0];
     if (!file) return;
 
+    // Allow selecting the same file again later
+    if (event.target) event.target.value = '';
+
+    // Basic client-side validation (matches backend limits)
+    const isImage = /^image\//.test(file.type);
+    if (!isImage) {
+      setUploadError('Please select a valid image file.');
+      return;
+    }
+    const maxBytes = 5 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      setUploadError('Image is too large. Max size is 5MB.');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('profilePicture', file);
 
@@ -68,26 +89,26 @@ const Profile = () => {
     setUploadError('');
 
     try {
-      // Get token from localStorage or AuthContext (for Authorization)
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:4000/api/profile/picture', {
-        method: 'POST',
-        body: formData,
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+      // Use shared API client (correct baseURL + auth headers + consistent behavior)
+      const response = await api.post('/profile/picture', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-      const data = await response.json();
-      console.log('Profile picture upload response:', data); // Debug log
-      if (response.ok && data.user) {
-        dispatch(setUser(data.user)); // Update Redux
-        updateUser(data.user); // Update AuthContext
-        // Also refresh user data from server to ensure consistency
-        dispatch(fetchUserProfile()); // Refresh user data from server
+
+      const updatedUser = response.data?.user || response.data;
+      if (updatedUser) {
+        dispatch(setUser(updatedUser)); // Update Redux
+        if (updateUser) updateUser(updatedUser); // Update AuthContext
+        setUploadError('');
       } else {
-        setUploadError(data.message || 'Failed to upload picture. Please try again.');
+        setUploadError('Upload succeeded but no user data returned.');
       }
     } catch (err) {
       console.error('Error uploading profile picture:', err);
-      setUploadError('Failed to upload picture. Please try again.');
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        'Failed to upload picture. Please try again.';
+      setUploadError(msg);
     } finally {
       setUploading(false);
     }
@@ -104,6 +125,58 @@ const Profile = () => {
 
   const handleViewOrders = () => {
     navigate('/buyer/orders');
+  };
+
+  // Handle opening location map
+  const handleOpenLocationMap = () => {
+    setLocationError('');
+    setLocationMessage('');
+    setShowLocationMap(true);
+  };
+
+  // Handle location selection from map
+  const handleLocationSelect = async (location) => {
+    setLocationUpdateLoading(true);
+    setLocationMessage('');
+    setLocationError('');
+    
+    try {
+      const locationData = {
+        businessLocation: {
+          formattedAddress: location.formattedAddress || `${location.lat}, ${location.lng}`,
+          city: location.city || location.formattedAddress?.split(',')[0] || '',
+          country: location.country || 'Uganda',
+          coordinates: {
+            type: 'Point',
+            coordinates: [location.lng, location.lat]
+          }
+        }
+      };
+      
+      const response = await api.put('/profile', locationData);
+      const updatedUser = response.data.user || response.data;
+      
+      if (updatedUser) {
+        dispatch(setUser(updatedUser));
+        if (updateUser) {
+          updateUser(updatedUser);
+        }
+        setLocationMessage('✓ Location updated successfully!');
+        setTimeout(() => setLocationMessage(''), 5000);
+        // Also refresh profile to ensure consistency
+        dispatch(fetchUserProfile());
+      }
+      
+      setShowLocationMap(false);
+    } catch (err) {
+      const errorMsg = err.response?.data?.message || 'Failed to update location. Please try again.';
+      setLocationError(errorMsg);
+      console.error('Location update error:', err);
+      // Don't close the modal on error so user can retry
+      setTimeout(() => setLocationError(''), 5000);
+    } finally {
+      setLocationUpdateLoading(false);
+    }
   };
 
   if (authLoading || isLoggingOut || userStatus === 'loading') {
@@ -135,10 +208,23 @@ const Profile = () => {
     );
   }
 
+  // Construct proper image URL (handle both relative and absolute URLs)
+  const getImageUrl = (url) => {
+    if (!url) return null;
+    // If it's a cloudinary URL or starts with http/https, use as is
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    // Otherwise, prepend the backend URL
+    return `http://localhost:4000${url.startsWith('/') ? '' : '/'}${url}`;
+  };
+  
+  const profileImageUrl = getImageUrl(user.profilePicture);
+  
   // Debug logging
   console.log('Current user data:', user);
   console.log('Profile picture value:', user.profilePicture);
-  console.log('Constructed image URL:', user.profilePicture ? `http://localhost:4000${user.profilePicture}` : 'No profile picture');
+  console.log('Constructed image URL:', profileImageUrl);
 
   return (
     <div className="profile-container">
@@ -158,15 +244,15 @@ const Profile = () => {
               accept="image/*"
               disabled={uploading}
             />
-            {user.profilePicture ? (
+            {profileImageUrl ? (
               <img
-                key={user.profilePicture}
-                src={`http://localhost:4000${user.profilePicture}`}
+                key={profileImageUrl}
+                src={profileImageUrl}
                 alt={user.name || 'Profile'}
                 className={`profile-image profile-image-small ${uploading ? 'uploading' : ''}`}
-                onLoad={() => console.log('Profile image loaded successfully:', `http://localhost:4000${user.profilePicture}`)}
+                onLoad={() => console.log('Profile image loaded successfully:', profileImageUrl)}
                 onError={(e) => {
-                  console.error('Profile image failed to load:', `http://localhost:4000${user.profilePicture}`);
+                  console.error('Profile image failed to load:', profileImageUrl);
                   console.error('Image error:', e);
                 }}
               />
@@ -201,7 +287,7 @@ const Profile = () => {
 
           {/* Business Location - Only for sellers */}
           {user.role === 'seller' && (
-            <div className="detail-item">
+            <div className="detail-item location-item">
               <label>Business Location</label>
               {user.businessLocation && user.businessLocation.formattedAddress ? (
                 <div className="business-location-info">
@@ -213,17 +299,34 @@ const Profile = () => {
                       {user.businessLocation.country && `, ${user.businessLocation.country}`}
                     </p>
                   )}
-                  <span className="location-status verified">
-                    📍 Location Set
-                  </span>
+                  <button
+                    className="location-status-button verified"
+                    onClick={handleOpenLocationMap}
+                    disabled={locationUpdateLoading}
+                  >
+                    <FaMapMarkerAlt /> Update Location
+                  </button>
                 </div>
               ) : (
                 <div className="business-location-missing">
                   <p>No business location set</p>
-                  <span className="location-status missing">
+                  <button
+                    className="location-status-button set-location"
+                    onClick={handleOpenLocationMap}
+                    disabled={locationUpdateLoading}
+                  >
+                    <FaMapMarkerAlt /> Set Location Now
+                  </button>
+                  <span className="location-warning">
                     ⚠️ Location Required for Product Listings
                   </span>
                 </div>
+              )}
+              {locationMessage && (
+                <div className="location-success-message">{locationMessage}</div>
+              )}
+              {locationError && (
+                <div className="location-error-message">{locationError}</div>
               )}
             </div>
           )}
@@ -283,6 +386,49 @@ const Profile = () => {
           </button>
         </div>
       </div>
+      
+      {/* Location Map Modal */}
+      {showLocationMap && (
+        <div className="location-map-modal">
+          <div className="location-map-container">
+            <div className="location-map-header">
+              <h3>
+                {locationUpdateLoading ? 'Updating Location...' : 'Select Your Business Location'}
+              </h3>
+              <button 
+                className="close-btn"
+                onClick={() => setShowLocationMap(false)}
+                disabled={locationUpdateLoading}
+              >
+                ×
+              </button>
+            </div>
+            <div className="location-map-body">
+              {locationError && (
+                <div className="map-error-message">
+                  {locationError}
+                </div>
+              )}
+              <LeafletLocationSelector
+                initialLocation={user.businessLocation?.coordinates ? {
+                  lat: user.businessLocation.coordinates.coordinates[1],
+                  lng: user.businessLocation.coordinates.coordinates[0],
+                  formattedAddress: user.businessLocation.formattedAddress
+                } : null}
+                onLocationSelect={handleLocationSelect}
+                required={false}
+                disabled={locationUpdateLoading}
+              />
+              {locationUpdateLoading && (
+                <div className="location-updating-overlay">
+                  <div className="spinner"></div>
+                  <p>Saving your location...</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

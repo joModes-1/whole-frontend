@@ -32,7 +32,12 @@ const Cart = () => {
         <p>Add some products to your cart to continue shopping.</p>
         <button 
           className="continue-shopping"
-          onClick={() => navigate('/products')}
+          onClick={() => {
+            // Navigate to products page with all filters cleared
+            navigate('/products');
+            // Clear any search params from the URL
+            window.history.replaceState({}, '', '/products');
+          }}
         >
           Continue Shopping
         </button>

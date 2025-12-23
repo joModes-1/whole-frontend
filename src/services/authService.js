@@ -23,12 +23,29 @@ export const signup = async (userData) => {
 
     // Store token and user data
     const { token, user } = response.data;
-    setToken(token);
-    localStorage.setItem('user', JSON.stringify(user));
+    if (token) {
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+    }
+
+    // Add welcome notification
+    const welcomeNotification = {
+      id: `welcome-${Date.now()}`,
+      title: 'Welcome to Ujii!',
+      message: 'Thanks for signing up. Enjoy shopping with us!',
+      type: 'welcome',
+      date: new Date().toISOString(),
+      read: false
+    };
+
+    // Get existing notifications or create new array
+    const existingNotifications = JSON.parse(localStorage.getItem('userNotifications') || '[]');
+    const updatedNotifications = [welcomeNotification, ...existingNotifications];
+    localStorage.setItem('userNotifications', JSON.stringify(updatedNotifications));
 
     return {
-      user,
-      token
+      success: true,
+      user
     };
 
   } catch (error) {

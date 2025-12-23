@@ -111,6 +111,14 @@
   font-size: 2rem;
   color: var(--primary);
   transition: var(--transition);
+  overflow: hidden;
+}
+
+.category-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .category-card-item:hover .category-card-image-placeholder {

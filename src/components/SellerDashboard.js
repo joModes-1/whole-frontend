@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import ProductSkeleton from './ProductSkeleton/ProductSkeleton';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import RevenueOverTimeChart from './charts/RevenueOverTimeChart';
 import { FaPlus, FaMoneyBillWave, FaShoppingCart, FaChartLine, FaFire } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useSelector, useDispatch } from 'react-redux';
@@ -141,30 +141,9 @@ const SellerDashboard = () => {
             No revenue data to display yet.
           </div>
         ) : (
-          <ResponsiveContainer key={revenueDataKey} width="100%" height={360}>
-            <LineChart data={revenueData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-              <XAxis dataKey="name" stroke="#94a3b8" />
-              <YAxis stroke="#94a3b8" tickFormatter={(v) => formatCurrency(v)} domain={[0, yMax]} allowDecimals={false} />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'var(--card-bg)', 
-                  borderRadius: '8px', 
-                  border: '1px solid var(--border-color)'
-                }}
-                formatter={(value) => [formatCurrency(Number(value) || 0), 'Revenue']}
-                labelFormatter={(label) => `${label}`}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="revenue" 
-                stroke="var(--accent-primary)" 
-                strokeWidth={3} 
-                dot={{ strokeWidth: 3, r: 5, fill: '#ffffff' }}
-                activeDot={{ r: 8, stroke: '#ffffff', strokeWidth: 2 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <div key={revenueDataKey}>
+            <RevenueOverTimeChart data={revenueData} height={360} formatCurrency={formatCurrency} />
+          </div>
         )}
       </div>
 

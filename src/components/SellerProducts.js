@@ -16,7 +16,7 @@ const SellerProducts = () => { // Renamed component
 
 
   const handleAddProduct = () => {
-    navigate('/seller/add-product');
+    navigate('/seller/products/add');
   };
 
   useEffect(() => {

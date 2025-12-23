@@ -8,6 +8,7 @@ const OrderSuccess = () => {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [qrDownloaded, setQrDownloaded] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { clearCart } = useCart();
@@ -25,6 +26,12 @@ const OrderSuccess = () => {
 
         const orderData = await getOrderById(orderId);
         setOrder(orderData);
+        
+        // Auto-download QR code if available
+        if (orderData.deliveryConfirmation?.qrCode) {
+          autoDownloadQRCode(orderData);
+        }
+        
         // Cart should already be cleared after successful payment verification
         // Only clear cart here for COD orders or if it wasn't cleared elsewhere
       } catch (err) {
@@ -48,6 +55,42 @@ const OrderSuccess = () => {
       return `UGX ${Math.round(n).toLocaleString('en-UG')}`;
     }
   }, []);
+
+  const autoDownloadQRCode = (orderData) => {
+    try {
+      // Check if already downloaded in this session
+      const downloadedKey = `qr-downloaded-${orderData._id}`;
+      if (sessionStorage.getItem(downloadedKey)) {
+        setQrDownloaded(true);
+        return;
+      }
+
+      // Create a downloadable link from the QR code data URL
+      const link = document.createElement('a');
+      link.download = `order-${orderData.orderNumber}-qr.png`;
+      link.href = orderData.deliveryConfirmation.qrCode;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Mark as downloaded
+      sessionStorage.setItem(downloadedKey, 'true');
+      setQrDownloaded(true);
+    } catch (error) {
+      console.error('Failed to auto-download QR code:', error);
+    }
+  };
+
+  const manualDownloadQRCode = () => {
+    if (order?.deliveryConfirmation?.qrCode) {
+      const link = document.createElement('a');
+      link.download = `order-${order.orderNumber}-qr.png`;
+      link.href = order.deliveryConfirmation.qrCode;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
 
   if (loading) {
     return (
@@ -197,6 +240,11 @@ const OrderSuccess = () => {
           {order.deliveryConfirmation && order.deliveryConfirmation.qrCode && order.status !== 'delivered' && (
             <div className="qr-code-section">
               <h3>Delivery Confirmation QR Code</h3>
+              {qrDownloaded && (
+                <div className="qr-download-notice">
+                  ✓ QR code has been automatically downloaded to your device
+                </div>
+              )}
               <p className="qr-description">
                 Show this QR code to the delivery person when your order arrives. 
                 They will scan it to confirm delivery.
@@ -208,8 +256,25 @@ const OrderSuccess = () => {
                   className="qr-code-image"
                 />
               </div>
+              <button 
+                className="btn-download-qr"
+                onClick={manualDownloadQRCode}
+                style={{
+                  marginTop: '15px',
+                  padding: '10px 20px',
+                  background: '#0264f1',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}
+              >
+                Download QR Code Again
+              </button>
               <p className="qr-note">
-                <strong>Note:</strong> Keep this QR code accessible until your order is delivered.
+                <strong>Note:</strong> Keep this QR code accessible (even offline) until your order is delivered.
               </p>
             </div>
           )}
@@ -268,7 +333,12 @@ const OrderSuccess = () => {
 
       <div className="action-buttons">
         <button onClick={() => navigate('/orders')}>View All Orders</button>
-        <button onClick={() => navigate('/')}>Continue Shopping</button>
+        <button onClick={() => {
+          // Navigate to products page with all filters cleared
+          navigate('/products');
+          // Clear any search params from the URL
+          window.history.replaceState({}, '', '/products');
+        }}>Continue Shopping</button>
       </div>
     </div>
   );

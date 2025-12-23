@@ -38,35 +38,17 @@ import Notification from '../pages/Notification';
 import Header from '../components/Header/Header';
 import TrackOrderPage from '../pages/TrackOrderPage';
 
-// Admin Imports
-import AdminLayout from '../pages/admin/AdminLayout';
-import AdminDashboard from '../pages/admin/AdminDashboard';
-import UserManagementPage from '../pages/admin/UserManagementPage';
-import ProductManagementPage from '../pages/admin/ProductManagementPage';
-import OrderManagementPage from '../pages/admin/OrderManagementPage';
-import DeliveryManagementPage from '../pages/admin/DeliveryManagementPage';
-import FinancePage from '../pages/admin/FinancePage';
-import MarketingPage from '../pages/admin/MarketingPage';
-import ContentManagementPage from '../pages/admin/ContentManagementPage';
-import AnalyticsPage from '../pages/admin/AnalyticsPage';
-import SecurityPage from '../pages/admin/SecurityPage';
-import IntegrationsPage from '../pages/admin/IntegrationsPage';
-import SupportPage from '../pages/admin/SupportPage';
-import AdminRoute from '../components/routes/AdminRoute';
-import CatalogCategoriesPage from '../pages/admin/CatalogCategoriesPage';
-import CatalogPresetImagesPage from '../pages/admin/CatalogPresetImagesPage';
 
 const AppRoutes = () => {
   const { currentUser } = useAuth();
   const location = useLocation();
   const isAuthPage = ['/login', '/register', '/role-selection', '/verify-phone'].includes(location.pathname);
   const isInfoPage = ['/', '/about', '/contact', '/terms', '/privacy-policy', '/help-center'].includes(location.pathname);
-  const isAdminPath = location.pathname.startsWith('/admin');
   
   return (
     <>
-      {!isAuthPage && !isAdminPath && <Header />}
-      <main className={`${!isAdminPath ? 'main-content' : ''} ${isAuthPage ? 'auth-layout' : ''}`}>
+      {!isAuthPage && <Header />}
+      <main className={`main-content ${isAuthPage ? 'auth-layout' : ''}`}>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
@@ -109,26 +91,6 @@ const AppRoutes = () => {
           <Route path="/seller/hot-deals/create" element={<PrivateRoute roles={['seller']}><CreateHotDeal /></PrivateRoute>} />
           <Route path="/seller/orders" element={<PrivateRoute roles={['seller']}><SellerOrdersPage /></PrivateRoute>} />
           
-          {/* Admin Protected Routes */}
-          <Route element={<AdminRoute />}>
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<Navigate to="dashboard" replace />} />
-              <Route path="dashboard" element={<AdminDashboard />} />
-              <Route path="users" element={<UserManagementPage />} />
-              <Route path="products" element={<ProductManagementPage />} />
-              <Route path="catalog/categories" element={<CatalogCategoriesPage />} />
-              <Route path="catalog/preset-images" element={<CatalogPresetImagesPage />} />
-              <Route path="orders" element={<OrderManagementPage />} />
-              <Route path="delivery" element={<DeliveryManagementPage />} />
-              <Route path="finance" element={<FinancePage />} />
-              <Route path="marketing" element={<MarketingPage />} />
-              <Route path="content" element={<ContentManagementPage />} />
-              <Route path="analytics" element={<AnalyticsPage />} />
-              <Route path="security" element={<SecurityPage />} />
-              <Route path="integrations" element={<IntegrationsPage />} />
-              <Route path="support" element={<SupportPage />} />
-            </Route>
-          </Route>
 
         </Routes>
       </main>

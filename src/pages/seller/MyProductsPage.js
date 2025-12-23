@@ -71,7 +71,7 @@ const MyProductsPage = () => {
             ) : products.length === 0 ? (
                 <div className="products-table-container">
                     <div className="no-products-message">
-                        <p>You haven't added any products yet.</p>
+                        <p>You haven't added  products yet.</p>
                     </div>
                 </div>
             ) : (
