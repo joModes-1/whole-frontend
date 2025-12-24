@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
@@ -46,7 +46,7 @@ const FeaturedProductsLayout = () => {
     return FiTag;
   };
 
-  const getImageUrl = (product) => {
+  const getImageUrl = useCallback((product) => {
     if (!product) return null;
     let candidate = product.images?.[0] || product.imageUrl || product.image || product.photo || '';
 
@@ -68,7 +68,7 @@ const FeaturedProductsLayout = () => {
     if (candidate.startsWith('/')) return `${apiBase}${candidate}`;
     if (candidate.startsWith('uploads')) return `${apiBase}/${candidate}`;
     return `${apiBase}/uploads/${candidate}`;
-  };
+  }, [apiBase]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -149,7 +149,7 @@ const FeaturedProductsLayout = () => {
     };
 
     fetchData();
-  }, [apiBase]);
+  }, [apiBase, getImageUrl]);
 
   // Auto-rotate the banner slider
   useEffect(() => {

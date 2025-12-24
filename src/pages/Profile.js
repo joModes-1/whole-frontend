@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaUser, FaMapMarkerAlt, FaEdit } from 'react-icons/fa';
+import { FaUser, FaMapMarkerAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchUserProfile, clearUser, setUser } from '../redux/userSlice';

@@ -91,9 +91,6 @@ const SellerDashboard = () => {
     ? stats.revenueByMonth.map((i) => `${i?._id?.year}-${i?._id?.month}-${i?.revenue}`).join('|')
     : String(revenueData.length);
 
-  const maxRevenue = revenueData.reduce((max, d) => (d.revenue > max ? d.revenue : max), 0);
-  const yMax = maxRevenue === 0 ? 1 : Math.ceil(maxRevenue * 1.1);
-
   return (
     <div className="seller-dashboard">
       <div className="dashboard-header">
